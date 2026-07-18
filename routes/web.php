@@ -1,18 +1,45 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PortfolioController;
+use App\Http\Controllers\AdminController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+// ─── Portfolio Frontend ───
+Route::get('/', [PortfolioController::class, 'index'])->name('home');
 
-Route::get('/', function () {
-    return view('welcome');
+// ─── Admin Auth ───
+Route::get('/admin/login',  [AdminController::class, 'loginForm'])->name('admin.login');
+Route::post('/admin/login', [AdminController::class, 'login'])->name('admin.login.post');
+Route::post('/admin/logout',[AdminController::class, 'logout'])->name('admin.logout');
+
+// ─── Admin CMS ───
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/',                         [AdminController::class, 'dashboard'])->name('dashboard');
+
+    // Projects
+    Route::get('/projects',                 [AdminController::class, 'projects'])->name('projects');
+    Route::get('/projects/create',          [AdminController::class, 'projectCreate'])->name('projects.create');
+    Route::post('/projects',                [AdminController::class, 'projectStore'])->name('projects.store');
+    Route::get('/projects/{id}/edit',       [AdminController::class, 'projectEdit'])->name('projects.edit');
+    Route::put('/projects/{id}',            [AdminController::class, 'projectUpdate'])->name('projects.update');
+    Route::delete('/projects/{id}',         [AdminController::class, 'projectDelete'])->name('projects.delete');
+
+    // Experience
+    Route::get('/experience',               [AdminController::class, 'experiences'])->name('experience');
+    Route::get('/experience/create',        [AdminController::class, 'experienceCreate'])->name('experience.create');
+    Route::post('/experience',              [AdminController::class, 'experienceStore'])->name('experience.store');
+    Route::get('/experience/{id}/edit',     [AdminController::class, 'experienceEdit'])->name('experience.edit');
+    Route::put('/experience/{id}',          [AdminController::class, 'experienceUpdate'])->name('experience.update');
+    Route::delete('/experience/{id}',       [AdminController::class, 'experienceDelete'])->name('experience.delete');
+
+    // Skills
+    Route::get('/skills',                   [AdminController::class, 'skills'])->name('skills');
+    Route::post('/skills/category',         [AdminController::class, 'skillCategoryStore'])->name('skills.category.store');
+    Route::delete('/skills/category/{id}',  [AdminController::class, 'skillCategoryDelete'])->name('skills.category.delete');
+    Route::post('/skills',                  [AdminController::class, 'skillStore'])->name('skills.store');
+    Route::delete('/skills/{id}',           [AdminController::class, 'skillDelete'])->name('skills.delete');
+
+    // Settings
+    Route::get('/settings',                 [AdminController::class, 'settings'])->name('settings');
+    Route::post('/settings',                [AdminController::class, 'settingsUpdate'])->name('settings.update');
 });

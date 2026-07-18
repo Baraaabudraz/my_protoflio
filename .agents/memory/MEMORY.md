@@ -1,0 +1,2 @@
+- [SQLite direct PDO workaround](sqlite-pdo-workaround.md) — system DATABASE_URL env overrides Eloquent; use App\Services\Database (direct PDO to SQLite) to bypass it.
+- [stdClass views pattern](stdclass-views.md) — controllers return stdClass arrays; views must use count()/empty() not ->count()/->isEmpty(), and ->id not model binding in route helpers.

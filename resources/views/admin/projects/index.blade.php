@@ -1,0 +1,79 @@
+@extends('admin.layout')
+@section('title', 'Projects')
+
+@section('topbar-actions')
+    <a href="{{ route('admin.projects.create') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Add Project</a>
+@endsection
+
+@section('content')
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">All Projects <span class="badge badge-cyan">{{ count($projects) }}</span></span>
+    </div>
+    @if(empty($projects))
+        <div class="card-body" style="text-align:center;color:var(--muted);padding:3rem;">
+            <i class="fas fa-rocket" style="font-size:2rem;margin-bottom:1rem;display:block"></i>
+            No projects yet. <a href="{{ route('admin.projects.create') }}" style="color:var(--cyan)">Add your first project</a>.
+        </div>
+    @else
+    <table>
+        <thead>
+            <tr>
+                <th>Icon</th>
+                <th>Title</th>
+                <th>Stack</th>
+                <th>Featured</th>
+                <th>Visible</th>
+                <th>Order</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($projects as $project)
+            <tr>
+                <td style="font-size:1.5rem">{{ $project->icon }}</td>
+                <td>
+                    <div style="font-weight:600">{{ $project->title }}</div>
+                    <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem">{{ Str::limit($project->description, 60) }}</div>
+                </td>
+                <td>
+                    <div style="display:flex;flex-wrap:wrap;gap:0.25rem;">
+                        @foreach(array_slice($project->stack ?? [], 0, 3) as $tech)
+                            <span class="badge badge-muted">{{ $tech }}</span>
+                        @endforeach
+                        @if(count($project->stack ?? []) > 3)
+                            <span class="badge badge-muted">+{{ count($project->stack) - 3 }}</span>
+                        @endif
+                    </div>
+                </td>
+                <td>
+                    @if($project->featured)
+                        <span class="badge badge-cyan"><i class="fas fa-star"></i> Yes</span>
+                    @else
+                        <span class="badge badge-muted">No</span>
+                    @endif
+                </td>
+                <td>
+                    @if($project->visible)
+                        <span class="badge badge-success">Visible</span>
+                    @else
+                        <span class="badge badge-muted">Hidden</span>
+                    @endif
+                </td>
+                <td style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.8rem">{{ $project->sort_order }}</td>
+                <td>
+                    <div style="display:flex;gap:0.4rem">
+                        <a href="{{ route('admin.projects.edit', $project->id) }}" class="btn btn-secondary btn-sm"><i class="fas fa-pen"></i></a>
+                        <form method="POST" action="{{ route('admin.projects.delete', $project->id) }}" onsubmit="return confirm('Delete this project?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
+</div>
+@endsection
