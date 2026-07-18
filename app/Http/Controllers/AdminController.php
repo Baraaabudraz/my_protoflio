@@ -82,17 +82,21 @@ class AdminController extends Controller
             'title'       => 'required|string|max:255',
             'description' => 'required|string',
         ]);
-        $stack    = $request->stack ? json_encode(array_map('trim', explode(',', $request->stack))) : '[]';
-        $featured = $request->has('featured') ? 1 : 0;
-        $visible  = $request->has('visible') ? 1 : 0;
-        $now      = now()->toDateTimeString();
+        $stack       = $request->stack ? json_encode(array_map('trim', explode(',', $request->stack))) : '[]';
+        $featured    = $request->has('featured') ? 1 : 0;
+        $visible     = $request->has('visible') ? 1 : 0;
+        $now         = now()->toDateTimeString();
+        $workStages  = $this->parseWorkStages($request->work_stages ?? '');
 
         Database::execute(
-            'INSERT INTO projects (title,description,icon,stack,github_url,live_url,featured,sort_order,visible,created_at,updated_at)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+            'INSERT INTO projects (title,description,icon,stack,github_url,live_url,featured,sort_order,visible,
+             client,duration,category,overview,work_stages,created_at,updated_at)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [$request->title, $request->description, $request->icon ?? '🚀', $stack,
              $request->github_url, $request->live_url, $featured,
-             (int)($request->sort_order ?? 0), $visible, $now, $now]
+             (int)($request->sort_order ?? 0), $visible,
+             $request->client, $request->duration, $request->category,
+             $request->overview, $workStages, $now, $now]
         );
         return redirect()->route('admin.projects')->with('success', 'Project created!');
     }
@@ -102,9 +106,10 @@ class AdminController extends Controller
         if (!$this->auth()) return redirect()->route('admin.login');
         $project = Database::first('SELECT * FROM projects WHERE id = ?', [$id]);
         if (!$project) abort(404);
-        $project->stack    = json_decode($project->stack ?? '[]');
-        $project->featured = (bool) $project->featured;
-        $project->visible  = (bool) $project->visible;
+        $project->stack       = json_decode($project->stack ?? '[]');
+        $project->work_stages = json_decode($project->work_stages ?? '[]');
+        $project->featured    = (bool) $project->featured;
+        $project->visible     = (bool) $project->visible;
         return view('admin.projects.form', compact('project'));
     }
 
@@ -115,18 +120,32 @@ class AdminController extends Controller
             'title'       => 'required|string|max:255',
             'description' => 'required|string',
         ]);
-        $stack    = $request->stack ? json_encode(array_map('trim', explode(',', $request->stack))) : '[]';
-        $featured = $request->has('featured') ? 1 : 0;
-        $visible  = $request->has('visible') ? 1 : 0;
+        $stack      = $request->stack ? json_encode(array_map('trim', explode(',', $request->stack))) : '[]';
+        $featured   = $request->has('featured') ? 1 : 0;
+        $visible    = $request->has('visible') ? 1 : 0;
+        $workStages = $this->parseWorkStages($request->work_stages ?? '');
 
         Database::execute(
             'UPDATE projects SET title=?,description=?,icon=?,stack=?,github_url=?,live_url=?,
-             featured=?,sort_order=?,visible=?,updated_at=? WHERE id=?',
+             featured=?,sort_order=?,visible=?,client=?,duration=?,category=?,overview=?,work_stages=?,updated_at=? WHERE id=?',
             [$request->title, $request->description, $request->icon ?? '🚀', $stack,
              $request->github_url, $request->live_url, $featured,
-             (int)($request->sort_order ?? 0), $visible, now()->toDateTimeString(), $id]
+             (int)($request->sort_order ?? 0), $visible,
+             $request->client, $request->duration, $request->category,
+             $request->overview, $workStages, now()->toDateTimeString(), $id]
         );
         return redirect()->route('admin.projects')->with('success', 'Project updated!');
+    }
+
+    private function parseWorkStages(string $raw): string
+    {
+        if (empty(trim($raw))) return '[]';
+        $lines  = array_filter(array_map('trim', explode("\n", $raw)));
+        $stages = [];
+        foreach ($lines as $line) {
+            if (!empty($line)) $stages[] = $line;
+        }
+        return json_encode($stages);
     }
 
     public function projectDelete(int $id)

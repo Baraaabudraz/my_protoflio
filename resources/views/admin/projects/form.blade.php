@@ -6,7 +6,7 @@
 @endsection
 
 @section('content')
-<div class="card" style="max-width:760px">
+<div class="card" style="max-width:860px">
     <div class="card-header">
         <span class="card-title">{{ $project ? 'Edit: '.$project->title : 'Add New Project' }}</span>
     </div>
@@ -21,6 +21,9 @@
                 </div>
             @endif
 
+            {{-- Basic Info --}}
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);font-family:'JetBrains Mono',monospace;margin-bottom:0.75rem">Basic Info</div>
+
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Title *</label>
@@ -33,13 +36,51 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Description *</label>
-                <textarea name="description" class="form-control" required>{{ old('description', $project?->description) }}</textarea>
+                <label class="form-label">Short Description *</label>
+                <textarea name="description" class="form-control" rows="3" required>{{ old('description', $project?->description) }}</textarea>
+                <div class="form-hint">Shown on the project card in the portfolio grid.</div>
             </div>
 
             <div class="form-group">
+                <label class="form-label">Overview (Full Detail)</label>
+                <textarea name="overview" class="form-control" rows="5" placeholder="Detailed project overview shown on the project detail page...">{{ old('overview', $project?->overview) }}</textarea>
+            </div>
+
+            {{-- Project Meta --}}
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);font-family:'JetBrains Mono',monospace;margin:1.5rem 0 0.75rem">Project Details</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Client</label>
+                    <input type="text" name="client" class="form-control" value="{{ old('client', $project?->client) }}" placeholder="e.g. Acme Corp.">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Duration</label>
+                    <input type="text" name="duration" class="form-control" value="{{ old('duration', $project?->duration) }}" placeholder="e.g. 3 months">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <input type="text" name="category" class="form-control" value="{{ old('category', $project?->category) }}" placeholder="e.g. Web App, API, Mobile, E-Commerce">
+                <div class="form-hint">Used to group related projects.</div>
+            </div>
+
+            {{-- Work Stages --}}
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);font-family:'JetBrains Mono',monospace;margin:1.5rem 0 0.75rem">Work Stages</div>
+
+            <div class="form-group">
+                <label class="form-label">Stages (one per line)</label>
+                <textarea name="work_stages" class="form-control" rows="6" placeholder="Requirements Analysis&#10;System Architecture Design&#10;Backend API Development&#10;Frontend Integration&#10;Testing & QA&#10;Deployment & Handover">{{ old('work_stages', $project ? implode("\n", (array)($project->work_stages ?? [])) : '') }}</textarea>
+                <div class="form-hint">Each line becomes a numbered stage on the detail page.</div>
+            </div>
+
+            {{-- Tech & Links --}}
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);font-family:'JetBrains Mono',monospace;margin:1.5rem 0 0.75rem">Tech Stack & Links</div>
+
+            <div class="form-group">
                 <label class="form-label">Tech Stack</label>
-                <input type="text" name="stack" class="form-control" value="{{ old('stack', $project ? implode(', ', $project->stack ?? []) : '') }}" placeholder="Laravel, MySQL, Redis, Vue.js">
+                <input type="text" name="stack" class="form-control" value="{{ old('stack', $project ? implode(', ', (array)($project->stack ?? [])) : '') }}" placeholder="Laravel, MySQL, Redis, Vue.js">
                 <div class="form-hint">Comma-separated list</div>
             </div>
 
@@ -53,6 +94,9 @@
                     <input type="url" name="live_url" class="form-control" value="{{ old('live_url', $project?->live_url) }}" placeholder="https://...">
                 </div>
             </div>
+
+            {{-- Visibility --}}
+            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);font-family:'JetBrains Mono',monospace;margin:1.5rem 0 0.75rem">Settings</div>
 
             <div class="form-row">
                 <div class="form-group">

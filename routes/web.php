@@ -6,6 +6,8 @@ use App\Http\Controllers\AdminController;
 
 // ─── Portfolio Frontend ───
 Route::get('/', [PortfolioController::class, 'index'])->name('home');
+Route::get('/projects/{id}', [PortfolioController::class, 'show'])->name('project.show')->where('id', '[0-9]+');
+Route::get('/lang/{locale}', [PortfolioController::class, 'switchLocale'])->name('lang.switch');
 
 // ─── Admin Auth ───
 Route::get('/admin/login',  [AdminController::class, 'loginForm'])->name('admin.login');

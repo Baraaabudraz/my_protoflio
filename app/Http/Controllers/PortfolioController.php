@@ -3,12 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Services\Database;
+use Illuminate\Http\Request;
 
 class PortfolioController extends Controller
 {
+    private function setLocale(): string
+    {
+        $locale = session('locale', 'en');
+        app()->setLocale($locale);
+        return $locale;
+    }
+
     public function index()
     {
-        $db = Database::connection();
+        $locale = $this->setLocale();
 
         $projects = Database::query(
             'SELECT * FROM projects WHERE visible = 1 ORDER BY featured DESC, sort_order ASC'
@@ -42,6 +50,54 @@ class PortfolioController extends Controller
             $settings[$s->key] = $s->value;
         }
 
-        return view('portfolio', compact('projects', 'experiences', 'categories', 'settings'));
+        return view('portfolio', compact('projects', 'experiences', 'categories', 'settings', 'locale'));
+    }
+
+    public function show(int $id)
+    {
+        $locale = $this->setLocale();
+
+        $project = Database::first('SELECT * FROM projects WHERE id = ? AND visible = 1', [$id]);
+        if (!$project) abort(404);
+
+        $project->stack       = json_decode($project->stack ?? '[]');
+        $project->work_stages = json_decode($project->work_stages ?? '[]');
+
+        // Related projects: same category, exclude current
+        $related = [];
+        if ($project->category) {
+            $related = Database::query(
+                'SELECT * FROM projects WHERE category = ? AND id != ? AND visible = 1 ORDER BY featured DESC, sort_order ASC LIMIT 3',
+                [$project->category, $id]
+            );
+            foreach ($related as $r) {
+                $r->stack = json_decode($r->stack ?? '[]');
+            }
+        }
+        if (empty($related)) {
+            $related = Database::query(
+                'SELECT * FROM projects WHERE id != ? AND visible = 1 ORDER BY featured DESC, sort_order ASC LIMIT 3',
+                [$id]
+            );
+            foreach ($related as $r) {
+                $r->stack = json_decode($r->stack ?? '[]');
+            }
+        }
+
+        $settingRows = Database::query('SELECT key, value FROM settings');
+        $settings = [];
+        foreach ($settingRows as $s) {
+            $settings[$s->key] = $s->value;
+        }
+
+        return view('project-detail', compact('project', 'related', 'settings', 'locale'));
+    }
+
+    public function switchLocale(Request $request, string $locale)
+    {
+        if (in_array($locale, ['en', 'ar'])) {
+            session(['locale' => $locale]);
+        }
+        return redirect()->back();
     }
 }

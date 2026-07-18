@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ $locale }}" dir="{{ $locale === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $settings['hero_name'] ?? 'Portfolio' }} — {{ $settings['hero_tagline'] ?? 'Developer' }}</title>
     <meta name="description" content="{{ strip_tags($settings['hero_subtitle'] ?? '') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
@@ -24,7 +24,7 @@
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         html { scroll-behavior:smooth; }
-        body { font-family:'Inter',sans-serif; background:var(--bg-primary); color:var(--text-primary); line-height:1.6; overflow-x:hidden; cursor:none; }
+        body { font-family:{{ $locale === 'ar' ? "'Cairo'" : "'Inter'" }},sans-serif; background:var(--bg-primary); color:var(--text-primary); line-height:1.6; overflow-x:hidden; cursor:none; }
         ::-webkit-scrollbar { width:5px; }
         ::-webkit-scrollbar-track { background:var(--bg-primary); }
         ::-webkit-scrollbar-thumb { background:var(--cyan-dark); border-radius:3px; }
@@ -84,7 +84,7 @@
             transition:all 0.3s;
         }
         nav.scrolled { border-bottom-color:rgba(0,212,212,0.2); box-shadow:0 4px 30px rgba(0,0,0,0.5); }
-        .nav-inner { max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:70px; }
+        .nav-inner { max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:70px; gap:1rem; }
         .nav-logo { font-size:1.4rem; font-weight:800; color:var(--cyan); text-decoration:none; letter-spacing:-0.5px; }
         .nav-logo span { color:var(--text-primary); }
         .nav-links { display:flex; gap:2rem; list-style:none; }
@@ -96,6 +96,23 @@
         .nav-cta:hover { background:var(--cyan); color:var(--bg-primary) !important; }
         .hamburger { display:none; flex-direction:column; gap:5px; cursor:none; }
         .hamburger span { display:block; width:24px; height:2px; background:var(--text-primary); border-radius:2px; transition:all 0.3s; }
+        .lang-switch { display:flex; align-items:center; gap:0.25rem; background:rgba(0,212,212,0.06); border:1px solid rgba(0,212,212,0.2); border-radius:50px; padding:0.25rem; flex-shrink:0; }
+        .lang-btn { padding:0.3rem 0.7rem; border-radius:50px; font-size:0.75rem; font-weight:600; text-decoration:none; color:var(--text-secondary); transition:all .2s; font-family:'JetBrains Mono',monospace; cursor:none; }
+        .lang-btn.active { background:var(--gradient); color:#0a0e17; }
+        .lang-btn:not(.active):hover { color:var(--cyan); }
+
+        /* ─── PROJECT CARD LINK ─── */
+        .project-card-link { text-decoration:none; color:inherit; display:block; }
+        .project-card { cursor:none; }
+        .project-card:hover .project-title { color:var(--cyan); }
+        .project-view-more { display:inline-flex; align-items:center; gap:0.4rem; margin-top:1rem; font-size:0.8rem; color:var(--cyan); font-weight:600; opacity:0; transition:opacity .2s; font-family:'JetBrains Mono',monospace; }
+        .project-card:hover .project-view-more { opacity:1; }
+
+        /* ─── RTL ─── */
+        @if($locale === 'ar')
+        .nav-links a::after { left:auto; right:0; }
+        .hero-stats { direction:ltr; }
+        @endif
 
         /* ─── SECTIONS ─── */
         section { position:relative; z-index:1; }
@@ -274,14 +291,20 @@
     <div class="nav-inner">
         <a class="nav-logo" href="#hero">B<span>.</span></a>
         <ul class="nav-links" id="navLinks">
-            <li><a href="#about">About</a></li>
-            <li><a href="#skills">Skills</a></li>
-            <li><a href="#experience">Experience</a></li>
-            <li><a href="#projects">Projects</a></li>
-            <li><a class="nav-cta" href="#contact">Hire Me</a></li>
+            <li><a href="#about">{{ __('About') }}</a></li>
+            <li><a href="#skills">{{ __('Skills') }}</a></li>
+            <li><a href="#experience">{{ __('Experience') }}</a></li>
+            <li><a href="#projects">{{ __('Projects') }}</a></li>
+            <li><a class="nav-cta" href="#contact">{{ __('Hire Me') }}</a></li>
         </ul>
-        <div class="hamburger" id="hamburger">
-            <span></span><span></span><span></span>
+        <div style="display:flex;align-items:center;gap:0.75rem">
+            <div class="lang-switch">
+                <a href="{{ route('lang.switch', 'en') }}" class="lang-btn {{ $locale === 'en' ? 'active' : '' }}">EN</a>
+                <a href="{{ route('lang.switch', 'ar') }}" class="lang-btn {{ $locale === 'ar' ? 'active' : '' }}">عربي</a>
+            </div>
+            <div class="hamburger" id="hamburger">
+                <span></span><span></span><span></span>
+            </div>
         </div>
     </div>
 </nav>
@@ -471,17 +494,18 @@
         </div>
         <div class="projects-grid">
             @foreach($projects as $project)
-            <div class="project-card reveal">
+            <a href="{{ route('project.show', $project->id) }}" class="project-card-link reveal">
+            <div class="project-card">
                 <div class="project-header">
                     <div class="project-icon">{{ $project->icon }}</div>
                     <div class="project-links">
                         @if($project->github_url)
-                            <a href="{{ $project->github_url }}" target="_blank" class="project-link" title="GitHub"><i class="fab fa-github"></i></a>
+                            <span onclick="event.preventDefault();window.open('{{ $project->github_url }}','_blank')" class="project-link" title="GitHub"><i class="fab fa-github"></i></span>
                         @else
                             <span class="project-link" style="opacity:0.3"><i class="fab fa-github"></i></span>
                         @endif
                         @if($project->live_url)
-                            <a href="{{ $project->live_url }}" target="_blank" class="project-link" title="Live"><i class="fas fa-arrow-up-right-from-square"></i></a>
+                            <span onclick="event.preventDefault();window.open('{{ $project->live_url }}','_blank')" class="project-link" title="Live"><i class="fas fa-arrow-up-right-from-square"></i></span>
                         @else
                             <span class="project-link" style="opacity:0.3"><i class="fas fa-arrow-up-right-from-square"></i></span>
                         @endif
@@ -489,7 +513,7 @@
                 </div>
                 <div class="project-body">
                     @if($project->featured)
-                        <div class="featured-badge"><i class="fas fa-star"></i> Featured</div>
+                        <div class="featured-badge"><i class="fas fa-star"></i> {{ __('Featured') }}</div>
                     @endif
                     <div class="project-title">{{ $project->title }}</div>
                     <p class="project-desc">{{ $project->description }}</p>
@@ -500,8 +524,13 @@
                         @endforeach
                     </div>
                     @endif
+                    <div class="project-view-more">
+                        {{ __('View Details') }}
+                        <i class="fas fa-arrow-{{ $locale === 'ar' ? 'left' : 'right' }}"></i>
+                    </div>
                 </div>
             </div>
+            </a>
             @endforeach
         </div>
     </div>
