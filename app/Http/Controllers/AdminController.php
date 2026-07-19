@@ -82,21 +82,32 @@ class AdminController extends Controller
             'title'       => 'required|string|max:255',
             'description' => 'required|string',
         ]);
-        $stack       = $request->stack ? json_encode(array_map('trim', explode(',', $request->stack))) : '[]';
-        $featured    = $request->has('featured') ? 1 : 0;
-        $visible     = $request->has('visible') ? 1 : 0;
-        $now         = now()->toDateTimeString();
-        $workStages  = $this->parseWorkStages($request->work_stages ?? '');
+        $stack      = $request->stack ? json_encode(array_map('trim', explode(',', $request->stack))) : '[]';
+        $featured   = $request->has('featured') ? 1 : 0;
+        $visible    = $request->has('visible')  ? 1 : 0;
+        $now        = now()->toDateTimeString();
+        $workStages = $this->parseWorkStages($request->work_stages ?? '');
+        $workStagesAr = $this->parseWorkStages($request->work_stages_ar ?? '');
 
         Database::execute(
-            'INSERT INTO projects (title,description,icon,stack,github_url,live_url,featured,sort_order,visible,
-             client,duration,category,overview,work_stages,created_at,updated_at)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-            [$request->title, $request->description, $request->icon ?? '🚀', $stack,
-             $request->github_url, $request->live_url, $featured,
-             (int)($request->sort_order ?? 0), $visible,
-             $request->client, $request->duration, $request->category,
-             $request->overview, $workStages, $now, $now]
+            'INSERT INTO projects
+             (title,title_ar,description,description_ar,icon,stack,github_url,live_url,featured,sort_order,visible,
+              client,client_ar,duration,duration_ar,category,category_ar,overview,overview_ar,work_stages,work_stages_ar,
+              created_at,updated_at)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            [
+                $request->title,          $request->title_ar,
+                $request->description,    $request->description_ar,
+                $request->icon ?? '🚀',  $stack,
+                $request->github_url,     $request->live_url,
+                $featured, (int)($request->sort_order ?? 0), $visible,
+                $request->client,         $request->client_ar,
+                $request->duration,       $request->duration_ar,
+                $request->category,       $request->category_ar,
+                $request->overview,       $request->overview_ar,
+                $workStages,              $workStagesAr,
+                $now, $now,
+            ]
         );
         return redirect()->route('admin.projects')->with('success', 'Project created!');
     }
@@ -108,6 +119,7 @@ class AdminController extends Controller
         if (!$project) abort(404);
         $project->stack       = json_decode($project->stack ?? '[]');
         $project->work_stages = json_decode($project->work_stages ?? '[]');
+        $project->work_stages_ar = json_decode($project->work_stages_ar ?? '[]');
         $project->featured    = (bool) $project->featured;
         $project->visible     = (bool) $project->visible;
         return view('admin.projects.form', compact('project'));
@@ -120,19 +132,32 @@ class AdminController extends Controller
             'title'       => 'required|string|max:255',
             'description' => 'required|string',
         ]);
-        $stack      = $request->stack ? json_encode(array_map('trim', explode(',', $request->stack))) : '[]';
-        $featured   = $request->has('featured') ? 1 : 0;
-        $visible    = $request->has('visible') ? 1 : 0;
-        $workStages = $this->parseWorkStages($request->work_stages ?? '');
+        $stack       = $request->stack ? json_encode(array_map('trim', explode(',', $request->stack))) : '[]';
+        $featured    = $request->has('featured') ? 1 : 0;
+        $visible     = $request->has('visible')  ? 1 : 0;
+        $workStages  = $this->parseWorkStages($request->work_stages ?? '');
+        $workStagesAr = $this->parseWorkStages($request->work_stages_ar ?? '');
 
         Database::execute(
-            'UPDATE projects SET title=?,description=?,icon=?,stack=?,github_url=?,live_url=?,
-             featured=?,sort_order=?,visible=?,client=?,duration=?,category=?,overview=?,work_stages=?,updated_at=? WHERE id=?',
-            [$request->title, $request->description, $request->icon ?? '🚀', $stack,
-             $request->github_url, $request->live_url, $featured,
-             (int)($request->sort_order ?? 0), $visible,
-             $request->client, $request->duration, $request->category,
-             $request->overview, $workStages, now()->toDateTimeString(), $id]
+            'UPDATE projects SET
+             title=?,title_ar=?,description=?,description_ar=?,icon=?,stack=?,github_url=?,live_url=?,
+             featured=?,sort_order=?,visible=?,
+             client=?,client_ar=?,duration=?,duration_ar=?,category=?,category_ar=?,
+             overview=?,overview_ar=?,work_stages=?,work_stages_ar=?,updated_at=?
+             WHERE id=?',
+            [
+                $request->title,       $request->title_ar,
+                $request->description, $request->description_ar,
+                $request->icon ?? '🚀', $stack,
+                $request->github_url,  $request->live_url,
+                $featured, (int)($request->sort_order ?? 0), $visible,
+                $request->client,      $request->client_ar,
+                $request->duration,    $request->duration_ar,
+                $request->category,    $request->category_ar,
+                $request->overview,    $request->overview_ar,
+                $workStages,           $workStagesAr,
+                now()->toDateTimeString(), $id,
+            ]
         );
         return redirect()->route('admin.projects')->with('success', 'Project updated!');
     }
@@ -187,10 +212,16 @@ class AdminController extends Controller
         $now     = now()->toDateTimeString();
 
         Database::execute(
-            'INSERT INTO experiences (title,company,date_range,description,tags,sort_order,visible,created_at,updated_at)
-             VALUES (?,?,?,?,?,?,?,?,?)',
-            [$request->title, $request->company, $request->date_range,
-             $request->description, $tags, (int)($request->sort_order ?? 0), $visible, $now, $now]
+            'INSERT INTO experiences
+             (title,title_ar,company,company_ar,date_range,description,description_ar,tags,sort_order,visible,created_at,updated_at)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+            [
+                $request->title,   $request->title_ar,
+                $request->company, $request->company_ar,
+                $request->date_range,
+                $request->description, $request->description_ar,
+                $tags, (int)($request->sort_order ?? 0), $visible, $now, $now,
+            ]
         );
         return redirect()->route('admin.experience')->with('success', 'Experience created!');
     }
@@ -218,9 +249,18 @@ class AdminController extends Controller
         $visible = $request->has('visible') ? 1 : 0;
 
         Database::execute(
-            'UPDATE experiences SET title=?,company=?,date_range=?,description=?,tags=?,sort_order=?,visible=?,updated_at=? WHERE id=?',
-            [$request->title, $request->company, $request->date_range, $request->description,
-             $tags, (int)($request->sort_order ?? 0), $visible, now()->toDateTimeString(), $id]
+            'UPDATE experiences SET
+             title=?,title_ar=?,company=?,company_ar=?,date_range=?,description=?,description_ar=?,
+             tags=?,sort_order=?,visible=?,updated_at=?
+             WHERE id=?',
+            [
+                $request->title,   $request->title_ar,
+                $request->company, $request->company_ar,
+                $request->date_range,
+                $request->description, $request->description_ar,
+                $tags, (int)($request->sort_order ?? 0), $visible,
+                now()->toDateTimeString(), $id,
+            ]
         );
         return redirect()->route('admin.experience')->with('success', 'Experience updated!');
     }
@@ -253,8 +293,8 @@ class AdminController extends Controller
         $request->validate(['name' => 'required', 'type' => 'required']);
         $now = now()->toDateTimeString();
         Database::execute(
-            'INSERT INTO skill_categories (name,icon,type,sort_order,created_at,updated_at) VALUES (?,?,?,?,?,?)',
-            [$request->name, $request->icon ?? '⚙️', $request->type, (int)($request->sort_order ?? 0), $now, $now]
+            'INSERT INTO skill_categories (name,name_ar,icon,type,sort_order,created_at,updated_at) VALUES (?,?,?,?,?,?,?)',
+            [$request->name, $request->name_ar, $request->icon ?? '⚙️', $request->type, (int)($request->sort_order ?? 0), $now, $now]
         );
         return back()->with('success', 'Category created!');
     }
@@ -273,9 +313,9 @@ class AdminController extends Controller
         $request->validate(['name' => 'required', 'skill_category_id' => 'required']);
         $now = now()->toDateTimeString();
         Database::execute(
-            'INSERT INTO skills (skill_category_id,name,percentage,sort_order,created_at,updated_at) VALUES (?,?,?,?,?,?)',
-            [$request->skill_category_id, $request->name, $request->percentage ?: null,
-             (int)($request->sort_order ?? 0), $now, $now]
+            'INSERT INTO skills (skill_category_id,name,name_ar,percentage,sort_order,created_at,updated_at) VALUES (?,?,?,?,?,?,?)',
+            [$request->skill_category_id, $request->name, $request->name_ar,
+             $request->percentage ?: null, (int)($request->sort_order ?? 0), $now, $now]
         );
         return back()->with('success', 'Skill added!');
     }
@@ -299,10 +339,17 @@ class AdminController extends Controller
     {
         if (!$this->auth()) return redirect()->route('admin.login');
         $fields = [
-            'hero_name','hero_tagline','hero_subtitle',
+            'hero_name',    'hero_name_ar',
+            'hero_tagline', 'hero_tagline_ar',
+            'hero_subtitle','hero_subtitle_ar',
             'hero_stat_years','hero_stat_projects','hero_stat_clients',
-            'about_heading','about_p1','about_p2','about_p3',
-            'about_tags','email','github_url','linkedin_url','footer_text',
+            'about_heading','about_heading_ar',
+            'about_p1',     'about_p1_ar',
+            'about_p2',     'about_p2_ar',
+            'about_p3',     'about_p3_ar',
+            'about_tags',   'about_tags_ar',
+            'email','github_url','linkedin_url',
+            'footer_text',  'footer_text_ar',
         ];
         $now = now()->toDateTimeString();
         foreach ($fields as $field) {

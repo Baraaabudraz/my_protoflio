@@ -17,7 +17,11 @@
         @foreach($categories as $cat)
         <div class="card">
             <div class="card-header">
-                <span class="card-title">{{ $cat->icon }} {{ $cat->name }} <span class="badge badge-muted">{{ $cat->type === 'bars' ? __('Progress Bars') : __('Tags') }}</span></span>
+                <span class="card-title">
+                    {{ $cat->icon }} {{ $cat->name }}
+                    @if($cat->name_ar)<span style="color:var(--muted);font-size:0.78rem;margin-inline-start:0.4rem">/ {{ $cat->name_ar }}</span>@endif
+                    <span class="badge badge-muted" style="margin-inline-start:0.4rem">{{ $cat->type === 'bars' ? __('Progress Bars') : __('Tags') }}</span>
+                </span>
                 <form method="POST" action="{{ route('admin.skills.category.delete', $cat->id) }}" onsubmit="return confirm('{{ __('Delete category and all its skills?') }}')">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
@@ -30,7 +34,11 @@
                     <div style="display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1rem">
                         @foreach($cat->skills as $skill)
                         <div style="display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0.6rem;background:rgba(255,255,255,0.02);border-radius:6px">
-                            <span style="font-size:0.875rem">{{ $skill->name }} @if($skill->percentage)<span style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:0.75rem">&nbsp;{{ $skill->percentage }}%</span>@endif</span>
+                            <span style="font-size:0.875rem">
+                                {{ $skill->name }}
+                                @if($skill->name_ar)<span style="color:var(--muted);font-size:0.78rem;margin-inline-start:0.3rem">/ {{ $skill->name_ar }}</span>@endif
+                                @if($skill->percentage)<span style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:0.75rem">&nbsp;{{ $skill->percentage }}%</span>@endif
+                            </span>
                             <form method="POST" action="{{ route('admin.skills.delete', $skill->id) }}" onsubmit="return confirm('{{ __('Delete?') }}')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem"><i class="fas fa-times"></i></button>
@@ -40,14 +48,18 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('admin.skills.store') }}" style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                {{-- Add skill --}}
+                <form method="POST" action="{{ route('admin.skills.store') }}">
                     @csrf
                     <input type="hidden" name="skill_category_id" value="{{ $cat->id }}">
-                    <input type="text" name="name" class="form-control" placeholder="{{ __('Skill name') }}" style="flex:1;min-width:120px" required>
-                    @if($cat->type === 'bars')
-                        <input type="number" name="percentage" class="form-control" placeholder="%" style="width:70px" min="0" max="100">
-                    @endif
-                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> {{ __('Add') }}</button>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.4rem">
+                        <input type="text" name="name" class="form-control" placeholder="{{ __('Skill name') }} (EN)" style="flex:1;min-width:100px" required>
+                        <input type="text" name="name_ar" class="form-control" placeholder="الاسم (AR)" style="flex:1;min-width:100px" dir="rtl" style="font-family:'Cairo',sans-serif">
+                        @if($cat->type === 'bars')
+                            <input type="number" name="percentage" class="form-control" placeholder="%" style="width:70px" min="0" max="100">
+                        @endif
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> {{ __('Add') }}</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -62,8 +74,12 @@
                 <form method="POST" action="{{ route('admin.skills.category.store') }}">
                     @csrf
                     <div class="form-group">
-                        <label class="form-label">{{ __('Category Name') }}</label>
-                        <input type="text" name="name" class="form-control" required placeholder="{{ app()->getLocale() === 'ar' ? 'مثال: تطوير الواجهة الخلفية' : 'e.g. Backend Development' }}">
+                        <label class="form-label">{{ __('Category Name') }} (EN)</label>
+                        <input type="text" name="name" class="form-control" required placeholder="e.g. Backend Development">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">اسم الفئة (AR) <span style="font-size:0.7rem;opacity:0.6">اختياري</span></label>
+                        <input type="text" name="name_ar" class="form-control" placeholder="مثال: تطوير الواجهة الخلفية" dir="rtl" style="font-family:'Cairo',sans-serif">
                     </div>
                     <div class="form-row">
                         <div class="form-group">

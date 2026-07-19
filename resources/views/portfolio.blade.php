@@ -315,28 +315,28 @@
     <div class="hero-grid"></div>
     <div class="hero-inner">
         <div>
-            <div class="hero-badge">Available for opportunities</div>
+            <div class="hero-badge">{{ __('Available for opportunities') }}</div>
             <h1 class="hero-title">
-                <span class="name">{{ $settings['hero_name'] ?? 'Your Name' }}</span>
-                <span class="role" id="typing-role">{{ $settings['hero_tagline'] ?? 'Developer' }}</span>
+                <span class="name">{{ ts($settings, 'hero_name') ?: ($settings['hero_name'] ?? 'Your Name') }}</span>
+                <span class="role" id="typing-role">{{ ts($settings, 'hero_tagline') ?: ($settings['hero_tagline'] ?? 'Developer') }}</span>
             </h1>
-            <p class="hero-subtitle">{!! $settings['hero_subtitle'] ?? '' !!}</p>
+            <p class="hero-subtitle">{!! ts($settings, 'hero_subtitle') ?: ($settings['hero_subtitle'] ?? '') !!}</p>
             <div class="hero-actions">
-                <a href="#projects" class="btn-primary"><i class="fas fa-rocket"></i> View My Work</a>
-                <a href="#contact" class="btn-secondary"><i class="fas fa-envelope"></i> Get In Touch</a>
+                <a href="#projects" class="btn-primary"><i class="fas fa-rocket"></i> {{ __('View My Work') }}</a>
+                <a href="#contact" class="btn-secondary"><i class="fas fa-envelope"></i> {{ __('Get In Touch') }}</a>
             </div>
             <div class="hero-stats">
                 <div class="stat-item">
                     <span class="stat-number">{{ $settings['hero_stat_years'] ?? '5+' }}</span>
-                    <span class="stat-label">Years Exp.</span>
+                    <span class="stat-label">{{ __('Years Exp.') }}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-number">{{ $settings['hero_stat_projects'] ?? '30+' }}</span>
-                    <span class="stat-label">Projects</span>
+                    <span class="stat-label">{{ __('Projects') }}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-number">{{ $settings['hero_stat_clients'] ?? '15+' }}</span>
-                    <span class="stat-label">Happy Clients</span>
+                    <span class="stat-label">{{ __('Happy Clients') }}</span>
                 </div>
             </div>
         </div>
@@ -385,14 +385,20 @@
             </div>
             <div class="reveal">
                 <div class="section-tag">// who am I</div>
-                <h2>{!! $settings['about_heading'] ?? 'About Me' !!}</h2>
-                @if(!empty($settings['about_p1']))<p>{{ $settings['about_p1'] }}</p>@endif
-                @if(!empty($settings['about_p2']))<p>{{ $settings['about_p2'] }}</p>@endif
-                @if(!empty($settings['about_p3']))<p>{{ $settings['about_p3'] }}</p>@endif
-                @if(!empty($settings['about_tags']))
+                <h2>{!! ts($settings, 'about_heading') ?: ($settings['about_heading'] ?? 'About Me') !!}</h2>
+                @php
+                    $p1 = ts($settings, 'about_p1') ?: ($settings['about_p1'] ?? '');
+                    $p2 = ts($settings, 'about_p2') ?: ($settings['about_p2'] ?? '');
+                    $p3 = ts($settings, 'about_p3') ?: ($settings['about_p3'] ?? '');
+                    $tagsRaw = ts($settings, 'about_tags') ?: ($settings['about_tags'] ?? '');
+                @endphp
+                @if($p1)<p>{{ $p1 }}</p>@endif
+                @if($p2)<p>{{ $p2 }}</p>@endif
+                @if($p3)<p>{{ $p3 }}</p>@endif
+                @if($tagsRaw)
                 <div class="about-tags">
-                    @foreach(array_map('trim', explode(',', $settings['about_tags'])) as $t)
-                        <span class="tag">{{ $t }}</span>
+                    @foreach(array_map('trim', explode(',', $tagsRaw)) as $tag)
+                        <span class="tag">{{ $tag }}</span>
                     @endforeach
                 </div>
                 @endif
