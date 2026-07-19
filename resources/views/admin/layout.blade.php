@@ -1,8 +1,3 @@
-@php
-    $locale = session('locale', 'en');
-    app()->setLocale($locale);
-    $isRtl = $locale === 'ar';
-@endphp
 <!DOCTYPE html>
 <html lang="{{ $locale }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}">
 <head>

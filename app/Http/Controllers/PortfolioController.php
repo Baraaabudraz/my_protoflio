@@ -7,17 +7,8 @@ use Illuminate\Http\Request;
 
 class PortfolioController extends Controller
 {
-    private function setLocale(): string
-    {
-        $locale = session('locale', 'en');
-        app()->setLocale($locale);
-        return $locale;
-    }
-
     public function index()
     {
-        $locale = $this->setLocale();
-
         $projects = Database::query(
             'SELECT * FROM projects WHERE visible = 1 ORDER BY featured DESC, sort_order ASC'
         );
@@ -50,13 +41,11 @@ class PortfolioController extends Controller
             $settings[$s->key] = $s->value;
         }
 
-        return view('portfolio', compact('projects', 'experiences', 'categories', 'settings', 'locale'));
+        return view('portfolio', compact('projects', 'experiences', 'categories', 'settings'));
     }
 
     public function show(int $id)
     {
-        $locale = $this->setLocale();
-
         $project = Database::first('SELECT * FROM projects WHERE id = ? AND visible = 1', [$id]);
         if (!$project) abort(404);
 
@@ -90,7 +79,7 @@ class PortfolioController extends Controller
             $settings[$s->key] = $s->value;
         }
 
-        return view('project-detail', compact('project', 'related', 'settings', 'locale'));
+        return view('project-detail', compact('project', 'related', 'settings'));
     }
 
     public function switchLocale(Request $request, string $locale)
