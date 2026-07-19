@@ -391,24 +391,20 @@ function anim(){
 anim();
 
 // Scroll reveal
-const obs=new IntersectionObserver(entries=>{
-    entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
-},{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
 document.querySelectorAll('.reveal').forEach(el=>{
     el.style.opacity='0';
     el.style.transform='translateY(30px)';
     el.style.transition='opacity 0.6s ease, transform 0.6s ease';
-    obs.observe(el);
 });
-document.querySelectorAll('.reveal.visible').forEach(el=>{
-    el.style.opacity='1';
-    el.style.transform='none';
-});
-obs.takeRecords&&setTimeout(()=>{
-    document.querySelectorAll('.reveal').forEach(el=>{
-        if(el.classList.contains('visible')){el.style.opacity='1';el.style.transform='none';}
+const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+        if(e.isIntersecting){
+            e.target.style.opacity='1';
+            e.target.style.transform='none';
+        }
     });
-},100);
+},{threshold:0.1,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 </script>
 </body>
 </html>
