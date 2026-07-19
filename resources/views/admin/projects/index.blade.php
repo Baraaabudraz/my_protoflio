@@ -1,31 +1,31 @@
 @extends('admin.layout')
-@section('title', 'Projects')
+@section('title', __('Projects'))
 
 @section('topbar-actions')
-    <a href="{{ route('admin.projects.create') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Add Project</a>
+    <a href="{{ route('admin.projects.create') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> {{ __('Add Project') }}</a>
 @endsection
 
 @section('content')
 <div class="card">
     <div class="card-header">
-        <span class="card-title">All Projects <span class="badge badge-cyan">{{ count($projects) }}</span></span>
+        <span class="card-title">{{ __('All Projects') }} <span class="badge badge-cyan">{{ count($projects) }}</span></span>
     </div>
     @if(empty($projects))
         <div class="card-body" style="text-align:center;color:var(--muted);padding:3rem;">
             <i class="fas fa-rocket" style="font-size:2rem;margin-bottom:1rem;display:block"></i>
-            No projects yet. <a href="{{ route('admin.projects.create') }}" style="color:var(--cyan)">Add your first project</a>.
+            {{ __('No projects yet.') }} <a href="{{ route('admin.projects.create') }}" style="color:var(--cyan)">{{ __('Add your first project') }}</a>.
         </div>
     @else
     <table>
         <thead>
             <tr>
-                <th>Icon</th>
-                <th>Title</th>
-                <th>Stack</th>
-                <th>Featured</th>
-                <th>Visible</th>
-                <th>Order</th>
-                <th>Actions</th>
+                <th>{{ __('Icon') }}</th>
+                <th>{{ __('Title') }}</th>
+                <th>{{ __('Stack') }}</th>
+                <th>{{ __('Featured') }}</th>
+                <th>{{ __('Visible') }}</th>
+                <th>{{ __('Order') }}</th>
+                <th>{{ __('Actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -48,23 +48,23 @@
                 </td>
                 <td>
                     @if($project->featured)
-                        <span class="badge badge-cyan"><i class="fas fa-star"></i> Yes</span>
+                        <span class="badge badge-cyan"><i class="fas fa-star"></i> {{ __('Yes') }}</span>
                     @else
-                        <span class="badge badge-muted">No</span>
+                        <span class="badge badge-muted">{{ __('No') }}</span>
                     @endif
                 </td>
                 <td>
                     @if($project->visible)
-                        <span class="badge badge-success">Visible</span>
+                        <span class="badge badge-success">{{ __('Visible') }}</span>
                     @else
-                        <span class="badge badge-muted">Hidden</span>
+                        <span class="badge badge-muted">{{ __('Hidden') }}</span>
                     @endif
                 </td>
                 <td style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:0.8rem">{{ $project->sort_order }}</td>
                 <td>
                     <div style="display:flex;gap:0.4rem">
                         <a href="{{ route('admin.projects.edit', $project->id) }}" class="btn btn-secondary btn-sm"><i class="fas fa-pen"></i></a>
-                        <form method="POST" action="{{ route('admin.projects.delete', $project->id) }}" onsubmit="return confirm('Delete this project?')">
+                        <form method="POST" action="{{ route('admin.projects.delete', $project->id) }}" onsubmit="return confirm('{{ __('Delete this project?') }}')">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                         </form>

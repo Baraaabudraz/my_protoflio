@@ -342,7 +342,7 @@
         </div>
         <div class="hero-visual">
             <div class="floating-card card-1"><i class="fas fa-check-circle"></i><span>Laravel Expert</span></div>
-            <div class="code-block">
+            <div class="code-block" dir="ltr">
                 <div class="code-dots"><span></span><span></span><span></span></div>
                 <div class="code-line"><span class="ln">1</span><span class="cm">// {{ $settings['hero_name'] ?? 'Portfolio' }}</span></div>
                 <div class="code-line"><span class="ln">2</span></div>
