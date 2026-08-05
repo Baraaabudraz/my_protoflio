@@ -154,40 +154,63 @@
         /* ─── NAV ─── */
         nav {
             position:fixed; top:0; left:0; right:0; z-index:1000;
-            padding:0 2rem;
-            background:var(--nav-bg);
-            backdrop-filter:blur(20px);
-            border-bottom:1px solid var(--border);
-            transition:all 0.3s;
+            padding:1.1rem 1.5rem 0;
+            transition:padding .35s ease;
         }
-        nav.scrolled { border-bottom-color:rgba(0,212,212,0.2); box-shadow:var(--shadow-sm); }
-        .nav-inner { max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:70px; gap:1rem; }
-        .nav-logo { font-size:1.4rem; font-weight:800; color:var(--cyan); text-decoration:none; letter-spacing:-0.5px; }
-        .nav-logo span { color:var(--text-primary); }
-        .nav-links { display:flex; gap:2rem; list-style:none; }
-        .nav-links a { color:var(--text-secondary); text-decoration:none; font-size:0.875rem; font-weight:500; letter-spacing:0.5px; transition:color 0.2s; position:relative; }
-        .nav-links a::after { content:''; position:absolute; bottom:-4px; left:0; width:0; height:1px; background:var(--cyan); transition:width 0.3s; }
-        .nav-links a:hover, .nav-links a.active { color:var(--cyan); }
-        .nav-links a:hover::after, .nav-links a.active::after { width:100%; }
-        .nav-cta { padding:0.5rem 1.25rem; border:1px solid var(--cyan); border-radius:6px; color:var(--cyan) !important; font-weight:600; }
-        .nav-cta:hover { background:var(--cyan); color:var(--bg-primary) !important; }
-        .hamburger { display:none; flex-direction:column; gap:5px; cursor:none; }
-        .hamburger span { display:block; width:24px; height:2px; background:var(--text-primary); border-radius:2px; transition:all 0.3s; }
-        .lang-switch { display:flex; align-items:center; gap:0.25rem; background:rgba(0,212,212,0.06); border:1px solid rgba(0,212,212,0.2); border-radius:50px; padding:0.25rem; flex-shrink:0; }
-        .lang-btn { padding:0.3rem 0.7rem; border-radius:50px; font-size:0.75rem; font-weight:600; text-decoration:none; color:var(--text-secondary); transition:all .2s; font-family:'JetBrains Mono',monospace; cursor:none; }
-        .lang-btn.active { background:var(--gradient); color:#fff; }
+        nav.scrolled { padding:0.6rem 1.5rem 0; }
+        .nav-inner {
+            max-width:1160px; margin:0 auto; display:flex; align-items:center; justify-content:space-between;
+            height:64px; gap:1rem; padding:0 0.6rem 0 1.4rem;
+            background:var(--nav-bg);
+            backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+            border:1px solid var(--border);
+            border-radius:100px;
+            box-shadow:0 8px 30px rgba(0,0,0,0.06);
+            transition:box-shadow .35s ease, border-radius .35s ease, background .35s ease;
+            position:relative;
+        }
+        nav.scrolled .nav-inner { box-shadow:var(--shadow-md), 0 0 0 1px rgba(0,212,212,0.12); }
+        [dir="rtl"] .nav-inner { padding:0 1.4rem 0 0.6rem; }
+        .nav-logo { display:flex; align-items:center; gap:0.55rem; font-size:1.05rem; font-weight:800; color:var(--text-primary); text-decoration:none; letter-spacing:-0.3px; flex-shrink:0; }
+        .nav-logo-badge { width:36px; height:36px; border-radius:11px; background:var(--gradient); display:flex; align-items:center; justify-content:center; font-size:1rem; font-weight:900; color:#fff; box-shadow:0 6px 16px rgba(0,212,212,0.35); position:relative; overflow:hidden; }
+        .nav-logo-badge::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,.35),transparent 60%); }
+        .nav-logo-text { display:none; }
+        @media(min-width:480px){ .nav-logo-text{ display:inline; } }
+
+        .nav-links { display:flex; align-items:center; gap:0.15rem; list-style:none; background:rgba(127,127,127,0.06); border:1px solid transparent; border-radius:100px; padding:0.3rem; }
+        .nav-links li { position:relative; }
+        .nav-links a { display:block; color:var(--text-secondary); text-decoration:none; font-size:0.83rem; font-weight:600; letter-spacing:0.2px; transition:color 0.25s; position:relative; padding:0.5rem 1rem; border-radius:100px; }
+        .nav-links a:not(.nav-cta):hover { color:var(--text-primary); }
+        .nav-links a.active:not(.nav-cta) { color:#fff; }
+        .nav-links a.active:not(.nav-cta)::before { content:''; position:absolute; inset:0; background:var(--gradient); border-radius:100px; z-index:-1; box-shadow:0 4px 14px rgba(0,212,212,0.35); }
+        .nav-cta { margin-inline-start:0.4rem; background:var(--gradient); color:#fff !important; font-weight:700; box-shadow:0 6px 16px rgba(0,212,212,0.3); display:flex; align-items:center; gap:0.4rem; }
+        .nav-cta:hover { transform:translateY(-1px); box-shadow:0 10px 22px rgba(0,212,212,0.42); }
+        .nav-cta i { font-size:0.72rem; }
+
+        .hamburger { display:none; flex-direction:column; gap:5px; cursor:none; width:38px; height:38px; align-items:center; justify-content:center; border-radius:50%; transition:background .2s; }
+        .hamburger:hover { background:rgba(127,127,127,0.1); }
+        .hamburger span { display:block; width:18px; height:2px; background:var(--text-primary); border-radius:2px; transition:all 0.3s; }
+        .hamburger.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+        .hamburger.open span:nth-child(2) { opacity:0; }
+        .hamburger.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+
+        .nav-controls { display:flex; align-items:center; gap:0.5rem; flex-shrink:0; padding-inline-start:0.5rem; }
+        .nav-divider { width:1px; height:22px; background:var(--border); flex-shrink:0; }
+        .lang-switch { display:flex; align-items:center; gap:0.15rem; background:rgba(127,127,127,0.08); border:1px solid var(--border); border-radius:50px; padding:0.2rem; flex-shrink:0; }
+        .lang-btn { padding:0.32rem 0.65rem; border-radius:50px; font-size:0.7rem; font-weight:700; text-decoration:none; color:var(--text-secondary); transition:all .2s; font-family:'JetBrains Mono',monospace; cursor:none; }
+        .lang-btn.active { background:var(--gradient); color:#fff; box-shadow:0 3px 10px rgba(0,212,212,0.3); }
         .lang-btn:not(.active):hover { color:var(--cyan); }
 
         /* ─── THEME SWITCH ─── */
         .theme-switch { position:relative; }
-        .theme-toggle-btn { display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:rgba(0,212,212,0.06); border:1px solid rgba(0,212,212,0.2); color:var(--cyan); cursor:none; font-size:0.85rem; transition:all .2s; }
-        .theme-toggle-btn:hover { background:rgba(0,212,212,0.15); }
-        .theme-menu { position:absolute; top:calc(100% + 10px); right:0; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:0.5rem; display:flex; flex-direction:column; gap:0.15rem; min-width:150px; box-shadow:var(--shadow-md); opacity:0; visibility:hidden; transform:translateY(-8px); transition:all .2s; z-index:1100; }
-        [dir="rtl"] .theme-menu { right:auto; left:0; }
-        .theme-menu.open { opacity:1; visibility:visible; transform:translateY(0); }
-        .theme-option { display:flex; align-items:center; gap:0.6rem; padding:0.5rem 0.65rem; border-radius:8px; cursor:none; font-size:0.82rem; color:var(--text-secondary); transition:all .15s; background:transparent; border:none; text-align:{{ $locale === 'ar' ? 'right' : 'left' }}; width:100%; font-family:inherit; }
+        .theme-toggle-btn { display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:rgba(127,127,127,0.08); border:1px solid var(--border); color:var(--cyan); cursor:none; font-size:0.85rem; transition:all .2s; }
+        .theme-toggle-btn:hover { background:rgba(0,212,212,0.15); border-color:rgba(0,212,212,0.3); transform:rotate(20deg); }
+        .theme-menu { position:absolute; top:calc(100% + 14px); right:0; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:0.5rem; display:flex; flex-direction:column; gap:0.15rem; min-width:160px; box-shadow:var(--shadow-md); opacity:0; visibility:hidden; transform:translateY(-8px) scale(0.96); transform-origin:top right; transition:all .2s; z-index:1100; }
+        [dir="rtl"] .theme-menu { right:auto; left:0; transform-origin:top left; }
+        .theme-menu.open { opacity:1; visibility:visible; transform:translateY(0) scale(1); }
+        .theme-option { display:flex; align-items:center; gap:0.6rem; padding:0.55rem 0.7rem; border-radius:10px; cursor:none; font-size:0.82rem; color:var(--text-secondary); transition:all .15s; background:transparent; border:none; text-align:{{ $locale === 'ar' ? 'right' : 'left' }}; width:100%; font-family:inherit; }
         .theme-option:hover { background:rgba(0,212,212,0.08); color:var(--text-primary); }
-        .theme-option.active { color:var(--cyan); font-weight:600; }
+        .theme-option.active { color:var(--cyan); font-weight:700; background:rgba(0,212,212,0.06); }
         .theme-swatch { width:16px; height:16px; border-radius:50%; flex-shrink:0; border:1px solid rgba(255,255,255,0.15); }
         .theme-swatch.sw-light { background:linear-gradient(135deg,#f5f7fb,#0ea5b5); }
         .theme-swatch.sw-dark { background:linear-gradient(135deg,#0a0e17,#00d4d4); }
@@ -360,13 +383,27 @@
 
         /* ─── MOBILE ─── */
         @media(max-width:768px){
+            nav{padding:0.85rem 1rem 0}
+            nav.scrolled{padding:0.5rem 1rem 0}
+            .nav-inner{padding:0 0.5rem 0 1rem; height:58px}
+            [dir="rtl"] .nav-inner{padding:0 1rem 0 0.5rem}
             .nav-links{display:none}
             .hamburger{display:flex}
+            .nav-controls{gap:0.35rem}
             .lang-switch{padding:0.2rem}
             .lang-btn{padding:0.25rem 0.5rem}
-            .theme-toggle-btn{width:30px;height:30px}
-            .nav-inner > div[style]{gap:0.4rem !important}
-            .nav-links.open{display:flex;flex-direction:column;position:absolute;top:70px;left:0;right:0;background:var(--mobile-nav-bg);padding:1.5rem 2rem;border-bottom:1px solid var(--border);gap:1.25rem}
+            .theme-toggle-btn{width:32px;height:32px}
+            .nav-links.open{
+                display:flex;flex-direction:column;position:absolute;top:calc(100% + 10px);left:0;right:0;
+                background:var(--mobile-nav-bg);backdrop-filter:blur(20px);
+                padding:1rem;border:1px solid var(--border);border-radius:20px;
+                box-shadow:var(--shadow-lg);gap:0.25rem;background-clip:padding-box;
+            }
+            .nav-links.open li{width:100%}
+            .nav-links.open a{display:block;padding:0.8rem 1rem;border-radius:12px;font-size:0.95rem}
+            .nav-links.open a.active:not(.nav-cta)::before{border-radius:12px}
+            .nav-links.open a:not(.nav-cta):hover{background:rgba(127,127,127,0.08)}
+            .nav-links.open .nav-cta{justify-content:center;margin-inline-start:0;margin-top:0.4rem}
             .hero-inner{grid-template-columns:1fr;text-align:center}
             .hero-visual{display:none}
             .hero-subtitle{max-width:100%}
@@ -394,15 +431,18 @@
 <!-- NAV -->
 <nav id="navbar">
     <div class="nav-inner">
-        <a class="nav-logo" href="#hero">B<span>.</span></a>
+        <a class="nav-logo" href="#hero">
+            <span class="nav-logo-badge">B</span>
+            <span class="nav-logo-text">{{ explode(' ', $settings['hero_name'] ?? 'Baraa')[0] }}<span style="color:var(--cyan)">.</span></span>
+        </a>
         <ul class="nav-links" id="navLinks">
             <li><a href="#about">{{ __('About') }}</a></li>
             <li><a href="#skills">{{ __('Skills') }}</a></li>
             <li><a href="#experience">{{ __('Experience') }}</a></li>
             <li><a href="#projects">{{ __('Projects') }}</a></li>
-            <li><a class="nav-cta" href="#contact">{{ __('Hire Me') }}</a></li>
+            <li><a class="nav-cta" href="#contact">{{ __('Hire Me') }} <i class="fas fa-arrow-{{ $locale === 'ar' ? 'left' : 'right' }}"></i></a></li>
         </ul>
-        <div style="display:flex;align-items:center;gap:0.75rem">
+        <div class="nav-controls">
             <div class="lang-switch">
                 <a href="{{ route('lang.switch', 'en') }}" class="lang-btn {{ $locale === 'en' ? 'active' : '' }}">EN</a>
                 <a href="{{ route('lang.switch', 'ar') }}" class="lang-btn {{ $locale === 'ar' ? 'active' : '' }}">عربي</a>
@@ -418,6 +458,7 @@
                     <button type="button" class="theme-option" data-theme-choice="sunset"><span class="theme-swatch sw-sunset"></span>{{ __('Sunset') }}</button>
                 </div>
             </div>
+            <div class="nav-divider"></div>
             <div class="hamburger" id="hamburger">
                 <span></span><span></span><span></span>
             </div>
@@ -827,8 +868,14 @@ window.addEventListener('scroll', () => {
 // ─── MOBILE NAV ───
 const hamburger = document.getElementById('hamburger');
 const navLinks  = document.getElementById('navLinks');
-hamburger.addEventListener('click', () => navLinks.classList.toggle('open'));
-navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+hamburger.addEventListener('click', () => {
+    navLinks.classList.toggle('open');
+    hamburger.classList.toggle('open');
+});
+navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    navLinks.classList.remove('open');
+    hamburger.classList.remove('open');
+}));
 
 // ─── SCROLL REVEAL ───
 const observer = new IntersectionObserver(entries => {
