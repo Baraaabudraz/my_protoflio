@@ -256,9 +256,16 @@
         .btn-primary:hover { transform:translateY(-2px); box-shadow:0 0 50px rgba(0,212,212,0.5); }
         .btn-secondary { display:inline-flex; align-items:center; gap:0.5rem; padding:0.875rem 2rem; background:transparent; color:var(--text-primary); border:1px solid var(--border); border-radius:8px; font-weight:600; font-size:0.9rem; text-decoration:none; transition:all 0.3s; cursor:none; }
         .btn-secondary:hover { border-color:var(--cyan); color:var(--cyan); transform:translateY(-2px); }
-        .hero-stats { display:flex; gap:2rem; margin-top:3rem; padding-top:2rem; border-top:1px solid var(--border); }
-        .stat-number { font-size:1.75rem; font-weight:800; color:var(--cyan); display:block; }
-        .stat-label { font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; }
+        .hero-stats { display:flex; align-items:stretch; gap:0; margin-top:3rem; padding-top:2rem; border-top:1px solid var(--border); position:relative; }
+        .stat-item { display:flex; align-items:center; gap:0.85rem; padding:0.5rem 1.75rem; position:relative; transition:transform .3s ease; }
+        .stat-item:first-child { padding-inline-start:0; }
+        .stat-item:not(:first-child)::before { content:''; position:absolute; inset-inline-start:0; top:8%; bottom:8%; width:1px; background:linear-gradient(var(--border),var(--border)); }
+        .stat-item:hover { transform:translateY(-3px); }
+        .stat-icon { flex-shrink:0; width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1rem; background:rgba(0,212,212,0.08); border:1px solid rgba(0,212,212,0.18); color:var(--cyan); transition:all .3s ease; }
+        .stat-item:hover .stat-icon { background:var(--gradient); color:#fff; box-shadow:0 8px 18px rgba(0,212,212,0.35); transform:scale(1.06) rotate(-6deg); }
+        .stat-text { display:flex; flex-direction:column; }
+        .stat-number { font-size:1.85rem; font-weight:800; line-height:1.1; background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; display:block; font-family:'JetBrains Mono',monospace; letter-spacing:-0.5px; }
+        .stat-label { font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:600; margin-top:0.15rem; }
         .hero-visual { display:flex; justify-content:center; align-items:center; position:relative; }
         .code-block { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:2rem; font-family:'JetBrains Mono',monospace; font-size:0.82rem; line-height:1.8; position:relative; overflow:hidden; max-width:420px; width:100%; box-shadow:var(--shadow-lg); }
         .code-block::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--gradient); }
@@ -484,16 +491,25 @@
             </div>
             <div class="hero-stats">
                 <div class="stat-item">
-                    <span class="stat-number">{{ $settings['hero_stat_years'] ?? '5+' }}</span>
-                    <span class="stat-label">{{ __('Years Exp.') }}</span>
+                    <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="stat-text">
+                        <span class="stat-number">{{ $settings['hero_stat_years'] ?? '5+' }}</span>
+                        <span class="stat-label">{{ __('Years Exp.') }}</span>
+                    </div>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">{{ $settings['hero_stat_projects'] ?? '30+' }}</span>
-                    <span class="stat-label">{{ __('Projects') }}</span>
+                    <div class="stat-icon"><i class="fas fa-diagram-project"></i></div>
+                    <div class="stat-text">
+                        <span class="stat-number">{{ $settings['hero_stat_projects'] ?? '30+' }}</span>
+                        <span class="stat-label">{{ __('Projects') }}</span>
+                    </div>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">{{ $settings['hero_stat_clients'] ?? '15+' }}</span>
-                    <span class="stat-label">{{ __('Happy Clients') }}</span>
+                    <div class="stat-icon"><i class="fas fa-face-smile"></i></div>
+                    <div class="stat-text">
+                        <span class="stat-number">{{ $settings['hero_stat_clients'] ?? '15+' }}</span>
+                        <span class="stat-label">{{ __('Happy Clients') }}</span>
+                    </div>
                 </div>
             </div>
         </div>
