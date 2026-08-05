@@ -11,10 +11,10 @@ class SetLocale
     public function handle(Request $request, Closure $next)
     {
         $supported = ['en', 'ar'];
-        $locale    = session('locale', config('app.locale', 'en'));
+        $locale    = session('locale', config('app.locale', 'ar'));
 
         if (!in_array($locale, $supported)) {
-            $locale = 'en';
+            $locale = 'ar';
         }
 
         app()->setLocale($locale);

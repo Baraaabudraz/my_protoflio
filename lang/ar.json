@@ -125,5 +125,12 @@
     "Live URL": "رابط المعاينة",
     "Featured": "مميز",
     "Sort Order": "ترتيب العرض",
-    "Add Entry": "إضافة سجل"
+    "Add Entry": "إضافة سجل",
+
+    "Theme": "المظهر",
+    "Light": "فاتح",
+    "Dark": "داكن",
+    "Ocean": "المحيط",
+    "Sunset": "الغروب",
+    "Backend Dev": "مطور خلفي"
 }

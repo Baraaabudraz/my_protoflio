@@ -42,5 +42,11 @@
     "Not specified": "Not specified",
     "No stages added yet.": "No stages added yet.",
     "What's this about?": "What's this about?",
-    "Tell me about your project...": "Tell me about your project..."
+    "Tell me about your project...": "Tell me about your project...",
+    "Theme": "Theme",
+    "Light": "Light",
+    "Dark": "Dark",
+    "Ocean": "Ocean",
+    "Sunset": "Sunset",
+    "Backend Dev": "Backend Dev"
 }
