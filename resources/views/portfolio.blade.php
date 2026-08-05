@@ -457,7 +457,7 @@
             </div>
         </div>
         <div class="hero-visual">
-            <div class="floating-card card-1"><i class="fas fa-check-circle"></i><span>Laravel Expert</span></div>
+            <div class="floating-card card-1"><i class="fas fa-check-circle"></i><span>{{ __('Laravel Expert') }}</span></div>
             <div class="code-block" dir="ltr">
                 <div class="code-dots"><span></span><span></span><span></span></div>
                 <div class="code-line"><span class="ln">1</span><span class="cm">// {{ $settings['hero_name'] ?? 'Portfolio' }}</span></div>
@@ -477,7 +477,7 @@
                 <div class="code-line"><span class="ln">15</span>&nbsp;&nbsp;<span class="op">}</span></div>
                 <div class="code-line"><span class="ln">16</span><span class="op">}</span></div>
             </div>
-            <div class="floating-card card-2"><i class="fas fa-star"></i><span>Open to Work</span></div>
+            <div class="floating-card card-2"><i class="fas fa-star"></i><span>{{ __('Open to Work') }}</span></div>
         </div>
     </div>
 </section>
@@ -497,7 +497,7 @@
                 <div class="avatar-badge"><i class="fas fa-code"></i> {{ __('Backend Dev') }}</div>
             </div>
             <div class="reveal">
-                <div class="section-tag">// who am I</div>
+                <div class="section-tag">{{ __('// who am I') }}</div>
                 <h2>{!! ts($settings, 'about_heading') ?: ($settings['about_heading'] ?? 'About Me') !!}</h2>
                 @php
                     $p1 = ts($settings, 'about_p1') ?: ($settings['about_p1'] ?? '');
@@ -530,8 +530,8 @@
 <section id="skills">
     <div class="container">
         <div class="section-header reveal">
-            <div class="section-tag">// expertise</div>
-            <h2 class="section-title">Technical <span>Skills</span></h2>
+            <div class="section-tag">{{ __('// expertise') }}</div>
+            <h2 class="section-title">{{ __('Technical') }} <span>{{ __('Skills') }}</span></h2>
             <div class="section-line"></div>
         </div>
         @if(!empty($categories))
@@ -539,13 +539,13 @@
             @foreach($categories as $cat)
             <div class="skill-category reveal">
                 <div class="skill-cat-icon">{{ $cat->icon }}</div>
-                <div class="skill-cat-title">{{ $cat->name }}</div>
+                <div class="skill-cat-title">{{ t($cat, 'name') }}</div>
                 @if($cat->type === 'bars')
                     <div class="skill-items">
                         @foreach($cat->skills as $skill)
                         <div class="skill-item">
                             <div class="skill-info">
-                                <span class="skill-name">{{ $skill->name }}</span>
+                                <span class="skill-name">{{ t($skill, 'name') }}</span>
                                 <span class="skill-pct">{{ $skill->percentage }}%</span>
                             </div>
                             <div class="skill-bar">
@@ -557,7 +557,7 @@
                 @else
                     <div class="tech-tags">
                         @foreach($cat->skills as $skill)
-                            <span class="tech-tag">{{ $skill->name }}</span>
+                            <span class="tech-tag">{{ t($skill, 'name') }}</span>
                         @endforeach
                     </div>
                 @endif
@@ -572,8 +572,8 @@
 <section id="experience">
     <div class="container">
         <div class="section-header reveal">
-            <div class="section-tag">// career</div>
-            <h2 class="section-title">Work <span>Experience</span></h2>
+            <div class="section-tag">{{ __('// career') }}</div>
+            <h2 class="section-title">{{ __('Work') }} <span>{{ __('Experience') }}</span></h2>
             <div class="section-line"></div>
         </div>
         <div class="timeline">
@@ -583,12 +583,12 @@
                 <div class="timeline-card">
                     <div class="timeline-header">
                         <div>
-                            <div class="timeline-title">{{ $exp->title }}</div>
-                            <div class="timeline-company">{{ $exp->company }}</div>
+                            <div class="timeline-title">{{ t($exp, 'title') }}</div>
+                            <div class="timeline-company">{{ t($exp, 'company') }}</div>
                         </div>
                         <span class="timeline-date">{{ $exp->date_range }}</span>
                     </div>
-                    <p class="timeline-desc">{{ $exp->description }}</p>
+                    <p class="timeline-desc">{{ t($exp, 'description') }}</p>
                     @if(!empty($exp->tags))
                     <div class="timeline-tags">
                         @foreach($exp->tags as $tag)
@@ -607,8 +607,8 @@
 <section id="projects">
     <div class="container">
         <div class="section-header reveal">
-            <div class="section-tag">// portfolio</div>
-            <h2 class="section-title">Featured <span>Projects</span></h2>
+            <div class="section-tag">{{ __('// portfolio') }}</div>
+            <h2 class="section-title">{{ __('Featured') }} <span>{{ __('Projects') }}</span></h2>
             <div class="section-line"></div>
         </div>
         <div class="projects-grid">
@@ -634,8 +634,8 @@
                     @if($project->featured)
                         <div class="featured-badge"><i class="fas fa-star"></i> {{ __('Featured') }}</div>
                     @endif
-                    <div class="project-title">{{ $project->title }}</div>
-                    <p class="project-desc">{{ $project->description }}</p>
+                    <div class="project-title">{{ t($project, 'title') }}</div>
+                    <p class="project-desc">{{ t($project, 'description') }}</p>
                     @if(!empty($project->stack))
                     <div class="project-stack">
                         @foreach($project->stack as $tech)
@@ -660,51 +660,51 @@
     <div class="container">
         <div class="contact-wrapper">
             <div class="section-header reveal">
-                <div class="section-tag">// let's connect</div>
-                <h2 class="section-title">Get In <span>Touch</span></h2>
+                <div class="section-tag">{{ __("// let's connect") }}</div>
+                <h2 class="section-title">{{ __('Get In') }} <span>{{ __('Touch') }}</span></h2>
                 <div class="section-line"></div>
                 <p style="color:var(--text-secondary);margin-top:1rem;font-size:0.95rem">
-                    I'm currently open to new opportunities. Whether you have a project in mind, want to collaborate, or just say hi — my inbox is always open.
+                    {{ __("I'm currently open to new opportunities. Whether you have a project in mind, want to collaborate, or just say hi — my inbox is always open.") }}
                 </p>
             </div>
             <div class="contact-cards reveal">
                 <a href="mailto:{{ $settings['email'] ?? '#' }}" class="contact-card">
                     <i class="fas fa-envelope"></i>
-                    <span class="contact-card-label">Email</span>
-                    <span class="contact-card-value">{{ $settings['email'] ?? 'Email me' }}</span>
+                    <span class="contact-card-label">{{ __('Email') }}</span>
+                    <span class="contact-card-value">{{ $settings['email'] ?? __('Email me') }}</span>
                 </a>
                 <a href="{{ $settings['linkedin_url'] ?? '#' }}" target="_blank" class="contact-card">
                     <i class="fab fa-linkedin"></i>
                     <span class="contact-card-label">LinkedIn</span>
-                    <span class="contact-card-value">Connect with me</span>
+                    <span class="contact-card-value">{{ __('Connect with me') }}</span>
                 </a>
                 <a href="{{ $settings['github_url'] ?? '#' }}" target="_blank" class="contact-card">
                     <i class="fab fa-github"></i>
                     <span class="contact-card-label">GitHub</span>
-                    <span class="contact-card-value">View my code</span>
+                    <span class="contact-card-value">{{ __('View my code') }}</span>
                 </a>
             </div>
             <div class="contact-form reveal">
                 <form id="contactForm" onsubmit="handleSubmit(event)">
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Name</label>
-                            <input type="text" class="form-input" placeholder="Your name" required>
+                            <label class="form-label">{{ __('Name') }}</label>
+                            <input type="text" class="form-input" placeholder="{{ __('Your name') }}" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Email</label>
+                            <label class="form-label">{{ __('Email') }}</label>
                             <input type="email" class="form-input" placeholder="your@email.com" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Subject</label>
-                        <input type="text" class="form-input" placeholder="What's this about?" required>
+                        <label class="form-label">{{ __('Subject') }}</label>
+                        <input type="text" class="form-input" placeholder="{{ __("What's this about?") }}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Message</label>
-                        <textarea class="form-textarea" placeholder="Tell me about your project..." required></textarea>
+                        <label class="form-label">{{ __('Message') }}</label>
+                        <textarea class="form-textarea" placeholder="{{ __('Tell me about your project...') }}" required></textarea>
                     </div>
-                    <button type="submit" class="form-submit"><i class="fas fa-paper-plane"></i>&nbsp; Send Message</button>
+                    <button type="submit" class="form-submit"><i class="fas fa-paper-plane"></i>&nbsp; {{ __('Send Message') }}</button>
                 </form>
             </div>
         </div>
@@ -715,7 +715,7 @@
     <p>{{ $settings['footer_text'] ?? 'Portfolio' }}</p>
 </footer>
 
-<a href="/admin" class="admin-link"><i class="fas fa-lock"></i> CMS</a>
+<a href="/admin" class="admin-link"><i class="fas fa-lock"></i> {{ __('CMS') }}</a>
 
 <script>
 // ─── UNIQUE CURSOR ───
@@ -846,10 +846,10 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 // ─── TYPING ROLE ───
 const roleEl = document.getElementById('typing-role');
 const roles  = [
-    '{{ $settings["hero_tagline"] ?? "Backend Engineer" }}',
-    'Laravel Expert',
-    'API Architect',
-    'PHP Developer'
+    '{{ ts($settings, "hero_tagline") ?: ($settings["hero_tagline"] ?? "Backend Engineer") }}',
+    '{{ __('Laravel Expert') }}',
+    '{{ __('API Architect') }}',
+    '{{ __('PHP Developer') }}'
 ];
 let ri = 0, ci = roles[0].length, deleting = false;
 roleEl.textContent = roles[0];
@@ -870,10 +870,10 @@ setTimeout(typeRole, 2200);
 function handleSubmit(e) {
     e.preventDefault();
     const btn = e.target.querySelector('.form-submit');
-    btn.innerHTML = '<i class="fas fa-check"></i>&nbsp; Message Sent!';
+    btn.innerHTML = '<i class="fas fa-check"></i>&nbsp; {{ __('Message Sent!') }}';
     btn.style.background = 'linear-gradient(135deg,#28ca41,#00a832)';
     setTimeout(() => {
-        btn.innerHTML = '<i class="fas fa-paper-plane"></i>&nbsp; Send Message';
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i>&nbsp; {{ __('Send Message') }}';
         btn.style.background = '';
         e.target.reset();
     }, 3000);
