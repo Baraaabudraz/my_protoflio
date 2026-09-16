@@ -1,0 +1,31 @@
+<svg width="800" height="420" viewBox="0 0 800 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#071B2B"/>
+      <stop offset="0.52" stop-color="#0A5263"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="110" y1="70" x2="650" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67E8F9" stop-opacity="0.82"/>
+      <stop offset="1" stop-color="#A78BFA" stop-opacity="0.08"/>
+    </linearGradient>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0H0V28" stroke="white" stroke-opacity="0.12"/>
+    </pattern>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="34"/>
+    </filter>
+  </defs>
+  <rect width="800" height="420" rx="28" fill="url(#bg)"/>
+  <rect width="800" height="420" rx="28" fill="url(#grid)"/>
+  <circle cx="165" cy="92" r="120" fill="#22D3EE" fill-opacity="0.28" filter="url(#blur)"/>
+  <circle cx="665" cy="335" r="150" fill="#818CF8" fill-opacity="0.25" filter="url(#blur)"/>
+  <path d="M-20 326C143 250 198 373 337 280C476 187 553 240 820 94" stroke="url(#glow)" stroke-width="2"/>
+  <path d="M-20 350C143 274 198 397 337 304C476 211 553 264 820 118" stroke="white" stroke-opacity="0.14"/>
+  <rect x="70" y="62" width="178" height="14" rx="7" fill="white" fill-opacity="0.22"/>
+  <rect x="70" y="91" width="108" height="9" rx="4.5" fill="white" fill-opacity="0.12"/>
+  <rect x="584" y="300" width="128" height="54" rx="16" fill="white" fill-opacity="0.11" stroke="white" stroke-opacity="0.2"/>
+  <circle cx="614" cy="327" r="9" fill="#67E8F9" fill-opacity="0.8"/>
+  <rect x="634" y="318" width="50" height="7" rx="3.5" fill="white" fill-opacity="0.35"/>
+  <rect x="634" y="332" width="32" height="6" rx="3" fill="white" fill-opacity="0.18"/>
+</svg>

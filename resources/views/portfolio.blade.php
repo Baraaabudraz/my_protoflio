@@ -324,49 +324,96 @@
         .tech-tag:hover { border-color:var(--cyan); color:var(--cyan); }
 
         /* ─── EXPERIENCE ─── */
-        #experience { padding:8rem 2rem; background:var(--bg-secondary); }
-        .timeline { position:relative; max-width:800px; margin:0 auto; }
-        .timeline::before { content:''; position:absolute; left:20px; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,transparent,var(--cyan),transparent); }
-        .timeline-item { padding-left:60px; margin-bottom:3rem; position:relative; }
-        .timeline-dot { position:absolute; left:12px; top:8px; width:17px; height:17px; border-radius:50%; background:var(--bg-secondary); border:2px solid var(--cyan); transition:all 0.3s; }
-        .timeline-item:hover .timeline-dot { background:var(--cyan); box-shadow:0 0 15px rgba(0,212,212,0.6); }
-        .timeline-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1.75rem; transition:all 0.3s; }
-        .timeline-card:hover { border-color:rgba(0,212,212,0.3); transform:translateX(4px); }
-        .timeline-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:0.75rem; flex-wrap:wrap; }
-        .timeline-title { font-size:1.1rem; font-weight:700; }
-        .timeline-company { font-size:0.9rem; color:var(--cyan); margin-bottom:0.25rem; }
-        .timeline-date { font-size:0.78rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace; white-space:nowrap; padding:0.25rem 0.75rem; background:rgba(0,212,212,0.06); border-radius:50px; border:1px solid rgba(0,212,212,0.15); }
-        .timeline-desc { color:var(--text-secondary); font-size:0.9rem; line-height:1.7; margin-bottom:1rem; }
-        .timeline-tags { display:flex; flex-wrap:wrap; gap:0.4rem; }
-        .timeline-tag { padding:0.2rem 0.6rem; background:rgba(0,212,212,0.06); border:1px solid rgba(0,212,212,0.15); border-radius:4px; font-size:0.75rem; color:var(--cyan); font-family:'JetBrains Mono',monospace; }
+        #experience { padding:8rem 2rem; background:var(--bg-secondary); overflow:hidden; }
+        .timeline { position:relative; max-width:920px; margin:0 auto; }
+        .timeline::before { content:''; position:absolute; left:28px; top:0; bottom:0; width:2px; background:linear-gradient(to bottom,transparent,var(--cyan) 12%,rgba(0,212,212,0.22) 88%,transparent); }
+        [dir="rtl"] .timeline::before { left:auto; right:28px; }
+        .timeline-item { padding-left:88px; margin-bottom:2rem; position:relative; }
+        [dir="rtl"] .timeline-item { padding-left:0; padding-right:88px; }
+        .timeline-dot { position:absolute; left:16px; top:1.7rem; width:25px; height:25px; border-radius:9px; background:var(--bg-card); border:2px solid var(--cyan); transition:all 0.3s; z-index:1; display:flex; align-items:center; justify-content:center; color:var(--cyan); font-size:0.65rem; box-shadow:0 0 0 7px var(--bg-secondary); }
+        [dir="rtl"] .timeline-dot { left:auto; right:16px; }
+        .timeline-item:hover .timeline-dot { background:var(--gradient); color:#fff; transform:rotate(45deg); box-shadow:0 0 0 7px var(--bg-secondary),0 0 22px rgba(0,212,212,0.5); }
+        .timeline-item:hover .timeline-dot i { transform:rotate(-45deg); }
+        .timeline-dot i { transition:transform .3s; }
+        .timeline-card { background:linear-gradient(135deg,var(--bg-card),rgba(0,212,212,0.025)); border:1px solid var(--border); border-radius:22px; padding:1.8rem 2rem; transition:all 0.3s; position:relative; overflow:hidden; }
+        .timeline-card::after { content:attr(data-step); position:absolute; top:-1rem; right:1rem; font:900 5rem/1 'JetBrains Mono',monospace; color:rgba(0,212,212,0.05); pointer-events:none; }
+        [dir="rtl"] .timeline-card::after { right:auto; left:1rem; }
+        .timeline-card:hover { border-color:rgba(0,212,212,0.38); transform:translateX(6px); box-shadow:var(--shadow-md); }
+        [dir="rtl"] .timeline-card:hover { transform:translateX(-6px); }
+        .timeline-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; position:relative; z-index:1; }
+        .timeline-kicker { color:var(--cyan); font:600 0.7rem 'JetBrains Mono',monospace; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:0.45rem; }
+        .timeline-title { font-size:1.2rem; font-weight:800; }
+        .timeline-company { font-size:0.9rem; color:var(--text-secondary); margin-top:0.25rem; }
+        .timeline-date { font-size:0.76rem; color:var(--cyan); font-family:'JetBrains Mono',monospace; white-space:nowrap; padding:0.4rem 0.75rem; background:rgba(0,212,212,0.08); border-radius:50px; border:1px solid rgba(0,212,212,0.18); }
+        .timeline-desc { color:var(--text-secondary); font-size:0.92rem; line-height:1.85; margin-bottom:1.2rem; max-width:760px; position:relative; z-index:1; }
+        .timeline-tags { display:flex; flex-wrap:wrap; gap:0.45rem; position:relative; z-index:1; }
+        .timeline-tag { padding:0.3rem 0.7rem; background:rgba(0,212,212,0.06); border:1px solid rgba(0,212,212,0.15); border-radius:50px; font-size:0.72rem; color:var(--cyan); font-family:'JetBrains Mono',monospace; }
 
         /* ─── PROJECTS ─── */
         #projects { padding:8rem 2rem; }
         .projects-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:1.5rem; }
-        .project-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; overflow:hidden; transition:all 0.3s; display:flex; flex-direction:column; }
-        .project-card:hover { border-color:rgba(0,212,212,0.35); transform:translateY(-6px); box-shadow:var(--shadow-lg); }
-        .project-header { padding:1.75rem 1.75rem 1rem; display:flex; justify-content:space-between; align-items:flex-start; }
-        .project-icon { width:48px; height:48px; border-radius:12px; background:rgba(0,212,212,0.1); border:1px solid rgba(0,212,212,0.2); display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
+        .project-card { background:var(--bg-card); border:1px solid var(--border); border-radius:22px; overflow:hidden; transition:all 0.3s; display:flex; flex-direction:column; height:100%; }
+        .project-card:hover { border-color:rgba(0,212,212,0.42); transform:translateY(-8px); box-shadow:var(--shadow-lg); }
+        .project-cover { height:165px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,rgba(0,212,212,0.18),rgba(0,136,204,0.08)); border-bottom:1px solid var(--border); }
+        .project-base-image { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.58; mix-blend-mode:screen; transition:transform .6s ease, opacity .35s ease; }
+        .project-card:hover .project-base-image { transform:scale(1.08); opacity:.72; }
+        .project-cover::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px); background-size:24px 24px; mask-image:linear-gradient(to bottom right,black,transparent 75%); }
+        .project-cover::after { content:''; position:absolute; width:180px; height:180px; border:1px solid rgba(255,255,255,.18); border-radius:50%; transform:translate(45px,-35px); box-shadow:0 0 0 22px rgba(255,255,255,.04),0 0 0 44px rgba(255,255,255,.025); }
+        .project-cover.cover-1 { background:linear-gradient(135deg,#0d7181, #1d4ed8); }
+        .project-cover.cover-2 { background:linear-gradient(135deg,#334155, #0e7490); }
+        .project-cover.cover-3 { background:linear-gradient(135deg,#075985, #0f766e); }
+        .project-cover.cover-4 { background:linear-gradient(135deg,#4338ca, #0891b2); }
+        .project-cover.cover-5 { background:linear-gradient(135deg,#334155, #7c3aed); }
+        .project-cover-label { position:absolute; top:1rem; left:1rem; color:rgba(255,255,255,.8); font:700 0.65rem 'JetBrains Mono',monospace; letter-spacing:1.5px; z-index:1; }
+        [dir="rtl"] .project-cover-label { left:auto; right:1rem; }
+        .project-cover-number { position:absolute; bottom:0.8rem; right:1rem; color:rgba(255,255,255,.28); font:900 2rem 'JetBrains Mono',monospace; z-index:1; }
+        [dir="rtl"] .project-cover-number { right:auto; left:1rem; }
+        .project-icon { width:68px; height:68px; border-radius:22px; background:rgba(4,19,31,.42); border:1px solid rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center; font-size:1.8rem; position:relative; z-index:2; box-shadow:0 14px 35px rgba(0,0,0,.2); transition:transform .35s; }
+        .project-card:hover .project-icon { transform:scale(1.08) rotate(-5deg); }
         .project-links { display:flex; gap:0.5rem; }
         .project-link { width:34px; height:34px; border-radius:6px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-muted); text-decoration:none; font-size:0.85rem; transition:all 0.2s; cursor:none; }
         .project-link:hover { border-color:var(--cyan); color:var(--cyan); }
-        .project-body { padding:0 1.75rem 1.75rem; flex:1; display:flex; flex-direction:column; }
+        .project-header { padding:1rem 1.4rem 0; display:flex; justify-content:flex-end; align-items:flex-start; margin-top:-3rem; position:relative; z-index:3; }
+        .project-body { padding:1rem 1.5rem 1.5rem; flex:1; display:flex; flex-direction:column; }
         .project-title { font-size:1.15rem; font-weight:700; margin-bottom:0.6rem; }
         .project-desc { color:var(--text-secondary); font-size:0.875rem; line-height:1.7; flex:1; margin-bottom:1.25rem; }
         .project-stack { display:flex; flex-wrap:wrap; gap:0.4rem; }
         .stack-tag { padding:0.25rem 0.6rem; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:4px; font-size:0.75rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace; }
         .featured-badge { display:inline-flex; align-items:center; gap:0.3rem; font-size:0.7rem; color:var(--cyan); margin-bottom:0.5rem; }
+        .project-actions { display:flex; align-items:center; gap:0.6rem; margin-top:1.25rem; padding-top:1rem; border-top:1px solid var(--border); }
+        .project-action { display:inline-flex; align-items:center; justify-content:center; gap:0.4rem; padding:0.55rem 0.85rem; border-radius:9px; border:1px solid var(--border); color:var(--text-secondary); text-decoration:none; font-size:0.76rem; font-weight:700; transition:all .25s; cursor:none; }
+        .project-action.primary { background:var(--gradient); color:#fff; border-color:transparent; box-shadow:0 5px 14px rgba(0,212,212,0.22); }
+        .project-action:hover { color:var(--cyan); border-color:var(--cyan); transform:translateY(-2px); }
+        .project-action.primary:hover { color:#fff; box-shadow:0 8px 20px rgba(0,212,212,0.35); }
+        .project-action i { font-size:0.7rem; }
 
         /* ─── CONTACT ─── */
         #contact { padding:8rem 2rem; background:var(--bg-secondary); }
-        .contact-wrapper { max-width:700px; margin:0 auto; text-align:center; }
-        .contact-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin:3rem 0; }
-        .contact-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; text-decoration:none; transition:all 0.3s; display:flex; flex-direction:column; align-items:center; gap:0.75rem; cursor:none; }
-        .contact-card:hover { border-color:var(--cyan); transform:translateY(-4px); box-shadow:var(--shadow-md); }
-        .contact-card i { font-size:1.5rem; color:var(--cyan); }
-        .contact-card-label { font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
-        .contact-card-value { font-size:0.875rem; color:var(--text-primary); word-break:break-all; }
-        .contact-form { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:2.5rem; margin-top:2rem; text-align:left; }
+        .contact-wrapper { max-width:1060px; margin:0 auto; }
+        .contact-header { max-width:660px; margin:0 auto 3rem; text-align:center; }
+        .contact-header p { color:var(--text-secondary); margin-top:1rem; font-size:0.95rem; line-height:1.8; }
+        .contact-layout { display:grid; grid-template-columns:0.82fr 1.18fr; gap:1.5rem; align-items:stretch; }
+        [dir="rtl"] .contact-layout { direction:rtl; }
+        .contact-intro { background:linear-gradient(145deg,var(--bg-card),rgba(0,212,212,0.06)); border:1px solid var(--border); border-radius:24px; padding:2rem; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; }
+        .contact-intro::before { content:'✦'; position:absolute; right:-1rem; top:-2rem; font-size:10rem; line-height:1; color:rgba(0,212,212,0.07); transform:rotate(18deg); }
+        [dir="rtl"] .contact-intro::before { right:auto; left:-1rem; }
+        .contact-intro h3 { font-size:1.5rem; line-height:1.35; position:relative; z-index:1; }
+        .contact-intro p { color:var(--text-secondary); line-height:1.8; font-size:0.9rem; margin-top:0.8rem; position:relative; z-index:1; }
+        .contact-availability { display:flex; align-items:center; gap:0.65rem; color:var(--cyan); font-size:0.8rem; font-weight:700; margin-top:2rem; position:relative; z-index:1; }
+        .contact-availability::before { content:''; width:9px; height:9px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 5px rgba(34,197,94,.12); }
+        .contact-cards { display:grid; gap:0.75rem; margin:0; position:relative; z-index:1; }
+        .contact-card { background:rgba(127,127,127,0.05); border:1px solid var(--border); border-radius:14px; padding:0.9rem 1rem; text-decoration:none; transition:all 0.3s; display:grid; grid-template-columns:38px 1fr; text-align:{{ $locale === 'ar' ? 'right' : 'left' }}; align-items:center; gap:0.75rem; cursor:none; }
+        .contact-card:hover { border-color:var(--cyan); transform:translateX(4px); box-shadow:var(--shadow-md); }
+        [dir="rtl"] .contact-card:hover { transform:translateX(-4px); }
+        .contact-card i { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:1rem; color:var(--cyan); background:rgba(0,212,212,0.09); }
+        .contact-card-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); display:block; }
+        .contact-card-value { font-size:0.82rem; color:var(--text-primary); word-break:break-all; display:block; margin-top:0.15rem; }
+        .contact-form { background:var(--bg-card); border:1px solid var(--border); border-radius:24px; padding:2rem; margin-top:0; text-align:left; box-shadow:var(--shadow-sm); }
+        [dir="rtl"] .contact-form { text-align:right; }
+        .contact-form-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.5rem; }
+        .contact-form-head h3 { font-size:1.15rem; }
+        .contact-form-head p { color:var(--text-muted); font-size:0.78rem; margin-top:0.25rem; }
+        .contact-form-mark { width:40px; height:40px; border-radius:13px; background:var(--gradient); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
         .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
         .form-group { margin-bottom:1.25rem; }
         .form-label { display:block; font-size:0.8rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.5rem; }
@@ -420,9 +467,18 @@
             .about-links{justify-content:center}
             .about-tags{justify-content:center}
             .form-row{grid-template-columns:1fr}
-            .timeline::before{left:0}
-            .timeline-item{padding-left:30px}
-            .timeline-dot{left:-8px}
+            .timeline::before{left:12px}
+            [dir="rtl"] .timeline::before{left:auto;right:12px}
+            .timeline-item{padding-left:42px}
+            [dir="rtl"] .timeline-item{padding-left:0;padding-right:42px}
+            .timeline-dot{left:0}
+            [dir="rtl"] .timeline-dot{left:auto;right:0}
+            .timeline-card{padding:1.35rem}
+            .timeline-card::after{font-size:3.5rem}
+            .contact-layout{grid-template-columns:1fr}
+            .contact-intro{gap:2rem}
+            .project-cover{height:145px}
+            .project-actions{flex-wrap:wrap}
             body{cursor:auto}
             #cursor-dot,#cursor-ring,#cursor-trail-container{display:none}
         }
@@ -636,10 +692,11 @@
         <div class="timeline">
             @foreach($experiences as $exp)
             <div class="timeline-item reveal">
-                <div class="timeline-dot"></div>
-                <div class="timeline-card">
+                <div class="timeline-dot"><i class="fas fa-arrow-trend-up"></i></div>
+                <div class="timeline-card" data-step="{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}">
                     <div class="timeline-header">
                         <div>
+                            <div class="timeline-kicker">{{ __('A chapter in my journey') }}</div>
                             <div class="timeline-title">{{ t($exp, 'title') }}</div>
                             <div class="timeline-company">{{ t($exp, 'company') }}</div>
                         </div>
@@ -670,18 +727,23 @@
         </div>
         <div class="projects-grid">
             @foreach($projects as $project)
-            <a href="{{ route('project.show', $project->id) }}" class="project-card-link reveal">
+            <div class="project-card-link reveal">
             <div class="project-card">
-                <div class="project-header">
+                <div class="project-cover cover-{{ (($loop->index) % 5) + 1 }}">
+                    <img src="{{ asset('images/project-base.svg') }}" alt="" class="project-base-image" loading="lazy">
+                    <span class="project-cover-label">{{ __('PROJECT PREVIEW') }}</span>
+                    <span class="project-cover-number">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
                     <div class="project-icon">{{ $project->icon }}</div>
+                </div>
+                <div class="project-header">
                     <div class="project-links">
                         @if($project->github_url)
-                            <span onclick="event.preventDefault();window.open('{{ $project->github_url }}','_blank')" class="project-link" title="GitHub"><i class="fab fa-github"></i></span>
+                            <a href="{{ $project->github_url }}" target="_blank" class="project-link" title="GitHub" aria-label="GitHub"><i class="fab fa-github"></i></a>
                         @else
                             <span class="project-link" style="opacity:0.3"><i class="fab fa-github"></i></span>
                         @endif
                         @if($project->live_url)
-                            <span onclick="event.preventDefault();window.open('{{ $project->live_url }}','_blank')" class="project-link" title="Live"><i class="fas fa-arrow-up-right-from-square"></i></span>
+                            <a href="{{ $project->live_url }}" target="_blank" class="project-link" title="{{ __('Visit it') }}" aria-label="{{ __('Visit it') }}"><i class="fas fa-arrow-up-right-from-square"></i></a>
                         @else
                             <span class="project-link" style="opacity:0.3"><i class="fas fa-arrow-up-right-from-square"></i></span>
                         @endif
@@ -700,13 +762,21 @@
                         @endforeach
                     </div>
                     @endif
-                    <div class="project-view-more">
-                        {{ __('View Details') }}
-                        <i class="fas fa-arrow-{{ $locale === 'ar' ? 'left' : 'right' }}"></i>
+                    <div class="project-actions">
+                        <a href="{{ route('project.show', $project->id) }}" class="project-action primary">
+                            {{ __('More details') }}
+                            <i class="fas fa-arrow-{{ $locale === 'ar' ? 'left' : 'right' }}"></i>
+                        </a>
+                        @if($project->live_url)
+                            <a href="{{ $project->live_url }}" target="_blank" class="project-action">
+                                {{ __('Visit it') }}
+                                <i class="fas fa-arrow-up-right-from-square"></i>
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>
-            </a>
+            </div>
             @endforeach
         </div>
     </div>
@@ -716,32 +786,45 @@
 <section id="contact">
     <div class="container">
         <div class="contact-wrapper">
-            <div class="section-header reveal">
+            <div class="contact-header reveal">
                 <div class="section-tag">{{ __("// let's connect") }}</div>
                 <h2 class="section-title">{{ __('Get In') }} <span>{{ __('Touch') }}</span></h2>
                 <div class="section-line"></div>
-                <p style="color:var(--text-secondary);margin-top:1rem;font-size:0.95rem">
+                <p>
                     {{ __("I'm currently open to new opportunities. Whether you have a project in mind, want to collaborate, or just say hi — my inbox is always open.") }}
                 </p>
             </div>
-            <div class="contact-cards reveal">
-                <a href="mailto:{{ $settings['email'] ?? '#' }}" class="contact-card">
-                    <i class="fas fa-envelope"></i>
-                    <span class="contact-card-label">{{ __('Email') }}</span>
-                    <span class="contact-card-value">{{ $settings['email'] ?? __('Email me') }}</span>
-                </a>
-                <a href="{{ $settings['linkedin_url'] ?? '#' }}" target="_blank" class="contact-card">
-                    <i class="fab fa-linkedin"></i>
-                    <span class="contact-card-label">LinkedIn</span>
-                    <span class="contact-card-value">{{ __('Connect with me') }}</span>
-                </a>
-                <a href="{{ $settings['github_url'] ?? '#' }}" target="_blank" class="contact-card">
-                    <i class="fab fa-github"></i>
-                    <span class="contact-card-label">GitHub</span>
-                    <span class="contact-card-value">{{ __('View my code') }}</span>
-                </a>
-            </div>
-            <div class="contact-form reveal">
+            <div class="contact-layout">
+                <div class="contact-intro reveal">
+                    <div>
+                        <div class="section-tag">{{ __('Let’s make something useful') }}</div>
+                        <h3>{{ __('Have an idea? Let’s talk about it.') }}</h3>
+                        <p>{{ __('Tell me what you are building, what is getting in the way, or what you want to improve. I’ll get back to you with a clear next step.') }}</p>
+                        <div class="contact-availability">{{ __('Usually replies within 1–2 days') }}</div>
+                    </div>
+                    <div class="contact-cards">
+                        <a href="mailto:{{ $settings['email'] ?? '#' }}" class="contact-card">
+                            <i class="fas fa-envelope"></i>
+                            <span><span class="contact-card-label">{{ __('Email') }}</span><span class="contact-card-value">{{ $settings['email'] ?? __('Email me') }}</span></span>
+                        </a>
+                        <a href="{{ $settings['linkedin_url'] ?? '#' }}" target="_blank" class="contact-card">
+                            <i class="fab fa-linkedin"></i>
+                            <span><span class="contact-card-label">LinkedIn</span><span class="contact-card-value">{{ __('Connect with me') }}</span></span>
+                        </a>
+                        <a href="{{ $settings['github_url'] ?? '#' }}" target="_blank" class="contact-card">
+                            <i class="fab fa-github"></i>
+                            <span><span class="contact-card-label">GitHub</span><span class="contact-card-value">{{ __('View my code') }}</span></span>
+                        </a>
+                    </div>
+                </div>
+                <div class="contact-form reveal">
+                <div class="contact-form-head">
+                    <div>
+                        <h3>{{ __('Send me a message') }}</h3>
+                        <p>{{ __('No complicated forms — just the basics.') }}</p>
+                    </div>
+                    <div class="contact-form-mark"><i class="fas fa-paper-plane"></i></div>
+                </div>
                 <form id="contactForm" onsubmit="handleSubmit(event)">
                     <div class="form-row">
                         <div class="form-group">
@@ -763,6 +846,7 @@
                     </div>
                     <button type="submit" class="form-submit"><i class="fas fa-paper-plane"></i>&nbsp; {{ __('Send Message') }}</button>
                 </form>
+                </div>
             </div>
         </div>
     </div>
