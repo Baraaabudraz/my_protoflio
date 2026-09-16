@@ -49,6 +49,14 @@
                     <label class="form-check"><input type="checkbox" name="visible"  {{ old('visible', $project === null || $project?->visible) ? 'checked' : '' }}><span>{{ __('Visible') }}</span></label>
                 </div>
             </div>
+            <div class="form-group">
+                <label class="form-label">{{ __('Project Image') }}</label>
+                <input type="text" name="image" id="projectImage" class="form-control" value="{{ old('image', $project?->image) }}" placeholder="https://... or /images/project-cover.jpg">
+                <div class="form-hint">{{ __('Add an image URL or a path inside public/images. It will appear on the project card and detail page.') }}</div>
+                <div id="projectImagePreview" style="display:{{ old('image', $project?->image) ? 'block' : 'none' }};margin-top:0.75rem;border:1px solid var(--border);border-radius:10px;overflow:hidden;max-width:360px;background:var(--surface)">
+                    <img src="{{ old('image', $project?->image) }}" alt="" style="width:100%;height:140px;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'">
+                </div>
+            </div>
 
             {{-- Language Tabs --}}
             <div class="bi-tabs">
@@ -172,5 +180,19 @@ function switchLang(lang, btn) {
     btn.classList.add('active');
     document.getElementById('panel-' + lang).classList.add('active');
 }
+const projectImage = document.getElementById('projectImage');
+const projectImagePreview = document.getElementById('projectImagePreview');
+projectImage?.addEventListener('input', () => {
+    const value = projectImage.value.trim();
+    if (!value) {
+        projectImagePreview.style.display = 'none';
+        return;
+    }
+    projectImagePreview.querySelector('img').src = value;
+    projectImagePreview.style.display = 'block';
+});
+projectImagePreview?.querySelector('img')?.addEventListener('error', () => {
+    projectImagePreview.style.display = 'none';
+});
 </script>
 @endsection

@@ -75,5 +75,8 @@
     "Tell me what you are building, what is getting in the way, or what you want to improve. I’ll get back to you with a clear next step.": "Tell me what you are building, what is getting in the way, or what you want to improve. I’ll get back to you with a clear next step.",
     "Usually replies within 1–2 days": "Usually replies within 1–2 days",
     "Send me a message": "Send me a message",
-    "No complicated forms — just the basics.": "No complicated forms — just the basics."
+    "No complicated forms — just the basics.": "No complicated forms — just the basics.",
+    "Project Image": "Project Image",
+    "Add an image URL or a path inside public/images. It will appear on the project card and detail page.": "Add an image URL or a path inside public/images. It will appear on the project card and detail page.",
+    "Preview": "Preview"
 }

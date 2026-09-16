@@ -176,5 +176,8 @@
     "Tell me what you are building, what is getting in the way, or what you want to improve. I’ll get back to you with a clear next step.": "احكِ لي ماذا تبني، وما الذي يعيقك، أو ما الذي تريد تحسينه. سأرد عليك بخطوة واضحة نبدأ بها.",
     "Usually replies within 1–2 days": "عادةً أرد خلال يوم أو يومين",
     "Send me a message": "أرسل لي رسالة",
-    "No complicated forms — just the basics.": "بدون نماذج معقّدة — فقط المعلومات الأساسية."
+    "No complicated forms — just the basics.": "بدون نماذج معقّدة — فقط المعلومات الأساسية.",
+    "Project Image": "صورة المشروع",
+    "Add an image URL or a path inside public/images. It will appear on the project card and detail page.": "أضف رابط الصورة أو مسارها داخل public/images. ستظهر الصورة على بطاقة المشروع وصفحة التفاصيل.",
+    "Preview": "المعاينة"
 }

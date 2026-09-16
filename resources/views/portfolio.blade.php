@@ -730,7 +730,13 @@
             <div class="project-card-link reveal">
             <div class="project-card">
                 <div class="project-cover cover-{{ (($loop->index) % 5) + 1 }}">
-                    <img src="{{ asset('images/project-base.svg') }}" alt="" class="project-base-image" loading="lazy">
+                    @php
+                        $projectImage = $project->image ?? null;
+                        $projectImageSrc = $projectImage && preg_match('/^https?:\/\//i', $projectImage)
+                            ? $projectImage
+                            : ($projectImage ? asset(ltrim($projectImage, '/')) : asset('images/project-base.svg'));
+                    @endphp
+                    <img src="{{ $projectImageSrc }}" alt="" class="project-base-image" loading="lazy">
                     <span class="project-cover-label">{{ __('PROJECT PREVIEW') }}</span>
                     <span class="project-cover-number">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
                     <div class="project-icon">{{ $project->icon }}</div>

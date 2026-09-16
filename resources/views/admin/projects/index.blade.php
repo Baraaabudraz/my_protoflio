@@ -19,7 +19,7 @@
     <table>
         <thead>
             <tr>
-                <th>{{ __('Icon') }}</th>
+                <th>{{ __('Preview') }}</th>
                 <th>{{ __('Title') }}</th>
                 <th>{{ __('Stack') }}</th>
                 <th>{{ __('Featured') }}</th>
@@ -31,7 +31,13 @@
         <tbody>
             @foreach($projects as $project)
             <tr>
-                <td style="font-size:1.5rem">{{ $project->icon }}</td>
+                <td>
+                    @if($project->image)
+                        <img src="{{ $project->image }}" alt="" style="width:52px;height:38px;object-fit:cover;border-radius:7px;border:1px solid var(--border)" onerror="this.style.display='none'">
+                    @else
+                        <span style="font-size:1.5rem">{{ $project->icon }}</span>
+                    @endif
+                </td>
                 <td>
                     <div style="font-weight:600">{{ $project->title }}</div>
                     <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem">{{ Str::limit($project->description, 60) }}</div>

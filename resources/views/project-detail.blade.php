@@ -62,6 +62,7 @@
         .project-hero-title h1 { font-size:clamp(2rem,5vw,3.5rem); font-weight:900; line-height:1.1; }
         .featured-badge { display:inline-flex; align-items:center; gap:0.4rem; padding:0.3rem 0.8rem; background:rgba(0,212,212,0.1); border:1px solid rgba(0,212,212,0.3); border-radius:50px; font-size:0.78rem; font-weight:600; color:var(--cyan); margin-bottom:1rem; }
         .project-hero-desc { font-size:1.1rem; color:var(--text-secondary); max-width:700px; line-height:1.75; margin-bottom:2rem; }
+        .project-hero-image { max-width:900px; width:100%; height:260px; object-fit:cover; border:1px solid var(--border); border-radius:20px; margin:1.5rem 0 2rem; box-shadow:0 25px 60px rgba(0,0,0,.28); }
         .hero-actions { display:flex; gap:0.75rem; flex-wrap:wrap; }
         .btn-primary { display:inline-flex; align-items:center; gap:0.5rem; padding:0.75rem 1.75rem; background:var(--gradient); color:#0a0e17; border-radius:8px; font-weight:700; font-size:0.875rem; text-decoration:none; transition:all .3s; border:none; cursor:none; }
         .btn-primary:hover { transform:translateY(-2px); box-shadow:0 0 30px rgba(0,212,212,0.4); }
@@ -187,6 +188,14 @@
         </div>
 
         <p class="project-hero-desc">{{ $project->description }}</p>
+        @if($project->image)
+            @php
+                $projectImageSrc = preg_match('/^https?:\/\//i', $project->image)
+                    ? $project->image
+                    : asset(ltrim($project->image, '/'));
+            @endphp
+            <img src="{{ $projectImageSrc }}" alt="{{ $project->title }}" class="project-hero-image">
+        @endif
 
         <div class="hero-actions">
             @if($project->live_url)

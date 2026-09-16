@@ -81,6 +81,7 @@ class AdminController extends Controller
         $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'required|string',
+            'image'       => 'nullable|string|max:2048',
         ]);
         $stack      = $request->stack ? json_encode(array_map('trim', explode(',', $request->stack))) : '[]';
         $featured   = $request->has('featured') ? 1 : 0;
@@ -91,14 +92,14 @@ class AdminController extends Controller
 
         Database::execute(
             'INSERT INTO projects
-             (title,title_ar,description,description_ar,icon,stack,github_url,live_url,featured,sort_order,visible,
+             (title,title_ar,description,description_ar,icon,image,stack,github_url,live_url,featured,sort_order,visible,
               client,client_ar,duration,duration_ar,category,category_ar,overview,overview_ar,work_stages,work_stages_ar,
               created_at,updated_at)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [
                 $request->title,          $request->title_ar,
                 $request->description,    $request->description_ar,
-                $request->icon ?? '🚀',  $stack,
+                $request->icon ?? '🚀',  $request->image, $stack,
                 $request->github_url,     $request->live_url,
                 $featured, (int)($request->sort_order ?? 0), $visible,
                 $request->client,         $request->client_ar,
@@ -131,6 +132,7 @@ class AdminController extends Controller
         $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'required|string',
+            'image'       => 'nullable|string|max:2048',
         ]);
         $stack       = $request->stack ? json_encode(array_map('trim', explode(',', $request->stack))) : '[]';
         $featured    = $request->has('featured') ? 1 : 0;
@@ -140,7 +142,7 @@ class AdminController extends Controller
 
         Database::execute(
             'UPDATE projects SET
-             title=?,title_ar=?,description=?,description_ar=?,icon=?,stack=?,github_url=?,live_url=?,
+             title=?,title_ar=?,description=?,description_ar=?,icon=?,image=?,stack=?,github_url=?,live_url=?,
              featured=?,sort_order=?,visible=?,
              client=?,client_ar=?,duration=?,duration_ar=?,category=?,category_ar=?,
              overview=?,overview_ar=?,work_stages=?,work_stages_ar=?,updated_at=?
@@ -148,7 +150,7 @@ class AdminController extends Controller
             [
                 $request->title,       $request->title_ar,
                 $request->description, $request->description_ar,
-                $request->icon ?? '🚀', $stack,
+                $request->icon ?? '🚀', $request->image, $stack,
                 $request->github_url,  $request->live_url,
                 $featured, (int)($request->sort_order ?? 0), $visible,
                 $request->client,      $request->client_ar,

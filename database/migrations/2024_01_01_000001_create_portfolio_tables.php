@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->string('title');
             $table->text('description');
             $table->string('icon')->default('🚀');
+            $table->text('image')->nullable();
             $table->json('stack')->nullable();
             $table->string('github_url')->nullable();
             $table->string('live_url')->nullable();
