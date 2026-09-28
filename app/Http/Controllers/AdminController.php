@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\Database;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Session;
 
 class AdminController extends Controller
@@ -81,7 +82,8 @@ class AdminController extends Controller
         $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'required|string',
-            'image'       => 'nullable|string|max:2048',
+            'image_file'  => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
+            'image_url'   => 'nullable|string|max:2048',
         ]);
         $stack      = $request->stack ? json_encode(array_map('trim', explode(',', $request->stack))) : '[]';
         $featured   = $request->has('featured') ? 1 : 0;
@@ -89,6 +91,7 @@ class AdminController extends Controller
         $now        = now()->toDateTimeString();
         $workStages = $this->parseWorkStages($request->work_stages ?? '');
         $workStagesAr = $this->parseWorkStages($request->work_stages_ar ?? '');
+        $image      = $this->resolveProjectImage($request);
 
         Database::execute(
             'INSERT INTO projects
@@ -99,7 +102,7 @@ class AdminController extends Controller
             [
                 $request->title,          $request->title_ar,
                 $request->description,    $request->description_ar,
-                $request->icon ?? '🚀',  $request->image, $stack,
+                $request->icon ?? '🚀',  $image, $stack,
                 $request->github_url,     $request->live_url,
                 $featured, (int)($request->sort_order ?? 0), $visible,
                 $request->client,         $request->client_ar,
@@ -132,13 +135,16 @@ class AdminController extends Controller
         $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'required|string',
-            'image'       => 'nullable|string|max:2048',
+            'image_file'  => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
+            'image_url'   => 'nullable|string|max:2048',
         ]);
         $stack       = $request->stack ? json_encode(array_map('trim', explode(',', $request->stack))) : '[]';
         $featured    = $request->has('featured') ? 1 : 0;
         $visible     = $request->has('visible')  ? 1 : 0;
         $workStages  = $this->parseWorkStages($request->work_stages ?? '');
         $workStagesAr = $this->parseWorkStages($request->work_stages_ar ?? '');
+        $currentProject = Database::first('SELECT image FROM projects WHERE id = ?', [$id]);
+        $image = $this->resolveProjectImage($request, $currentProject?->image);
 
         Database::execute(
             'UPDATE projects SET
@@ -150,7 +156,7 @@ class AdminController extends Controller
             [
                 $request->title,       $request->title_ar,
                 $request->description, $request->description_ar,
-                $request->icon ?? '🚀', $request->image, $stack,
+                $request->icon ?? '🚀', $image, $stack,
                 $request->github_url,  $request->live_url,
                 $featured, (int)($request->sort_order ?? 0), $visible,
                 $request->client,      $request->client_ar,
@@ -173,6 +179,28 @@ class AdminController extends Controller
             if (!empty($line)) $stages[] = $line;
         }
         return json_encode($stages);
+    }
+
+    private function resolveProjectImage(Request $request, ?string $currentImage = null): ?string
+    {
+        if ($request->hasFile('image_file')) {
+            $path = $request->file('image_file')->store('project-covers', 'public');
+            return '/storage/' . $path;
+        }
+
+        if ($request->filled('image_url')) {
+            $image = trim((string) $request->input('image_url'));
+            if (preg_match('~drive\.google\.com/(?:file/d/|open\?id=)([^/?&]+)~i', $image, $match)) {
+                return 'https://drive.google.com/uc?export=view&id=' . rawurlencode($match[1]);
+            }
+            return $image;
+        }
+
+        if ($request->boolean('remove_image')) {
+            return null;
+        }
+
+        return $currentImage ?: null;
     }
 
     public function projectDelete(int $id)

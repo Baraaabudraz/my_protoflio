@@ -732,9 +732,7 @@
                 <div class="project-cover cover-{{ (($loop->index) % 5) + 1 }}">
                     @php
                         $projectImage = $project->image ?? null;
-                        $projectImageSrc = $projectImage && preg_match('/^https?:\/\//i', $projectImage)
-                            ? $projectImage
-                            : ($projectImage ? asset(ltrim($projectImage, '/')) : asset('images/project-base.svg'));
+                        $projectImageSrc = $projectImage ? project_image_url($projectImage) : asset('images/project-base.svg');
                     @endphp
                     <img src="{{ $projectImageSrc }}" alt="" class="project-base-image" loading="lazy">
                     <span class="project-cover-label">{{ __('PROJECT PREVIEW') }}</span>

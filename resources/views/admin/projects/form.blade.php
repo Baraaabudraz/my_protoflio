@@ -28,7 +28,7 @@
         <span class="card-title">{{ $project ? __('Edit Project').': '.$project->title : __('Add New Project') }}</span>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{ $project ? route('admin.projects.update', $project->id) : route('admin.projects.store') }}">
+        <form method="POST" enctype="multipart/form-data" action="{{ $project ? route('admin.projects.update', $project->id) : route('admin.projects.store') }}">
             @csrf
             @if($project) @method('PUT') @endif
 
@@ -51,10 +51,28 @@
             </div>
             <div class="form-group">
                 <label class="form-label">{{ __('Project Image') }}</label>
-                <input type="text" name="image" id="projectImage" class="form-control" value="{{ old('image', $project?->image) }}" placeholder="https://... or /images/project-cover.jpg">
-                <div class="form-hint">{{ __('Add an image URL or a path inside public/images. It will appear on the project card and detail page.') }}</div>
-                <div id="projectImagePreview" style="display:{{ old('image', $project?->image) ? 'block' : 'none' }};margin-top:0.75rem;border:1px solid var(--border);border-radius:10px;overflow:hidden;max-width:360px;background:var(--surface)">
-                    <img src="{{ old('image', $project?->image) }}" alt="" style="width:100%;height:140px;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-upload"></i> {{ __('Upload from device') }}</label>
+                        <input type="file" name="image_file" id="projectImageFile" class="form-control" accept="image/jpeg,image/png,image/webp">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label"><i class="fab fa-google-drive"></i> {{ __('Google Drive share link') }}</label>
+                        <input type="text" name="image_url" id="projectImageUrl" class="form-control" value="{{ old('image_url', $project?->image) }}" placeholder="https://drive.google.com/file/d/...">
+                    </div>
+                </div>
+                <div class="form-hint">{{ __('Choose a file from your device, or paste a Google Drive share link. Drive files must be shared as Anyone with the link.') }}</div>
+                @if($project?->image)
+                    <label class="form-check" style="margin-top:0.75rem">
+                        <input type="checkbox" name="remove_image" value="1">
+                        <span>{{ __('Remove current image') }}</span>
+                    </label>
+                @endif
+                @php
+                    $existingProjectImage = old('image_url', $project?->image ? project_image_url($project->image) : '');
+                @endphp
+                <div id="projectImagePreview" style="display:{{ $existingProjectImage ? 'block' : 'none' }};margin-top:0.75rem;border:1px solid var(--border);border-radius:10px;overflow:hidden;max-width:360px;background:var(--surface)">
+                    <img src="{{ $existingProjectImage }}" alt="" style="width:100%;height:140px;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'">
                 </div>
             </div>
 
@@ -180,18 +198,27 @@ function switchLang(lang, btn) {
     btn.classList.add('active');
     document.getElementById('panel-' + lang).classList.add('active');
 }
-const projectImage = document.getElementById('projectImage');
+const projectImageFile = document.getElementById('projectImageFile');
+const projectImageUrl = document.getElementById('projectImageUrl');
 const projectImagePreview = document.getElementById('projectImagePreview');
-projectImage?.addEventListener('input', () => {
-    const value = projectImage.value.trim();
+const projectImagePreviewImage = projectImagePreview?.querySelector('img');
+function previewProjectImage(value) {
     if (!value) {
         projectImagePreview.style.display = 'none';
         return;
     }
-    projectImagePreview.querySelector('img').src = value;
+    projectImagePreviewImage.src = value;
     projectImagePreview.style.display = 'block';
+}
+projectImageFile?.addEventListener('change', () => {
+    const file = projectImageFile.files?.[0];
+    if (!file) return;
+    previewProjectImage(URL.createObjectURL(file));
 });
-projectImagePreview?.querySelector('img')?.addEventListener('error', () => {
+projectImageUrl?.addEventListener('input', () => {
+    if (!projectImageFile?.files?.length) previewProjectImage(projectImageUrl.value.trim());
+});
+projectImagePreviewImage?.addEventListener('error', () => {
     projectImagePreview.style.display = 'none';
 });
 </script>

@@ -180,4 +180,8 @@
     "Project Image": "صورة المشروع",
     "Add an image URL or a path inside public/images. It will appear on the project card and detail page.": "أضف رابط الصورة أو مسارها داخل public/images. ستظهر الصورة على بطاقة المشروع وصفحة التفاصيل.",
     "Preview": "المعاينة"
+    ,"Upload from device": "رفع من الجهاز",
+    "Google Drive share link": "رابط مشاركة Google Drive",
+    "Choose a file from your device, or paste a Google Drive share link. Drive files must be shared as Anyone with the link.": "اختر صورة من جهازك، أو الصق رابط مشاركة من Google Drive. يجب أن تكون صلاحية الملف: أي شخص لديه الرابط.",
+    "Remove current image": "إزالة الصورة الحالية"
 }

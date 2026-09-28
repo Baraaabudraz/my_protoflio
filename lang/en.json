@@ -79,4 +79,8 @@
     "Project Image": "Project Image",
     "Add an image URL or a path inside public/images. It will appear on the project card and detail page.": "Add an image URL or a path inside public/images. It will appear on the project card and detail page.",
     "Preview": "Preview"
+    ,"Upload from device": "Upload from device",
+    "Google Drive share link": "Google Drive share link",
+    "Choose a file from your device, or paste a Google Drive share link. Drive files must be shared as Anyone with the link.": "Choose a file from your device, or paste a Google Drive share link. Drive files must be shared as Anyone with the link.",
+    "Remove current image": "Remove current image"
 }

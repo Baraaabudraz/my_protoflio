@@ -39,3 +39,27 @@ if (!function_exists('ts')) {
         return $settings[$key] ?? '';
     }
 }
+
+/**
+ * Resolve a project cover for the browser.
+ * Supports local public paths, normal image URLs, and Google Drive share links.
+ */
+if (!function_exists('project_image_url')) {
+    function project_image_url(?string $image): string
+    {
+        $image = trim((string) $image);
+        if ($image === '') {
+            return '';
+        }
+
+        if (preg_match('~drive\.google\.com/(?:file/d/|open\?id=)([^/?&]+)~i', $image, $match)) {
+            return 'https://drive.google.com/uc?export=view&id=' . rawurlencode($match[1]);
+        }
+
+        if (preg_match('~^https?://~i', $image)) {
+            return $image;
+        }
+
+        return asset(ltrim($image, '/'));
+    }
+}

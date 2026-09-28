@@ -189,12 +189,7 @@
 
         <p class="project-hero-desc">{{ $project->description }}</p>
         @if($project->image)
-            @php
-                $projectImageSrc = preg_match('/^https?:\/\//i', $project->image)
-                    ? $project->image
-                    : asset(ltrim($project->image, '/'));
-            @endphp
-            <img src="{{ $projectImageSrc }}" alt="{{ $project->title }}" class="project-hero-image">
+            <img src="{{ project_image_url($project->image) }}" alt="{{ $project->title }}" class="project-hero-image">
         @endif
 
         <div class="hero-actions">
