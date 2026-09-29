@@ -33,14 +33,14 @@
             <tr>
                 <td>
                     @if($project->image)
-                        <img src="{{ $project->image }}" alt="" style="width:52px;height:38px;object-fit:cover;border-radius:7px;border:1px solid var(--border)" onerror="this.style.display='none'">
+                        <img src="{{ project_image_url($project->image) }}" loading="lazy" alt="" style="width:64px;height:44px;object-fit:cover;border-radius:10px;border:1px solid var(--border)" onerror="this.style.display='none'">
                     @else
                         <span style="font-size:1.5rem">{{ $project->icon }}</span>
                     @endif
                 </td>
                 <td>
-                    <div style="font-weight:600">{{ $project->title }}</div>
-                    <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem">{{ Str::limit($project->description, 60) }}</div>
+                    <div style="font-weight:600">{{ t($project, 'title') }}</div>
+                    <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem">{{ Str::limit(t($project, 'description'), 60) }}</div>
                 </td>
                 <td>
                     <div style="display:flex;flex-wrap:wrap;gap:0.25rem;">

@@ -54,7 +54,7 @@
                     <input type="hidden" name="skill_category_id" value="{{ $cat->id }}">
                     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.4rem">
                         <input type="text" name="name" class="form-control" placeholder="{{ __('Skill name') }} (EN)" style="flex:1;min-width:100px" required>
-                        <input type="text" name="name_ar" class="form-control" placeholder="الاسم (AR)" style="flex:1;min-width:100px" dir="rtl" style="font-family:'Cairo',sans-serif">
+                        <input type="text" name="name_ar" class="form-control" placeholder="الاسم (AR)" style="flex:1;min-width:100px" dir="rtl">
                         @if($cat->type === 'bars')
                             <input type="number" name="percentage" class="form-control" placeholder="%" style="width:70px" min="0" max="100">
                         @endif

@@ -15,8 +15,12 @@
 @endsection
 
 @section('content')
-<form method="POST" action="{{ route('admin.settings.update') }}">
+<form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
     @csrf
+
+    @if($errors->any())
+        <div class="alert alert-error">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>
+    @endif
 
     {{-- Language Tabs --}}
     <div class="bi-tabs" style="max-width:300px;margin-bottom:1.5rem">
@@ -57,8 +61,26 @@
             <div class="card-body">
                 <div class="form-hint" style="margin-bottom:1rem"><i class="fas fa-circle-info" style="color:var(--cyan)"></i> These are shared between both languages.</div>
                 <div class="form-group"><label class="form-label">{{ __('Email Address') }}</label><input type="email" name="email" class="form-control" value="{{ $settings['email'] ?? '' }}"></div>
+                <div class="form-group">
+                    <label class="form-label">{{ __('WhatsApp Number') }}</label>
+                    <input type="text" name="whatsapp_number" class="form-control" value="{{ $settings['whatsapp_number'] ?? '' }}" placeholder="970599000000" dir="ltr">
+                    <div class="form-hint">{{ __('International format, digits only (no + or spaces). Leave empty to send inquiries by email only.') }}</div>
+                </div>
                 <div class="form-group"><label class="form-label">{{ __('GitHub URL') }}</label><input type="url" name="github_url" class="form-control" value="{{ $settings['github_url'] ?? '' }}"></div>
                 <div class="form-group"><label class="form-label">{{ __('LinkedIn URL') }}</label><input type="url" name="linkedin_url" class="form-control" value="{{ $settings['linkedin_url'] ?? '' }}"></div>
+                <div class="form-group">
+                    <label class="form-label" for="cv_file"><i class="fas fa-file-pdf" style="color:var(--cyan)"></i> {{ __('CV / Résumé (PDF)') }}</label>
+                    @if(!empty($settings['cv_path']) && file_exists(public_path($settings['cv_path'])))
+                        <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding:.7rem .9rem;margin-bottom:.6rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg)">
+                            <i class="fas fa-file-pdf" style="color:var(--danger);font-size:1.2rem"></i>
+                            <span style="flex:1;min-width:0;font-size:.85rem;word-break:break-all">{{ basename($settings['cv_path']) }} <small style="color:var(--muted)">· {{ number_format(filesize(public_path($settings['cv_path'])) / 1024) }} KB</small></span>
+                            <a href="{{ asset($settings['cv_path']) }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm"><i class="fas fa-eye"></i> {{ __('Preview') }}</a>
+                            <label class="form-check" style="font-size:.82rem"><input type="checkbox" name="remove_cv" value="1"> {{ __('Remove') }}</label>
+                        </div>
+                    @endif
+                    <input type="file" name="cv_file" id="cv_file" class="form-control" accept="application/pdf">
+                    <div class="form-hint">{{ __('Upload a new PDF to replace the current CV (max 10 MB). Visitors can view and download it from the portfolio.') }}</div>
+                </div>
             </div>
         </div>
 
@@ -66,6 +88,21 @@
             <div class="card-header"><span class="card-title"><i class="fas fa-ellipsis" style="color:var(--cyan)"></i> &nbsp;{{ __('Footer') }} <span class="lang-badge en">EN</span></span></div>
             <div class="card-body">
                 <div class="form-group"><label class="form-label">{{ __('Footer Text') }}</label><input type="text" name="footer_text" class="form-control" value="{{ $settings['footer_text'] ?? '' }}"></div>
+            </div>
+        </div>
+        <div class="card" style="grid-column:1/-1">
+            <div class="card-header"><span class="card-title"><i class="fas fa-magnifying-glass" style="color:var(--cyan)"></i> &nbsp;{{ __('SEO (Google & social sharing)') }} <span class="lang-badge en">EN</span></span></div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">{{ __('SEO Title') }}</label>
+                    <input type="text" name="seo_title" class="form-control seo-count" data-max="60" value="{{ $settings['seo_title'] ?? '' }}" placeholder="{{ ($settings['hero_name'] ?? '') . ' — ' . ($settings['hero_tagline'] ?? '') }}">
+                    <div class="form-hint">{{ __('Shown as the blue link in Google results. Aim for 50–60 characters.') }} <span class="seo-counter"></span></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">{{ __('Meta Description') }}</label>
+                    <textarea name="seo_description" class="form-control seo-count" data-max="160" style="min-height:80px">{{ $settings['seo_description'] ?? '' }}</textarea>
+                    <div class="form-hint">{{ __('The summary under the link in Google. Aim for 120–160 characters.') }} <span class="seo-counter"></span></div>
+                </div>
             </div>
         </div>
     </div>
@@ -101,6 +138,21 @@
                 <div class="form-group"><label class="form-label">نص التذييل <span class="lang-badge ar">AR</span></label><input type="text" name="footer_text_ar" class="form-control ar-input" value="{{ $settings['footer_text_ar'] ?? '' }}"></div>
             </div>
         </div>
+        <div class="card" style="grid-column:1/-1">
+            <div class="card-header"><span class="card-title"><i class="fas fa-magnifying-glass" style="color:var(--cyan)"></i> &nbsp;تحسين محركات البحث (SEO) <span class="lang-badge ar">AR</span></span></div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">عنوان الصفحة في Google <span class="lang-badge ar">AR</span></label>
+                    <input type="text" name="seo_title_ar" class="form-control ar-input seo-count" data-max="60" value="{{ $settings['seo_title_ar'] ?? '' }}">
+                    <div class="form-hint">يظهر كرابط أزرق في نتائج Google. الأفضل بين 50 و60 حرفًا. <span class="seo-counter"></span></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">وصف الصفحة <span class="lang-badge ar">AR</span></label>
+                    <textarea name="seo_description_ar" class="form-control ar-input seo-count" data-max="160" style="min-height:80px">{{ $settings['seo_description_ar'] ?? '' }}</textarea>
+                    <div class="form-hint">الملخص الذي يظهر تحت الرابط في Google. الأفضل بين 120 و160 حرفًا. <span class="seo-counter"></span></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div style="margin-top:1.5rem">
@@ -109,6 +161,17 @@
 </form>
 
 <script>
+document.querySelectorAll('.seo-count').forEach(field => {
+    const counter = field.parentElement.querySelector('.seo-counter');
+    const update = () => {
+        const max = Number(field.dataset.max);
+        counter.textContent = '(' + field.value.length + '/' + max + ')';
+        counter.style.color = field.value.length > max ? 'var(--danger)' : 'var(--cyan)';
+    };
+    field.addEventListener('input', update);
+    update();
+});
+
 function switchSettings(lang, btn) {
     document.querySelectorAll('.bi-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');

@@ -3,17 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Services\Database;
+use App\Services\SeoBuilder;
 use Illuminate\Http\Request;
 
 class PortfolioController extends Controller
 {
-    public function index()
+    public function index(SeoBuilder $seoBuilder)
     {
         $projects = Database::query(
             'SELECT * FROM projects WHERE visible = 1 ORDER BY featured DESC, sort_order ASC'
         );
         foreach ($projects as $p) {
             $p->stack = json_decode($p->stack ?? '[]');
+        }
+
+        $services = Database::query(
+            'SELECT * FROM services WHERE visible = 1 ORDER BY sort_order ASC'
+        );
+        foreach ($services as $s) {
+            $s->deliverables = json_decode($s->deliverables ?? '[]');
+            $s->deliverables_ar = json_decode($s->deliverables_ar ?? '[]');
         }
 
         $experiences = Database::query(
@@ -41,16 +50,24 @@ class PortfolioController extends Controller
             $settings[$s->key] = $s->value;
         }
 
-        return view('portfolio', compact('projects', 'experiences', 'categories', 'settings'));
+        $seo = $seoBuilder->home($settings, $services);
+
+        return view('portfolio', compact('projects', 'services', 'experiences', 'categories', 'settings', 'seo'));
     }
 
-    public function show(int $id)
+    public function show(int $id, SeoBuilder $seoBuilder)
     {
         $project = Database::first('SELECT * FROM projects WHERE id = ? AND visible = 1', [$id]);
-        if (!$project) abort(404);
+        if (! $project) {
+            abort(404);
+        }
 
-        $project->stack       = json_decode($project->stack ?? '[]');
+        $project->stack = json_decode($project->stack ?? '[]');
         $project->work_stages = json_decode($project->work_stages ?? '[]');
+        $workStagesAr = json_decode($project->work_stages_ar ?? '[]');
+        if (app()->getLocale() === 'ar' && ! empty($workStagesAr)) {
+            $project->work_stages = $workStagesAr;
+        }
 
         // Related projects: same category, exclude current
         $related = [];
@@ -79,7 +96,15 @@ class PortfolioController extends Controller
             $settings[$s->key] = $s->value;
         }
 
-        return view('project-detail', compact('project', 'related', 'settings'));
+        // Previous / next project in the same order as the portfolio grid
+        $ordered = Database::query('SELECT id, title, title_ar, icon FROM projects WHERE visible = 1 ORDER BY featured DESC, sort_order ASC');
+        $position = array_search($id, array_map(fn (object $row): int => (int) $row->id, $ordered), true);
+        $previousProject = $position !== false && $position > 0 ? $ordered[$position - 1] : null;
+        $nextProject = $position !== false ? ($ordered[$position + 1] ?? null) : null;
+
+        $seo = $seoBuilder->project($project, $settings);
+
+        return view('project-detail', compact('project', 'related', 'settings', 'seo', 'previousProject', 'nextProject'));
     }
 
     public function switchLocale(Request $request, string $locale)
@@ -87,6 +112,7 @@ class PortfolioController extends Controller
         if (in_array($locale, ['en', 'ar'])) {
             session(['locale' => $locale]);
         }
+
         return redirect()->back();
     }
 }

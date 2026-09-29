@@ -1,414 +1,538 @@
+@php
+    $heroName = ts($settings, 'hero_name') ?: ($settings['hero_name'] ?? 'Portfolio');
+    $heroTagline = ts($settings, 'hero_tagline') ?: ($settings['hero_tagline'] ?? '');
+    $firstName = explode(' ', $heroName)[0];
+    $projectTitle = t($project, 'title');
+    $projectImage = $project->image ? project_image_url($project->image) : null;
+    $client = t($project, 'client');
+    $duration = t($project, 'duration');
+    $category = t($project, 'category');
+    $overview = t($project, 'overview');
+    $stack = (array) ($project->stack ?? []);
+    $stages = (array) ($project->work_stages ?? []);
+    $homeUrl = \App\Http\Middleware\SetLocale::localizedUrl(url('/'), $locale);
+    $pageUrl = \App\Http\Middleware\SetLocale::localizedUrl(url()->current(), $locale);
+    $arrowIcon = $locale === 'ar' ? 'fa-arrow-left' : 'fa-arrow-right';
+    $backIcon = $locale === 'ar' ? 'fa-arrow-right' : 'fa-arrow-left';
+    $whatsappNumber = preg_replace('/\D+/', '', $settings['whatsapp_number'] ?? '');
+    $similarMessage = __('Hello :name, I saw your project ":project" and I would like something similar.', ['name' => $firstName, 'project' => $projectTitle]);
+    $similarUrl = $whatsappNumber ? 'https://wa.me/'.$whatsappNumber.'?text='.rawurlencode($similarMessage) : $homeUrl.'#contact';
+@endphp
 <!DOCTYPE html>
-<html lang="{{ $locale }}" dir="{{ $locale === 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="{{ $locale }}" dir="{{ $locale === 'ar' ? 'rtl' : 'ltr' }}" data-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $project->title }} — {{ $settings['hero_name'] ?? 'Portfolio' }}</title>
-    <meta name="description" content="{{ Str::limit(strip_tags($project->overview ?? $project->description), 160) }}">
+    @include('partials.seo')
+    <script>
+        (function () {
+            var saved = null;
+            try { saved = localStorage.getItem('theme'); } catch (e) {}
+            document.documentElement.setAttribute('data-theme', ['light', 'dark', 'ocean', 'sunset'].includes(saved) ? saved : 'light');
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        :root {
-            --cyan: #00d4d4;
-            --cyan-light: #00f5f5;
-            --cyan-dark: #009999;
-            --bg-primary: #0a0e17;
-            --bg-secondary: #0f1623;
-            --bg-card: #131c2e;
-            --text-primary: #e8eaf0;
-            --text-secondary: #8892a4;
-            --text-muted: #4a5568;
-            --border: #1e2d45;
-            --gradient: linear-gradient(135deg, #00d4d4, #0088cc);
-        }
+        @include('partials.theme-tokens')
+
+        /* ═════════ BASE ═════════ */
         * { margin:0; padding:0; box-sizing:border-box; }
-        html { scroll-behavior:smooth; }
-        body { font-family:{{ $locale === 'ar' ? "'Cairo'" : "'Inter'" }},sans-serif; background:var(--bg-primary); color:var(--text-primary); line-height:1.6; overflow-x:hidden; cursor:none; }
-        ::-webkit-scrollbar { width:5px; }
-        ::-webkit-scrollbar-track { background:var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background:var(--cyan-dark); border-radius:3px; }
+        html { scroll-behavior:smooth; scroll-padding-top:90px; }
+        body { font-family:var(--font-body); background:var(--bg-primary); color:var(--text-primary); line-height:1.65; overflow-x:hidden; -webkit-font-smoothing:antialiased; transition:background .35s, color .35s; }
+        img { max-width:100%; display:block; }
+        a { color:inherit; }
+        ::selection { background:var(--cyan); color:var(--on-accent); }
+        :where(a, button):focus-visible { outline:2px solid var(--cyan); outline-offset:3px; }
+        .container { max-width:1200px; margin:0 auto; padding-inline:1.5rem; }
+        .skip-link { position:absolute; top:-100px; inset-inline-start:1rem; z-index:2000; padding:.75rem 1.25rem; border-radius:10px; background:var(--gradient); color:var(--on-accent); font-weight:700; text-decoration:none; }
+        .skip-link:focus { top:1rem; }
+        .scroll-progress { position:fixed; top:0; left:0; right:0; height:3px; background:var(--gradient); transform-origin:0 50%; transform:scaleX(0); z-index:1200; }
+        [dir="rtl"] .scroll-progress { transform-origin:100% 50%; }
 
-        /* ─── CURSOR ─── */
-        #cursor-dot { position:fixed; width:8px; height:8px; background:var(--cyan); border-radius:50%; pointer-events:none; z-index:99999; transform:translate(-50%,-50%); transition:width .2s,height .2s; box-shadow:0 0 10px var(--cyan),0 0 20px rgba(0,212,212,0.4); }
-        #cursor-ring { position:fixed; width:36px; height:36px; border:1.5px solid rgba(0,212,212,0.6); border-radius:50%; pointer-events:none; z-index:99998; transform:translate(-50%,-50%); transition:width .3s,height .3s,border-color .3s; }
-        #cursor-trail-container { position:fixed; top:0; left:0; pointer-events:none; z-index:99997; }
-        .cursor-trail { position:fixed; width:4px; height:4px; background:var(--cyan); border-radius:50%; pointer-events:none; transform:translate(-50%,-50%); }
-        body.cursor-hover #cursor-dot { width:12px; height:12px; }
-        body.cursor-hover #cursor-ring { width:50px; height:50px; border-color:rgba(0,212,212,0.9); }
+        /* ═════════ SHARED COMPONENTS ═════════ */
+        .btn { display:inline-flex; align-items:center; justify-content:center; gap:.6rem; min-height:48px; padding:0 1.4rem; border-radius:var(--radius-sm); font:700 .93rem var(--font-body); text-decoration:none; border:1px solid transparent; cursor:pointer; transition:transform .25s var(--ease), box-shadow .25s, background .25s, color .25s, border-color .25s; white-space:nowrap; }
+        .btn-primary { background:var(--gradient); color:var(--on-accent); box-shadow:0 10px 26px -8px color-mix(in srgb, var(--cyan) 70%, transparent); }
+        .btn-primary:hover { transform:translateY(-2px); }
+        .btn-ghost { background:var(--glass); color:var(--text-primary); border-color:var(--border); }
+        .btn-ghost:hover { border-color:var(--cyan); color:var(--cyan); transform:translateY(-2px); }
+        .btn-whatsapp { background:#25d366; color:#fff; }
+        .btn-whatsapp:hover { background:#1ebe5b; transform:translateY(-2px); }
+        .chip { display:inline-flex; align-items:center; gap:.4rem; padding:.38rem .85rem; border-radius:999px; background:var(--accent-soft); border:1px solid var(--accent-line); color:var(--cyan); font-size:.8rem; font-weight:600; }
+        .chip-muted { background:color-mix(in srgb, var(--text-primary) 4%, transparent); border-color:var(--border); color:var(--text-secondary); }
+        .chip-featured { background:rgba(250,204,21,.18); border-color:rgba(250,204,21,.45); color:#a16207; }
+        [data-theme]:not([data-theme="light"]) .chip-featured { color:#facc15; }
+        .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); }
+        .icon-tile { width:48px; height:48px; border-radius:14px; background:var(--accent-soft); border:1px solid var(--accent-line); color:var(--cyan); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+        .eyebrow { display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--cyan); margin-bottom:.6rem; }
+        .eyebrow::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+        [dir="rtl"] .eyebrow { letter-spacing:0; }
+        .block-title { font:800 clamp(1.4rem,2.6vw,1.75rem)/1.3 var(--font-head); letter-spacing:-.02em; margin-bottom:1.2rem; }
+        [dir="rtl"] .block-title { letter-spacing:0; }
+        .reveal { opacity:0; transform:translateY(22px); transition:opacity .7s var(--ease) var(--d,0s), transform .7s var(--ease) var(--d,0s); }
+        .reveal.visible { opacity:1; transform:none; }
 
-        /* ─── NAV ─── */
-        nav { position:fixed; top:0; left:0; right:0; z-index:1000; padding:0 2rem; background:rgba(10,14,23,0.9); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
-        .nav-inner { max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; height:70px; gap:1rem; }
-        .nav-logo { font-size:1.4rem; font-weight:800; color:var(--cyan); text-decoration:none; }
-        .nav-logo span { color:var(--text-primary); }
-        .nav-back { display:inline-flex; align-items:center; gap:0.5rem; color:var(--text-secondary); text-decoration:none; font-size:0.875rem; font-weight:500; transition:color .2s; }
-        .nav-back:hover { color:var(--cyan); }
-        .nav-right { display:flex; align-items:center; gap:1rem; }
-        .lang-switch { display:flex; align-items:center; gap:0.25rem; background:rgba(0,212,212,0.06); border:1px solid rgba(0,212,212,0.2); border-radius:50px; padding:0.25rem; }
-        .lang-btn { padding:0.3rem 0.7rem; border-radius:50px; font-size:0.75rem; font-weight:600; text-decoration:none; color:var(--text-secondary); transition:all .2s; font-family:'JetBrains Mono',monospace; cursor:none; }
-        .lang-btn.active { background:var(--gradient); color:#0a0e17; }
-        .lang-btn:not(.active):hover { color:var(--cyan); }
+        /* ═════════ NAV ═════════ */
+        nav.site-nav { position:fixed; top:0; left:0; right:0; z-index:1000; padding:1rem 1.25rem 0; }
+        .nav-inner { max-width:1180px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:1rem; height:62px; padding-inline:1rem .5rem; background:var(--nav-bg); backdrop-filter:blur(18px) saturate(1.4); -webkit-backdrop-filter:blur(18px) saturate(1.4); border:1px solid var(--border); border-radius:999px; box-shadow:var(--shadow-sm); }
+        .nav-logo { display:flex; align-items:center; gap:.6rem; font:800 1.02rem var(--font-head); text-decoration:none; }
+        .nav-logo img { width:36px; height:36px; border-radius:50%; object-fit:cover; object-position:50% 25%; border:2px solid var(--cyan); }
+        .nav-logo span span { color:var(--cyan); }
+        .nav-back { display:inline-flex; align-items:center; gap:.5rem; padding:.5rem 1rem; border-radius:999px; color:var(--text-secondary); text-decoration:none; font-size:.88rem; font-weight:600; transition:all .2s; }
+        .nav-back:hover { color:var(--text-primary); background:color-mix(in srgb, var(--text-primary) 5%, transparent); }
+        .nav-controls { display:flex; align-items:center; gap:.45rem; }
+        .lang-switch { display:flex; gap:.15rem; background:color-mix(in srgb, var(--text-primary) 5%, transparent); border:1px solid var(--border); border-radius:999px; padding:.2rem; }
+        .lang-btn { min-width:40px; min-height:34px; display:inline-flex; align-items:center; justify-content:center; padding:0 .6rem; border-radius:999px; font-size:.74rem; font-weight:700; text-decoration:none; color:var(--text-secondary); }
+        .lang-btn.active { background:var(--gradient); color:var(--on-accent); }
+        .theme-switch { position:relative; }
+        .round-btn { width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; border:1px solid var(--border); background:color-mix(in srgb, var(--text-primary) 5%, transparent); color:var(--cyan); cursor:pointer; transition:all .2s; text-decoration:none; }
+        .round-btn:hover { border-color:var(--accent-line); background:var(--accent-soft); }
+        .theme-menu { position:absolute; top:calc(100% + 12px); inset-inline-end:0; min-width:160px; padding:.4rem; display:flex; flex-direction:column; gap:.15rem; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow-lg); opacity:0; visibility:hidden; transform:translateY(-8px); transition:all .2s; z-index:1100; }
+        .theme-menu.open { opacity:1; visibility:visible; transform:none; }
+        .theme-option { display:flex; align-items:center; gap:.6rem; width:100%; padding:.6rem .7rem; border:none; border-radius:10px; background:none; color:var(--text-secondary); font:inherit; font-size:.85rem; text-align:start; cursor:pointer; }
+        .theme-option:hover { background:var(--accent-soft); color:var(--text-primary); }
+        .theme-option.active { color:var(--cyan); font-weight:700; }
+        .theme-swatch { width:16px; height:16px; border-radius:50%; border:1px solid rgba(127,127,127,.3); }
+        .sw-light { background:linear-gradient(135deg,#f5f7fb,#00759c); } .sw-dark { background:linear-gradient(135deg,#0a0e17,#00d4d4); }
+        .sw-ocean { background:linear-gradient(135deg,#031824,#20e3c2); } .sw-sunset { background:linear-gradient(135deg,#1a0f1a,#ff7a59); }
+        .nav-cta { min-height:40px; padding:0 1.1rem; border-radius:999px; font-size:.85rem; }
 
-        /* ─── HERO ─── */
-        .detail-hero { padding:120px 2rem 60px; background:var(--bg-secondary); border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
-        .detail-hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,212,212,0.05) 0%, transparent 60%); }
-        .detail-hero-inner { max-width:1200px; margin:0 auto; position:relative; z-index:1; }
-        .breadcrumb { display:flex; align-items:center; gap:0.5rem; margin-bottom:1.5rem; font-size:0.8rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace; }
-        .breadcrumb a { color:var(--cyan); text-decoration:none; }
-        .breadcrumb a:hover { text-decoration:underline; }
-        .project-hero-title { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; }
-        .project-hero-icon { font-size:3rem; line-height:1; }
-        .project-hero-title h1 { font-size:clamp(2rem,5vw,3.5rem); font-weight:900; line-height:1.1; }
-        .featured-badge { display:inline-flex; align-items:center; gap:0.4rem; padding:0.3rem 0.8rem; background:rgba(0,212,212,0.1); border:1px solid rgba(0,212,212,0.3); border-radius:50px; font-size:0.78rem; font-weight:600; color:var(--cyan); margin-bottom:1rem; }
-        .project-hero-desc { font-size:1.1rem; color:var(--text-secondary); max-width:700px; line-height:1.75; margin-bottom:2rem; }
-        .project-hero-image { max-width:900px; width:100%; height:260px; object-fit:cover; border:1px solid var(--border); border-radius:20px; margin:1.5rem 0 2rem; box-shadow:0 25px 60px rgba(0,0,0,.28); }
-        .hero-actions { display:flex; gap:0.75rem; flex-wrap:wrap; }
-        .btn-primary { display:inline-flex; align-items:center; gap:0.5rem; padding:0.75rem 1.75rem; background:var(--gradient); color:#0a0e17; border-radius:8px; font-weight:700; font-size:0.875rem; text-decoration:none; transition:all .3s; border:none; cursor:none; }
-        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 0 30px rgba(0,212,212,0.4); }
-        .btn-outline { display:inline-flex; align-items:center; gap:0.5rem; padding:0.75rem 1.75rem; background:transparent; color:var(--text-primary); border:1px solid var(--border); border-radius:8px; font-weight:600; font-size:0.875rem; text-decoration:none; transition:all .3s; cursor:none; }
-        .btn-outline:hover { border-color:var(--cyan); color:var(--cyan); transform:translateY(-2px); }
+        /* ═════════ HERO ═════════ */
+        .project-hero { position:relative; padding:130px 0 3.5rem; overflow:hidden; }
+        .project-hero::before { content:''; position:absolute; width:560px; height:560px; top:-200px; inset-inline-end:-160px; border-radius:50%; background:color-mix(in srgb, var(--cyan) 30%, transparent); filter:blur(90px); opacity:.45; z-index:-1; }
+        .breadcrumb ol { list-style:none; display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; font-size:.85rem; color:var(--text-muted); margin-bottom:1.6rem; }
+        .breadcrumb a { color:var(--text-secondary); text-decoration:none; font-weight:600; }
+        .breadcrumb a:hover { color:var(--cyan); }
+        .breadcrumb i { font-size:.6rem; opacity:.6; }
+        .breadcrumb [aria-current] { color:var(--text-primary); font-weight:600; }
+        .hero-grid { display:grid; grid-template-columns:1.05fr .95fr; gap:3.5rem; align-items:center; }
+        .hero-badges { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1.2rem; }
+        .project-title { font:800 clamp(2.1rem,4.6vw,3.3rem)/1.12 var(--font-head); letter-spacing:-.03em; margin-bottom:1.1rem; }
+        [dir="rtl"] .project-title { letter-spacing:0; }
+        .project-lead { font-size:1.12rem; line-height:1.8; color:var(--text-secondary); margin-bottom:2rem; max-width:580px; }
+        .hero-actions { display:flex; flex-wrap:wrap; gap:.75rem; }
+        .cover { position:relative; aspect-ratio:4/3; border-radius:var(--radius-lg); overflow:hidden; background:var(--gradient); box-shadow:var(--shadow-lg); border:1px solid var(--border); }
+        .cover img { width:100%; height:100%; object-fit:cover; }
+        .cover-placeholder { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4rem; padding:2rem; }
+        .cover-placeholder::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px); background-size:32px 32px; mask-image:radial-gradient(circle at 50% 45%, #000 20%, transparent 75%); -webkit-mask-image:radial-gradient(circle at 50% 45%, #000 20%, transparent 75%); }
+        .cover-emoji { position:relative; width:112px; height:112px; border-radius:30px; display:grid; place-items:center; font-size:3.3rem; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3); backdrop-filter:blur(8px); box-shadow:0 20px 40px rgba(0,0,0,.18); }
+        .cover-stack { position:relative; display:flex; flex-wrap:wrap; justify-content:center; gap:.45rem; max-width:360px; }
+        .cover-stack span { padding:.35rem .8rem; border-radius:999px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.28); color:#fff; font-size:.8rem; font-weight:600; backdrop-filter:blur(6px); }
 
-        /* ─── META BAR ─── */
-        .meta-bar { background:var(--bg-card); border-bottom:1px solid var(--border); padding:0; }
-        .meta-bar-inner { max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(3,1fr); }
-        .meta-item { padding:1.5rem 2rem; border-{{ $locale === 'ar' ? 'left' : 'right' }}:1px solid var(--border); }
-        .meta-item:last-child { border:none; }
-        .meta-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:var(--text-muted); font-family:'JetBrains Mono',monospace; margin-bottom:0.4rem; }
-        .meta-value { font-size:1rem; font-weight:600; color:var(--text-primary); }
-        .meta-value span { color:var(--cyan); }
+        /* ═════════ FACTS ═════════ */
+        .facts { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-top:3rem; }
+        .fact { display:flex; align-items:center; gap:.9rem; padding:1.1rem 1.2rem; border-radius:var(--radius-md); background:var(--glass); border:1px solid var(--border); backdrop-filter:blur(10px); }
+        .fact .icon-tile { width:42px; height:42px; font-size:.95rem; border-radius:12px; }
+        .fact small { display:block; font-size:.76rem; color:var(--text-muted); font-weight:600; }
+        .fact strong { display:block; font-size:.95rem; line-height:1.35; }
 
-        /* ─── CONTENT ─── */
-        .detail-content { max-width:1200px; margin:0 auto; padding:4rem 2rem; display:grid; grid-template-columns:1fr 360px; gap:3rem; align-items:start; }
-        @media (max-width:900px) { .detail-content { grid-template-columns:1fr; } }
+        /* ═════════ CONTENT ═════════ */
+        .content { padding:3rem 0 5rem; }
+        .content-grid { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:2rem; align-items:start; }
+        .main-col { display:flex; flex-direction:column; gap:1.5rem; }
+        .block { padding:2.2rem; }
+        .overview-text { font-size:1.06rem; line-height:1.9; color:var(--text-secondary); white-space:pre-line; }
+        .stages { list-style:none; position:relative; }
+        .stages::before { content:''; position:absolute; top:22px; bottom:22px; inset-inline-start:21px; width:2px; background:linear-gradient(to bottom, var(--cyan), var(--accent-line)); }
+        .stage { position:relative; display:flex; gap:1.1rem; align-items:flex-start; padding-bottom:1.3rem; }
+        .stage:last-child { padding-bottom:0; }
+        .stage-num { position:relative; z-index:1; width:44px; height:44px; flex-shrink:0; border-radius:14px; display:grid; place-items:center; background:var(--bg-card); border:2px solid var(--cyan); color:var(--cyan); font:800 .85rem var(--font-mono); box-shadow:0 0 0 5px var(--bg-card); }
+        .stage:last-child .stage-num { background:var(--gradient); border-color:transparent; color:var(--on-accent); }
+        .stage-text { padding:.55rem 1rem; flex:1; border-radius:14px; background:color-mix(in srgb, var(--text-primary) 3%, transparent); border:1px solid var(--border); font-size:1rem; line-height:1.65; }
+        .empty-note { color:var(--text-muted); font-size:.95rem; }
 
-        /* ─── SECTIONS ─── */
-        .section-block { margin-bottom:3rem; }
-        .section-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:var(--cyan); font-family:'JetBrains Mono',monospace; margin-bottom:1rem; }
-        .section-title { font-size:1.5rem; font-weight:800; margin-bottom:1.25rem; }
-        .overview-text { color:var(--text-secondary); line-height:1.85; font-size:1rem; white-space:pre-wrap; }
+        /* Sidebar */
+        .side-col { position:sticky; top:100px; display:flex; flex-direction:column; gap:1.25rem; }
+        .side-card { padding:1.6rem; }
+        .side-title { display:flex; align-items:center; gap:.55rem; font:800 1rem var(--font-head); margin-bottom:1rem; }
+        .side-title i { color:var(--cyan); }
+        .cta-card { position:relative; overflow:hidden; padding:1.8rem; border:none; background:var(--gradient); color:var(--on-accent); }
+        .cta-card::after { content:''; position:absolute; width:220px; height:220px; border-radius:50%; border:36px solid rgba(255,255,255,.1); bottom:-110px; inset-inline-end:-80px; }
+        .cta-person { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; position:relative; z-index:1; }
+        .cta-person img { width:50px; height:50px; border-radius:50%; object-fit:cover; object-position:50% 22%; border:3px solid rgba(255,255,255,.4); }
+        .cta-person small { display:flex; align-items:center; gap:.4rem; font-size:.8rem; opacity:.9; }
+        .cta-person strong { font:800 .98rem var(--font-head); }
+        .pulse-dot { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.3); }
+        .cta-card h2 { font:800 1.3rem/1.3 var(--font-head); margin-bottom:.5rem; position:relative; z-index:1; }
+        .cta-card p { font-size:.92rem; opacity:.9; margin-bottom:1.3rem; position:relative; z-index:1; }
+        .cta-actions { display:grid; gap:.6rem; position:relative; z-index:1; }
+        .cta-actions .btn { width:100%; }
+        .cta-actions .btn-light { background:rgba(255,255,255,.16); color:inherit; border-color:rgba(255,255,255,.3); }
+        .cta-actions .btn-light:hover { background:rgba(255,255,255,.26); }
+        .stack-list { display:flex; flex-wrap:wrap; gap:.45rem; }
+        .link-list { display:grid; gap:.6rem; }
+        .link-list .btn { width:100%; min-height:44px; }
+        .share-row { display:flex; gap:.5rem; }
+        .share-row .round-btn { width:44px; height:44px; border-radius:12px; }
+        .copy-feedback { font-size:.8rem; color:var(--cyan); font-weight:600; min-height:1.2em; margin-top:.5rem; }
 
-        /* ─── WORK STAGES ─── */
-        .stages-list { display:flex; flex-direction:column; gap:0; }
-        .stage-item { display:flex; gap:1.25rem; position:relative; }
-        .stage-item:not(:last-child)::before { content:''; position:absolute; {{ $locale === 'ar' ? 'right' : 'left' }}:19px; top:44px; bottom:0; width:2px; background:linear-gradient(to bottom,rgba(0,212,212,0.3),transparent); }
-        .stage-num { flex-shrink:0; width:40px; height:40px; border-radius:50%; background:rgba(0,212,212,0.1); border:2px solid rgba(0,212,212,0.3); display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:0.8rem; font-weight:700; color:var(--cyan); margin-top:0.15rem; position:relative; z-index:1; }
-        .stage-body { padding-bottom:2rem; }
-        .stage-text { font-size:0.95rem; color:var(--text-secondary); line-height:1.6; }
+        /* ═════════ PREV / NEXT ═════════ */
+        .pager { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1.5rem; }
+        .pager a { display:flex; align-items:center; gap:1rem; padding:1.2rem 1.4rem; border-radius:var(--radius-md); background:var(--bg-card); border:1px solid var(--border); text-decoration:none; transition:all .25s; min-width:0; }
+        .pager a:hover { border-color:var(--accent-line); transform:translateY(-3px); box-shadow:var(--shadow-md); }
+        .pager .next { justify-content:flex-end; text-align:end; grid-column:2; }
+        .pager small { display:block; font-size:.78rem; color:var(--text-muted); font-weight:600; }
+        .pager strong { display:block; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .pager span.info { min-width:0; }
+        .pager i { color:var(--cyan); }
 
-        /* ─── SIDEBAR ─── */
-        .sidebar { display:flex; flex-direction:column; gap:1.5rem; }
-        .sidebar-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1.25rem; }
-        .sidebar-card-title { font-size:0.7rem; text-transform:uppercase; letter-spacing:2px; color:var(--cyan); font-family:'JetBrains Mono',monospace; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
-        .stack-tags { display:flex; flex-wrap:wrap; gap:0.5rem; }
-        .stack-tag { padding:0.35rem 0.75rem; background:rgba(0,212,212,0.08); border:1px solid rgba(0,212,212,0.2); border-radius:6px; font-size:0.78rem; color:var(--cyan); font-family:'JetBrains Mono',monospace; }
+        /* ═════════ RELATED ═════════ */
+        .related { padding:5rem 0; background:var(--bg-secondary); border-top:1px solid var(--border); }
+        .related-head { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:2rem; }
+        .related-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap:1.25rem; }
+        .related-card { display:flex; flex-direction:column; overflow:hidden; text-decoration:none; transition:transform .3s var(--ease), box-shadow .3s, border-color .3s; }
+        .related-card:hover { transform:translateY(-5px); box-shadow:var(--shadow-lg); border-color:var(--accent-line); }
+        .related-cover { position:relative; aspect-ratio:16/9; background:var(--gradient); display:grid; place-items:center; font-size:2.2rem; overflow:hidden; }
+        .related-cover img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+        .related-body { padding:1.3rem 1.4rem 1.5rem; display:flex; flex-direction:column; gap:.5rem; flex:1; }
+        .related-body small { color:var(--cyan); font-weight:700; font-size:.78rem; }
+        .related-body h3 { font:800 1.08rem/1.35 var(--font-head); }
+        .related-body p { color:var(--text-secondary); font-size:.92rem; line-height:1.7; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .related-more { margin-top:auto; padding-top:.6rem; color:var(--cyan); font-weight:700; font-size:.88rem; display:inline-flex; align-items:center; gap:.4rem; }
 
-        /* ─── RELATED ─── */
-        .related-section { background:var(--bg-secondary); border-top:1px solid var(--border); padding:4rem 2rem; }
-        .related-inner { max-width:1200px; margin:0 auto; }
-        .related-header { margin-bottom:2.5rem; }
-        .related-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.5rem; }
-        .related-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; text-decoration:none; color:inherit; display:block; transition:all .3s; cursor:none; }
-        .related-card:hover { border-color:rgba(0,212,212,0.4); transform:translateY(-4px); box-shadow:0 20px 40px rgba(0,0,0,0.3); }
-        .related-card-icon { font-size:1.75rem; margin-bottom:0.75rem; }
-        .related-card-title { font-size:1rem; font-weight:700; margin-bottom:0.5rem; color:var(--text-primary); }
-        .related-card-desc { font-size:0.85rem; color:var(--text-secondary); line-height:1.6; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-        .related-card-stack { display:flex; flex-wrap:wrap; gap:0.35rem; margin-top:0.75rem; }
-        .related-tag { padding:0.2rem 0.5rem; background:rgba(0,212,212,0.06); border:1px solid rgba(0,212,212,0.15); border-radius:4px; font-size:0.7rem; color:var(--cyan); font-family:'JetBrains Mono',monospace; }
-        .view-details-link { display:inline-flex; align-items:center; gap:0.35rem; margin-top:1rem; font-size:0.8rem; color:var(--cyan); font-weight:600; }
+        /* ═════════ FOOTER ═════════ */
+        footer { padding:2rem 0; border-top:1px solid var(--border); background:var(--bg-primary); }
+        .footer-inner { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; color:var(--text-muted); font-size:.88rem; }
+        .footer-inner a { color:var(--text-secondary); text-decoration:none; font-weight:600; }
+        .footer-inner a:hover { color:var(--cyan); }
 
-        /* ─── FOOTER ─── */
-        footer { text-align:center; padding:2rem; color:var(--text-muted); font-size:0.85rem; border-top:1px solid var(--border); }
-
-        /* ─── RTL TWEAKS ─── */
-        @if($locale === 'ar')
-        .breadcrumb { direction:rtl; }
-        .stage-item:not(:last-child)::before { right:19px; left:auto; }
-        .meta-item { border-right:none; border-left:1px solid var(--border); }
-        .meta-item:last-child { border:none; }
-        @endif
-
-        /* ─── RESPONSIVE ─── */
-        @media (max-width:768px) {
-            .meta-bar-inner { grid-template-columns:1fr; }
-            .meta-item { border:none; border-bottom:1px solid var(--border); }
-            .meta-item:last-child { border:none; }
-            .detail-hero { padding:100px 1.5rem 40px; }
-            body{cursor:auto} #cursor-dot,#cursor-ring,#cursor-trail-container{display:none}
+        /* ═════════ RESPONSIVE ═════════ */
+        @media (max-width:1024px) {
+            .hero-grid { grid-template-columns:1fr; gap:2.5rem; }
+            .facts { grid-template-columns:repeat(2,1fr); }
+            .content-grid { grid-template-columns:1fr; }
+            .side-col { position:static; }
         }
-        @media (max-width:600px) {
-            .project-hero-title { flex-direction:column; align-items:flex-start; gap:0.5rem; }
+        @media (max-width:768px) {
+            nav.site-nav { padding:.75rem .75rem 0; }
+            .nav-back-label, .nav-cta { display:none; }
+            .container { padding-inline:1rem; }
+            .project-hero { padding-top:110px; }
+            .facts { grid-template-columns:1fr 1fr; gap:.75rem; margin-top:2rem; }
+            .fact { flex-direction:column; align-items:flex-start; gap:.6rem; padding:1rem; }
+            .fact .icon-tile { width:36px; height:36px; font-size:.85rem; border-radius:10px; }
+            .fact strong { font-size:.9rem; }
+            .block { padding:1.5rem; }
+            .pager { grid-template-columns:1fr; }
+            .pager .next { grid-column:auto; }
+            .hero-actions .btn { flex:1 1 100%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior:auto; }
+            *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+            .reveal { opacity:1; transform:none; }
+        }
+        @media print {
+            nav.site-nav, .side-col .cta-card, .related, .scroll-progress, .wa-sticker { display:none !important; }
+            .reveal { opacity:1; transform:none; }
         }
     </style>
 </head>
 <body>
 
-<div id="cursor-dot"></div>
-<div id="cursor-ring"></div>
-<div id="cursor-trail-container"></div>
+<a href="#main" class="skip-link">{{ __('Skip to content') }}</a>
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
-<!-- NAV -->
-<nav>
+<!-- ═════════ NAV ═════════ -->
+<nav class="site-nav" aria-label="{{ __('Main navigation') }}">
     <div class="nav-inner">
-        <a class="nav-logo" href="/">B<span>.</span></a>
-        <a class="nav-back" href="/#projects">
-            @if($locale === 'ar')
-                {{ __('Back to Portfolio') }} <i class="fas fa-arrow-right"></i>
-            @else
-                <i class="fas fa-arrow-left"></i> {{ __('Back to Portfolio') }}
-            @endif
+        <a class="nav-logo" href="{{ $homeUrl }}" aria-label="{{ $heroName }}">
+            <img src="{{ asset('images/me-thumb.webp') }}" alt="" width="36" height="36">
+            <span>{{ $firstName }}<span>.</span></span>
         </a>
-        <div class="nav-right">
+        <a class="nav-back" href="{{ $homeUrl }}#projects"><i class="fas {{ $backIcon }}"></i> <span class="nav-back-label">{{ __('All projects') }}</span></a>
+        <div class="nav-controls">
             <div class="lang-switch">
-                <a href="{{ route('lang.switch', 'en') }}" class="lang-btn {{ $locale === 'en' ? 'active' : '' }}">EN</a>
-                <a href="{{ route('lang.switch', 'ar') }}" class="lang-btn {{ $locale === 'ar' ? 'active' : '' }}">عربي</a>
+                <a href="{{ url()->current() }}?lang=en" hreflang="en" lang="en" class="lang-btn {{ $locale === 'en' ? 'active' : '' }}">EN</a>
+                <a href="{{ url()->current() }}?lang=ar" hreflang="ar" lang="ar" class="lang-btn {{ $locale === 'ar' ? 'active' : '' }}">عربي</a>
             </div>
+            <div class="theme-switch" id="themeSwitch">
+                <button type="button" class="round-btn" id="themeToggleBtn" aria-label="{{ __('Theme') }}" aria-haspopup="true" aria-expanded="false" aria-controls="themeMenu"><i class="fas fa-palette"></i></button>
+                <div class="theme-menu" id="themeMenu">
+                    <button type="button" class="theme-option" data-theme-choice="light"><span class="theme-swatch sw-light"></span>{{ __('Light') }}</button>
+                    <button type="button" class="theme-option" data-theme-choice="dark"><span class="theme-swatch sw-dark"></span>{{ __('Dark') }}</button>
+                    <button type="button" class="theme-option" data-theme-choice="ocean"><span class="theme-swatch sw-ocean"></span>{{ __('Ocean') }}</button>
+                    <button type="button" class="theme-option" data-theme-choice="sunset"><span class="theme-swatch sw-sunset"></span>{{ __('Sunset') }}</button>
+                </div>
+            </div>
+            <a href="{{ $homeUrl }}#contact" class="btn btn-primary nav-cta">{{ __('Start a Project') }}</a>
         </div>
     </div>
 </nav>
 
-<!-- HERO -->
-<div class="detail-hero">
-    <div class="detail-hero-inner">
-        <div class="breadcrumb">
-            <a href="/">{{ $settings['hero_name'] ?? 'Portfolio' }}</a>
-            <i class="fas fa-chevron-{{ $locale === 'ar' ? 'left' : 'right' }}" style="font-size:0.65rem"></i>
-            <a href="/#projects">{{ __('Projects') }}</a>
-            <i class="fas fa-chevron-{{ $locale === 'ar' ? 'left' : 'right' }}" style="font-size:0.65rem"></i>
-            <span>{{ $project->title }}</span>
+<main id="main">
+
+<!-- ═════════ HERO ═════════ -->
+<header class="project-hero">
+    <div class="container">
+        <nav class="breadcrumb" aria-label="{{ __('Breadcrumb') }}">
+            <ol>
+                <li><a href="{{ $homeUrl }}">{{ __('Home') }}</a></li>
+                <li aria-hidden="true"><i class="fas fa-chevron-{{ $locale === 'ar' ? 'left' : 'right' }}"></i></li>
+                <li><a href="{{ $homeUrl }}#projects">{{ __('Projects') }}</a></li>
+                <li aria-hidden="true"><i class="fas fa-chevron-{{ $locale === 'ar' ? 'left' : 'right' }}"></i></li>
+                <li aria-current="page">{{ $projectTitle }}</li>
+            </ol>
+        </nav>
+
+        <div class="hero-grid">
+            <div>
+                <div class="hero-badges">
+                    @if($category)<span class="chip"><i class="fas fa-tag"></i> {{ $category }}</span>@endif
+                    @if($project->featured)<span class="chip chip-featured"><i class="fas fa-star"></i> {{ __('Featured') }}</span>@endif
+                    @if($duration)<span class="chip chip-muted"><i class="far fa-calendar"></i> {{ $duration }}</span>@endif
+                </div>
+                <h1 class="project-title">{{ $projectTitle }}</h1>
+                <p class="project-lead">{{ t($project, 'description') }}</p>
+                <div class="hero-actions">
+                    <a href="{{ $similarUrl }}" @if($whatsappNumber) target="_blank" rel="noopener" @endif class="btn btn-primary"><i class="fas fa-comments"></i> {{ __('I want something similar') }}</a>
+                    @if($project->live_url)
+                        <a href="{{ $project->live_url }}" target="_blank" rel="noopener" class="btn btn-ghost"><i class="fas fa-arrow-up-right-from-square"></i> {{ __('Live Demo') }}</a>
+                    @endif
+                    @if($project->github_url)
+                        <a href="{{ $project->github_url }}" target="_blank" rel="noopener" class="btn btn-ghost"><i class="fab fa-github"></i> {{ __('Source Code') }}</a>
+                    @endif
+                </div>
+            </div>
+
+            <div class="cover">
+                @if($projectImage)
+                    <img src="{{ $projectImage }}" alt="{{ $projectTitle }}" fetchpriority="high">
+                @else
+                    <div class="cover-placeholder" aria-hidden="true">
+                        <div class="cover-emoji">{{ $project->icon ?: '🚀' }}</div>
+                        @if(!empty($stack))
+                            <div class="cover-stack">
+                                @foreach(array_slice($stack, 0, 6) as $tech)<span>{{ $tech }}</span>@endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endif
+            </div>
         </div>
 
-        @if($project->featured)
-            <div class="featured-badge"><i class="fas fa-star"></i> {{ __('Featured') }}</div>
-        @endif
-
-        <div class="project-hero-title">
-            <div class="project-hero-icon">{{ $project->icon ?? '🚀' }}</div>
-            <h1>{{ $project->title }}</h1>
-        </div>
-
-        <p class="project-hero-desc">{{ $project->description }}</p>
-        @if($project->image)
-            <img src="{{ project_image_url($project->image) }}" alt="{{ $project->title }}" class="project-hero-image">
-        @endif
-
-        <div class="hero-actions">
-            @if($project->live_url)
-                <a href="{{ $project->live_url }}" target="_blank" class="btn-primary">
-                    <i class="fas fa-arrow-up-right-from-square"></i> {{ __('Live Demo') }}
-                </a>
-            @endif
-            @if($project->github_url)
-                <a href="{{ $project->github_url }}" target="_blank" class="btn-outline">
-                    <i class="fab fa-github"></i> {{ __('Source Code') }}
-                </a>
-            @endif
-        </div>
+        <dl class="facts">
+            <div class="fact">
+                <span class="icon-tile" aria-hidden="true"><i class="fas fa-user-tie"></i></span>
+                <div><dt><small>{{ __('Client') }}</small></dt><dd><strong>{{ $client ?: __('Not specified') }}</strong></dd></div>
+            </div>
+            <div class="fact">
+                <span class="icon-tile" aria-hidden="true"><i class="fas fa-clock"></i></span>
+                <div><dt><small>{{ __('Duration') }}</small></dt><dd><strong>{{ $duration ?: __('Not specified') }}</strong></dd></div>
+            </div>
+            <div class="fact">
+                <span class="icon-tile" aria-hidden="true"><i class="fas fa-shapes"></i></span>
+                <div><dt><small>{{ __('Category') }}</small></dt><dd><strong>{{ $category ?: __('Not specified') }}</strong></dd></div>
+            </div>
+            <div class="fact">
+                <span class="icon-tile" aria-hidden="true"><i class="fas fa-layer-group"></i></span>
+                <div><dt><small>{{ __('Technologies') }}</small></dt><dd><strong>{{ count($stack) }} {{ __('tools') }}</strong></dd></div>
+            </div>
+        </dl>
     </div>
-</div>
+</header>
 
-<!-- META BAR -->
-<div class="meta-bar">
-    <div class="meta-bar-inner">
-        <div class="meta-item">
-            <div class="meta-label"><i class="fas fa-user-tie" style="margin-{{ $locale === 'ar' ? 'left' : 'right' }}:0.35rem"></i>{{ __('Client') }}</div>
-            <div class="meta-value"><span>{{ $project->client ?: __('Not specified') }}</span></div>
-        </div>
-        <div class="meta-item">
-            <div class="meta-label"><i class="fas fa-clock" style="margin-{{ $locale === 'ar' ? 'left' : 'right' }}:0.35rem"></i>{{ __('Duration') }}</div>
-            <div class="meta-value"><span>{{ $project->duration ?: __('Not specified') }}</span></div>
-        </div>
-        <div class="meta-item">
-            <div class="meta-label"><i class="fas fa-tag" style="margin-{{ $locale === 'ar' ? 'left' : 'right' }}:0.35rem"></i>{{ __('Category') }}</div>
-            <div class="meta-value"><span>{{ $project->category ?: __('Not specified') }}</span></div>
-        </div>
-    </div>
-</div>
+<!-- ═════════ CONTENT ═════════ -->
+<section class="content">
+    <div class="container">
+        <div class="content-grid">
+            <div class="main-col">
+                @if($overview)
+                <article class="card block reveal">
+                    <div class="eyebrow">{{ __('Overview') }}</div>
+                    <h2 class="block-title">{{ __('The challenge & the solution') }}</h2>
+                    <p class="overview-text">{{ $overview }}</p>
+                </article>
+                @endif
 
-<!-- MAIN CONTENT -->
-<div class="detail-content">
-    <!-- Left: Overview + Work Stages -->
-    <div>
-        @if($project->overview)
-        <div class="section-block reveal">
-            <div class="section-label">// {{ strtolower(__('Overview')) }}</div>
-            <div class="section-title">{{ __('Overview') }}</div>
-            <div class="overview-text">{{ $project->overview }}</div>
-        </div>
-        @endif
+                <article class="card block reveal">
+                    <div class="eyebrow">{{ __('Work Stages') }}</div>
+                    <h2 class="block-title">{{ __('How I built it') }}</h2>
+                    @if(!empty($stages))
+                        <ol class="stages">
+                            @foreach($stages as $stage)
+                                <li class="stage">
+                                    <span class="stage-num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                                    <span class="stage-text">{{ $stage }}</span>
+                                </li>
+                            @endforeach
+                        </ol>
+                    @else
+                        <p class="empty-note">{{ __('No stages added yet.') }}</p>
+                    @endif
+                </article>
 
-        @if(!empty($project->work_stages))
-        <div class="section-block reveal">
-            <div class="section-label">// {{ strtolower(__('Work Stages')) }}</div>
-            <div class="section-title">{{ __('Work Stages') }}</div>
-            <div class="stages-list">
-                @foreach($project->work_stages as $i => $stage)
-                <div class="stage-item">
-                    <div class="stage-num">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</div>
-                    <div class="stage-body">
-                        <div class="stage-text">{{ $stage }}</div>
+                @if($previousProject || $nextProject)
+                <nav class="pager reveal" aria-label="{{ __('More projects') }}">
+                    @if($previousProject)
+                        <a href="{{ \App\Http\Middleware\SetLocale::localizedUrl(route('project.show', $previousProject->id), $locale) }}" class="prev" rel="prev">
+                            <i class="fas {{ $backIcon }}"></i>
+                            <span class="info"><small>{{ __('Previous project') }}</small><strong>{{ t($previousProject, 'title') }}</strong></span>
+                        </a>
+                    @endif
+                    @if($nextProject)
+                        <a href="{{ \App\Http\Middleware\SetLocale::localizedUrl(route('project.show', $nextProject->id), $locale) }}" class="next" rel="next">
+                            <span class="info"><small>{{ __('Next project') }}</small><strong>{{ t($nextProject, 'title') }}</strong></span>
+                            <i class="fas {{ $arrowIcon }}"></i>
+                        </a>
+                    @endif
+                </nav>
+                @endif
+            </div>
+
+            <aside class="side-col" aria-label="{{ __('Project Details') }}">
+                <div class="card cta-card">
+                    <div class="cta-person">
+                        <img src="{{ asset('images/me-thumb.webp') }}" alt="" width="50" height="50" loading="lazy">
+                        <div><strong>{{ $heroName }}</strong><small><span class="pulse-dot"></span>{{ __('Available for new projects') }}</small></div>
+                    </div>
+                    <h2>{{ __('Need something similar?') }}</h2>
+                    <p>{{ __('Tell me about your idea or your current system — I will reply with a clear plan, timeline, and price.') }}</p>
+                    <div class="cta-actions">
+                        @if($whatsappNumber)
+                            <a href="{{ $similarUrl }}" target="_blank" rel="noopener" class="btn btn-whatsapp"><i class="fab fa-whatsapp"></i> {{ __('Chat on WhatsApp') }}</a>
+                        @endif
+                        <a href="{{ $homeUrl }}#contact" class="btn btn-light">{{ __('Discuss Your Project') }} <i class="fas {{ $arrowIcon }}"></i></a>
                     </div>
                 </div>
-                @endforeach
-            </div>
+
+                @if(!empty($stack))
+                <div class="card side-card">
+                    <h2 class="side-title"><i class="fas fa-layer-group"></i> {{ __('Tech Stack') }}</h2>
+                    <div class="stack-list">
+                        @foreach($stack as $tech)<span class="chip chip-muted">{{ $tech }}</span>@endforeach
+                    </div>
+                </div>
+                @endif
+
+                @if($project->live_url || $project->github_url)
+                <div class="card side-card">
+                    <h2 class="side-title"><i class="fas fa-link"></i> {{ __('Project links') }}</h2>
+                    <div class="link-list">
+                        @if($project->live_url)<a href="{{ $project->live_url }}" target="_blank" rel="noopener" class="btn btn-primary"><i class="fas fa-arrow-up-right-from-square"></i> {{ __('Live Demo') }}</a>@endif
+                        @if($project->github_url)<a href="{{ $project->github_url }}" target="_blank" rel="noopener" class="btn btn-ghost"><i class="fab fa-github"></i> {{ __('Source Code') }}</a>@endif
+                    </div>
+                </div>
+                @endif
+
+                <div class="card side-card">
+                    <h2 class="side-title"><i class="fas fa-share-nodes"></i> {{ __('Share this project') }}</h2>
+                    <div class="share-row">
+                        <button type="button" class="round-btn" id="copyLink" data-url="{{ $pageUrl }}" aria-label="{{ __('Copy link') }}" title="{{ __('Copy link') }}"><i class="fas fa-link"></i></button>
+                        <a class="round-btn" href="https://www.linkedin.com/sharing/share-offsite/?url={{ rawurlencode($pageUrl) }}" target="_blank" rel="noopener" aria-label="{{ __('Share on LinkedIn') }}" title="{{ __('Share on LinkedIn') }}"><i class="fab fa-linkedin-in"></i></a>
+                        <a class="round-btn" href="https://wa.me/?text={{ rawurlencode($projectTitle.' — '.$pageUrl) }}" target="_blank" rel="noopener" aria-label="{{ __('Share on WhatsApp') }}" title="{{ __('Share on WhatsApp') }}"><i class="fab fa-whatsapp"></i></a>
+                        <a class="round-btn" href="https://x.com/intent/post?url={{ rawurlencode($pageUrl) }}&text={{ rawurlencode($projectTitle) }}" target="_blank" rel="noopener" aria-label="{{ __('Share on X') }}" title="{{ __('Share on X') }}"><i class="fab fa-x-twitter"></i></a>
+                    </div>
+                    <p class="copy-feedback" id="copyFeedback" role="status"></p>
+                </div>
+            </aside>
         </div>
-        @else
-        <div class="section-block">
-            <div class="section-label">// {{ strtolower(__('Work Stages')) }}</div>
-            <div class="section-title">{{ __('Work Stages') }}</div>
-            <p style="color:var(--text-muted);font-size:0.9rem">{{ __('No stages added yet.') }}</p>
-        </div>
-        @endif
     </div>
+</section>
 
-    <!-- Right: Sidebar -->
-    <div class="sidebar">
-        @if(!empty($project->stack))
-        <div class="sidebar-card">
-            <div class="sidebar-card-title"><i class="fas fa-layer-group" style="margin-{{ $locale === 'ar' ? 'left' : 'right' }}:0.4rem"></i>{{ __('Tech Stack') }}</div>
-            <div class="stack-tags">
-                @foreach($project->stack as $tech)
-                    <span class="stack-tag">{{ $tech }}</span>
-                @endforeach
-            </div>
-        </div>
-        @endif
-
-        <div class="sidebar-card">
-            <div class="sidebar-card-title"><i class="fas fa-info-circle" style="margin-{{ $locale === 'ar' ? 'left' : 'right' }}:0.4rem"></i>{{ __('Project Details') }}</div>
-            <div style="display:flex;flex-direction:column;gap:0.85rem">
-                @if($project->client)
-                <div>
-                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.2rem">{{ __('Client') }}</div>
-                    <div style="font-size:0.9rem;font-weight:600">{{ $project->client }}</div>
-                </div>
-                @endif
-                @if($project->duration)
-                <div>
-                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.2rem">{{ __('Duration') }}</div>
-                    <div style="font-size:0.9rem;font-weight:600">{{ $project->duration }}</div>
-                </div>
-                @endif
-                @if($project->category)
-                <div>
-                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.2rem">{{ __('Category') }}</div>
-                    <div style="font-size:0.9rem;font-weight:600;color:var(--cyan)">{{ $project->category }}</div>
-                </div>
-                @endif
-            </div>
-        </div>
-
-        @if($project->github_url || $project->live_url)
-        <div class="sidebar-card">
-            <div class="sidebar-card-title"><i class="fas fa-link" style="margin-{{ $locale === 'ar' ? 'left' : 'right' }}:0.4rem"></i>Links</div>
-            <div style="display:flex;flex-direction:column;gap:0.6rem">
-                @if($project->live_url)
-                <a href="{{ $project->live_url }}" target="_blank" class="btn-primary" style="justify-content:center;font-size:0.82rem;padding:0.6rem 1rem">
-                    <i class="fas fa-arrow-up-right-from-square"></i> {{ __('Live Demo') }}
-                </a>
-                @endif
-                @if($project->github_url)
-                <a href="{{ $project->github_url }}" target="_blank" class="btn-outline" style="justify-content:center;font-size:0.82rem;padding:0.6rem 1rem">
-                    <i class="fab fa-github"></i> {{ __('Source Code') }}
-                </a>
-                @endif
-            </div>
-        </div>
-        @endif
-    </div>
-</div>
-
-<!-- RELATED PROJECTS -->
+<!-- ═════════ RELATED ═════════ -->
 @if(!empty($related))
-<div class="related-section">
-    <div class="related-inner">
-        <div class="related-header">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--cyan);letter-spacing:2px;margin-bottom:0.5rem">// {{ strtolower(__('Related Projects')) }}</div>
-            <h2 style="font-size:1.75rem;font-weight:800">{{ __('Related Projects') }}</h2>
+<section class="related" aria-labelledby="relatedTitle">
+    <div class="container">
+        <div class="related-head">
+            <div>
+                <div class="eyebrow">{{ __('Related Projects') }}</div>
+                <h2 class="block-title" id="relatedTitle" style="margin:0">{{ __('More work you might like') }}</h2>
+            </div>
+            <a href="{{ $homeUrl }}#projects" class="btn btn-ghost">{{ __('All projects') }} <i class="fas {{ $arrowIcon }}"></i></a>
         </div>
         <div class="related-grid">
             @foreach($related as $rel)
-            <a href="{{ route('project.show', $rel->id) }}" class="related-card">
-                <div class="related-card-icon">{{ $rel->icon ?? '🚀' }}</div>
-                <div class="related-card-title">{{ $rel->title }}</div>
-                <div class="related-card-desc">{{ $rel->description }}</div>
-                @if(!empty($rel->stack))
-                <div class="related-card-stack">
-                    @foreach(array_slice((array)$rel->stack, 0, 3) as $tech)
-                        <span class="related-tag">{{ $tech }}</span>
-                    @endforeach
+            <a href="{{ \App\Http\Middleware\SetLocale::localizedUrl(route('project.show', $rel->id), $locale) }}" class="card related-card reveal" style="--d: {{ $loop->index * 0.08 }}s">
+                <div class="related-cover" aria-hidden="true">
+                    @if($rel->image)
+                        <img src="{{ project_image_url($rel->image) }}" alt="" loading="lazy">
+                    @else
+                        {{ $rel->icon ?: '🚀' }}
+                    @endif
                 </div>
-                @endif
-                <div class="view-details-link">
-                    {{ __('View Details') }}
-                    <i class="fas fa-arrow-{{ $locale === 'ar' ? 'left' : 'right' }}"></i>
+                <div class="related-body">
+                    @if(t($rel, 'category'))<small>{{ t($rel, 'category') }}</small>@endif
+                    <h3>{{ t($rel, 'title') }}</h3>
+                    <p>{{ t($rel, 'description') }}</p>
+                    <span class="related-more">{{ __('View Details') }} <i class="fas {{ $arrowIcon }}"></i></span>
                 </div>
             </a>
             @endforeach
         </div>
     </div>
-</div>
+</section>
 @endif
 
+</main>
+
 <footer>
-    <p>{{ $settings['footer_text'] ?? 'Portfolio' }}</p>
+    <div class="container footer-inner">
+        <a href="{{ $homeUrl }}">{{ $heroName }} · {{ $heroTagline }}</a>
+        <span>{{ ts($settings, 'footer_text') ?: ($settings['footer_text'] ?? '') }}</span>
+    </div>
 </footer>
 
-<a href="/admin" style="position:fixed;bottom:1.5rem;{{ $locale === 'ar' ? 'left' : 'right' }}:1.5rem;background:rgba(0,212,212,0.1);border:1px solid rgba(0,212,212,0.2);color:var(--cyan);padding:0.5rem 1rem;border-radius:8px;font-size:0.75rem;text-decoration:none;font-weight:600;z-index:100;cursor:none"><i class="fas fa-lock"></i> CMS</a>
-
 <script>
-const dot   = document.getElementById('cursor-dot');
-const ring  = document.getElementById('cursor-ring');
-const tc    = document.getElementById('cursor-trail-container');
-const TRAIL = 10;
-const trails = [];
-for(let i=0;i<TRAIL;i++){
-    const t=document.createElement('div');
-    t.className='cursor-trail';
-    t.style.opacity=(1-i/TRAIL)*0.4;
-    t.style.width=(4-i*0.25)+'px';
-    t.style.height=(4-i*0.25)+'px';
-    tc.appendChild(t);
-    trails.push({el:t,x:0,y:0});
-}
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
-document.addEventListener('mousedown',()=>document.body.classList.add('cursor-hover'));
-document.addEventListener('mouseup',()=>document.body.classList.remove('cursor-hover'));
-document.querySelectorAll('a,button').forEach(el=>{
-    el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
-    el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
-});
-function anim(){
-    rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
-    ring.style.left=rx+'px'; ring.style.top=ry+'px';
-    let px=mx,py=my;
-    trails.forEach((t,i)=>{
-        const d=0.08+i*0.04;
-        t.x+=(px-t.x)*d; t.y+=(py-t.y)*d;
-        t.el.style.left=t.x+'px'; t.el.style.top=t.y+'px';
-        t.el.style.opacity=(1-i/TRAIL)*0.3;
-        px=t.x; py=t.y;
-    });
-    requestAnimationFrame(anim);
-}
-anim();
+// Theme menu (shared with the homepage via localStorage)
+(function () {
+    const root = document.documentElement;
+    const btn = document.getElementById('themeToggleBtn');
+    const menu = document.getElementById('themeMenu');
+    const options = document.querySelectorAll('.theme-option');
+    const apply = theme => {
+        root.setAttribute('data-theme', theme);
+        try { localStorage.setItem('theme', theme); } catch (e) {}
+        options.forEach(o => o.classList.toggle('active', o.dataset.themeChoice === theme));
+    };
+    const close = focus => { menu.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); if (focus) btn.focus(); };
+    apply(root.getAttribute('data-theme') || 'light');
+    btn.addEventListener('click', e => { e.stopPropagation(); btn.setAttribute('aria-expanded', menu.classList.toggle('open')); });
+    options.forEach(o => o.addEventListener('click', () => { apply(o.dataset.themeChoice); close(true); }));
+    document.addEventListener('click', e => { if (!document.getElementById('themeSwitch').contains(e.target)) close(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && menu.classList.contains('open')) close(true); });
+})();
+
+// Reading progress
+(function () {
+    const bar = document.getElementById('scrollProgress');
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            bar.style.transform = 'scaleX(' + (max > 0 ? window.scrollY / max : 0) + ')';
+            ticking = false;
+        });
+    }, { passive: true });
+})();
 
 // Scroll reveal
-document.querySelectorAll('.reveal').forEach(el=>{
-    el.style.opacity='0';
-    el.style.transform='translateY(30px)';
-    el.style.transition='opacity 0.6s ease, transform 0.6s ease';
-});
-const obs=new IntersectionObserver(entries=>{
-    entries.forEach(e=>{
-        if(e.isIntersecting){
-            e.target.style.opacity='1';
-            e.target.style.transform='none';
+(function () {
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+        if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+    }), { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+})();
+
+// Copy link
+(function () {
+    const button = document.getElementById('copyLink');
+    const feedback = document.getElementById('copyFeedback');
+    button.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(button.dataset.url);
+            feedback.textContent = @json(__('Link copied!'));
+        } catch (e) {
+            window.prompt(@json(__('Copy link')), button.dataset.url);
         }
+        setTimeout(() => { feedback.textContent = ''; }, 2500);
     });
-},{threshold:0.1,rootMargin:'0px 0px -30px 0px'});
-document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+})();
 </script>
+@include('partials.whatsapp-sticker')
 </body>
 </html>
