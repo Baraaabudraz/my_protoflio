@@ -359,5 +359,6 @@
     "Share on LinkedIn": "مشاركة على LinkedIn",
     "Share on WhatsApp": "مشاركة عبر واتساب",
     "Share on X": "مشاركة على X",
-    "More work you might like": "أعمال أخرى قد تعجبك"
+    "More work you might like": "أعمال أخرى قد تعجبك",
+    "Admin login is disabled until ADMIN_PASSWORD is set on the server.": "تسجيل دخول المدير معطّل حتى يتم تعيين ADMIN_PASSWORD على الخادم."
 }

@@ -268,5 +268,6 @@
     "Share on LinkedIn": "Share on LinkedIn",
     "Share on WhatsApp": "Share on WhatsApp",
     "Share on X": "Share on X",
-    "More work you might like": "More work you might like"
+    "More work you might like": "More work you might like",
+    "Admin login is disabled until ADMIN_PASSWORD is set on the server.": "Admin login is disabled until ADMIN_PASSWORD is set on the server."
 }

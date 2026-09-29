@@ -8,10 +8,14 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Create the services table with two starter services. Skipped when the table already exists.
      */
     public function up(): void
     {
+        if (Schema::hasTable('services')) {
+            return;
+        }
+
         Schema::create('services', function (Blueprint $table) {
             $table->id();
             $table->string('icon')->default('fa-solid fa-code');

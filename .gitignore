@@ -16,3 +16,4 @@ yarn-error.log
 CLAUDE.local.md
 .claude/settings.local.json
 .config/
+.laravel.env

@@ -38,8 +38,13 @@ class AdminController extends Controller
 
     public function login(Request $request)
     {
-        $password = env('ADMIN_PASSWORD', 'admin123');
-        if ($request->password === $password) {
+        $password = (string) config('app.admin_password');
+        if ($password === '') {
+            return back()->with('error', __('Admin login is disabled until ADMIN_PASSWORD is set on the server.'));
+        }
+
+        if (hash_equals($password, (string) $request->input('password'))) {
+            $request->session()->regenerate();
             Session::put('admin_logged_in', true);
 
             return redirect()->route('admin.dashboard');
@@ -80,7 +85,7 @@ class AdminController extends Controller
         $healthChecks = [
             [
                 'label' => __('Admin password changed from the default'),
-                'ok' => env('ADMIN_PASSWORD', 'admin123') !== 'admin123',
+                'ok' => ! in_array(config('app.admin_password'), [null, '', 'admin123'], true),
                 'hint' => __('Set ADMIN_PASSWORD in the .laravel.env file.'),
                 'url' => null,
             ],
