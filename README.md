@@ -102,6 +102,18 @@ php artisan migrate
 
 Laravel's default connection is SQLite and points at the same file the app reads through `App\Services\Database`.
 
+### Content seeding
+
+The real site content (settings, services, projects, experience, skills — in both languages) is kept in Git as seeder data in `database/seeders/data/`, so any environment can be filled from the console.
+
+| Command | What it does |
+|---|---|
+| `php artisan portfolio:export` | Writes the current local content into `database/seeders/data/*.php`. Run it after editing content locally, then commit the files. |
+| `php artisan portfolio:seed` | **Safe:** fills empty tables and adds missing settings. Never overwrites content edited on the server. (`php artisan db:seed` does the same.) |
+| `php artisan portfolio:seed --fresh` | Replaces **all** content with the exported data (asks for confirmation; add `--force` to skip it). |
+
+Project IDs are preserved, so URLs such as `/projects/7` stay the same in every environment.
+
 ### Run
 
 ```bash
@@ -174,15 +186,16 @@ php artisan test --compact   # run the test suite
 vendor/bin/pint              # format PHP (Laravel preset)
 ```
 
-> Tests read from `database/portfolio.sqlite` (the PDO service has no separate test database). They are read-only — keep new tests that way, and back up the database before any test that writes.
+> Laravel's database connection uses an in-memory SQLite database during tests (see `phpunit.xml`), so seeder and migration tests never touch real content. Page tests go through `App\Services\Database`, which always reads `database/portfolio.sqlite` — keep those tests read-only.
 
 ## Deployment checklist
 
 - [ ] `.laravel.env` created on the server from `.laravel.env.example` with its own `php artisan key:generate`
 - [ ] `APP_URL=https://your-domain.com`, `APP_ENV=production`, `APP_DEBUG=false`
 - [ ] Strong `ADMIN_PASSWORD` set **on the server only**
-- [ ] `database/portfolio.sqlite` copied to the server (it is not in Git) and kept backed up
-- [ ] `php artisan migrate --force`
+- [ ] `touch database/portfolio.sqlite` (first deploy only), then `php artisan migrate --force`
+- [ ] `php artisan portfolio:seed` to load the content (safe to run on every deploy)
+- [ ] Back up `database/portfolio.sqlite` regularly — edits made in the admin live only there
 - [ ] Writable by the web server: `storage/`, `bootstrap/cache/`, `database/` (SQLite writes), `public/cv/`, and `storage/app/public`
 - [ ] `php artisan storage:link` (project cover uploads)
 - [ ] `php artisan config:cache && php artisan route:cache && php artisan view:cache`
