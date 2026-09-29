@@ -26,6 +26,7 @@
 - [Getting started](#getting-started)
 - [Configuration](#configuration)
 - [Managing content](#managing-content)
+- [Contact form & email](#contact-form--email)
 - [SEO](#seo)
 - [Project structure](#project-structure)
 - [Testing & code style](#testing--code-style)
@@ -38,7 +39,7 @@
 **Public site** — built to turn visitors into clients
 - Hero with photo and a clear value proposition, services with deliverables, a "Who Am I" section, work process, projects, skills, and experience timeline
 - Project case-study pages: challenge & solution, work stages, tech stack, "I want something similar" call-to-action, share buttons, previous/next navigation
-- Contact form that opens **WhatsApp** or email with a pre-filled message (nothing is stored), plus a floating WhatsApp sticker
+- **Contact form sent by the server** (SMTP or any Laravel mail driver): you get the inquiry with Reply-To set to the client, the client gets a confirmation in their language, and every message is kept in an admin inbox — plus WhatsApp as a one-tap alternative and a floating WhatsApp sticker
 - In-page **CV viewer** and download
 - 4 colour themes (light, dark, ocean, sunset) shared across all pages
 - Full **Arabic (RTL)** and **English** support; Arabic is the default
@@ -46,6 +47,7 @@
 **Admin CMS** (`/admin`)
 - Manage services, projects, experience, skills, and site settings — every text field in both languages
 - Upload project covers and the CV (PDF)
+- **Messages** inbox for contact-form inquiries (unread badge, reply by email / WhatsApp, delivery status)
 - Dashboard with a website-health checklist and a live Google search preview
 - Light / dark mode and a mobile-friendly layout
 
@@ -146,8 +148,32 @@ Everything else — name, texts, WhatsApp number, social links, SEO title/descri
 | **Projects** | Project cards and case-study pages (cover, client, duration, category, overview, work stages, stack, links) |
 | **Experience** | Career timeline |
 | **Skills** | Skill categories with progress bars or tags |
+| **Messages** | Inquiries from the contact form — mark read/unread, reply, delete |
 
 Every text field has an English and an Arabic version; empty Arabic fields fall back to English. Interface strings live in `lang/ar.json` and `lang/en.json`.
+
+## Contact form & email
+
+`POST /contact` validates the inquiry, **saves it first** (Admin → Messages), then sends two emails:
+
+1. To you — `MAIL_CONTACT_TO`, or the email in Admin → Settings — with **Reply-To** set to the client.
+2. To the client — a confirmation in the language they used on the site.
+
+If the mail server fails, the message is still saved and the error is shown in the inbox. Spam protection: a hidden honeypot field and a limit of 5 messages per 10 minutes per visitor. The form works without JavaScript too.
+
+Configure mail in `.laravel.env` (full examples in `.laravel.env.example`):
+
+```ini
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com        # or your provider / hosting mail server
+MAIL_PORT=587                   # 465 → also set MAIL_SCHEME=smtps
+MAIL_USERNAME=you@gmail.com
+MAIL_PASSWORD=your-app-password
+MAIL_FROM_ADDRESS="you@gmail.com"
+MAIL_FROM_NAME="Baraa Abu Draz"
+```
+
+Any Laravel mail driver works (`postmark`, `ses`, `mailgun`, `resend`, …). Locally, `MAIL_MAILER=log` writes emails to `storage/logs/laravel.log`. The dashboard health check shows whether delivery is configured.
 
 ## SEO
 
@@ -186,7 +212,7 @@ php artisan test --compact   # run the test suite
 vendor/bin/pint              # format PHP (Laravel preset)
 ```
 
-> Laravel's database connection uses an in-memory SQLite database during tests (see `phpunit.xml`), so seeder and migration tests never touch real content. Page tests go through `App\Services\Database`, which always reads `database/portfolio.sqlite` — keep those tests read-only.
+> Tests run against an in-memory SQLite database (see `phpunit.xml`), seeded with the exported content via `PortfolioSeeder` — they never touch `database/portfolio.sqlite`. Mail is faked in tests.
 
 ## Deployment checklist
 

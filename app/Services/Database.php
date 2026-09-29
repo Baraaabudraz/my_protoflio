@@ -2,40 +2,48 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\DB;
 use PDO;
 
+/**
+ * Thin raw-SQL helper over Laravel's SQLite connection (database/portfolio.sqlite).
+ *
+ * Sharing Laravel's connection means the app, migrations, seeders and tests all use the
+ * same database — tests get the in-memory database configured in phpunit.xml.
+ */
 class Database
 {
-    private static ?PDO $instance = null;
-
     public static function connection(): PDO
     {
-        if (self::$instance === null) {
-            $path = database_path('portfolio.sqlite');
-            self::$instance = new PDO('sqlite:'.$path);
-            self::$instance->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            self::$instance->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
-        }
-
-        return self::$instance;
+        return DB::connection('sqlite')->getPdo();
     }
 
+    /**
+     * @param  array<int, mixed>  $params
+     * @return array<int, object>
+     */
     public static function query(string $sql, array $params = []): array
     {
         $stmt = self::connection()->prepare($sql);
         $stmt->execute($params);
 
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
+    /**
+     * @param  array<int, mixed>  $params
+     */
     public static function first(string $sql, array $params = []): mixed
     {
         $stmt = self::connection()->prepare($sql);
         $stmt->execute($params);
 
-        return $stmt->fetch() ?: null;
+        return $stmt->fetch(PDO::FETCH_OBJ) ?: null;
     }
 
+    /**
+     * @param  array<int, mixed>  $params
+     */
     public static function execute(string $sql, array $params = []): bool
     {
         $stmt = self::connection()->prepare($sql);

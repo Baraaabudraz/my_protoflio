@@ -90,6 +90,12 @@ class AdminController extends Controller
                 'url' => null,
             ],
             [
+                'label' => __('Email delivery is configured'),
+                'ok' => $this->mailIsConfigured(),
+                'hint' => __('Set the MAIL_* values in .laravel.env so contact messages reach your inbox.'),
+                'url' => route('admin.messages'),
+            ],
+            [
                 'label' => __('WhatsApp number added'),
                 'ok' => $isFilled('whatsapp_number'),
                 'hint' => __('Lets clients contact you in one tap.'),
@@ -423,6 +429,73 @@ class AdminController extends Controller
         Database::execute('DELETE FROM services WHERE id = ?', [$id]);
 
         return redirect()->route('admin.services')->with('success', __('Service deleted.'));
+    }
+
+    // ─── Contact messages ───
+    public function messages(Request $request)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+
+        $filter = $request->query('filter') === 'unread' ? 'unread' : 'all';
+        $messages = Database::query(
+            'SELECT * FROM contact_messages'.($filter === 'unread' ? ' WHERE read_at IS NULL' : '').' ORDER BY created_at DESC, id DESC LIMIT 200'
+        );
+        $counts = Database::first('SELECT COUNT(*) AS total, SUM(CASE WHEN read_at IS NULL THEN 1 ELSE 0 END) AS unread, SUM(CASE WHEN mail_error IS NOT NULL THEN 1 ELSE 0 END) AS failed FROM contact_messages');
+        $mailConfigured = $this->mailIsConfigured();
+
+        return view('admin.messages.index', compact('messages', 'counts', 'filter', 'mailConfigured'));
+    }
+
+    public function messageToggleRead(int $id)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+
+        $message = Database::first('SELECT read_at FROM contact_messages WHERE id = ?', [$id]);
+        if (! $message) {
+            abort(404);
+        }
+
+        Database::execute('UPDATE contact_messages SET read_at = ?, updated_at = ? WHERE id = ?', [
+            $message->read_at ? null : now()->toDateTimeString(), now()->toDateTimeString(), $id,
+        ]);
+
+        return back()->with('success', $message->read_at ? __('Marked as unread.') : __('Marked as read.'));
+    }
+
+    public function messageDelete(int $id)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+
+        Database::execute('DELETE FROM contact_messages WHERE id = ?', [$id]);
+
+        return back()->with('success', __('Message deleted.'));
+    }
+
+    /**
+     * Whether a real mail transport is set up (not the log/array drivers or an unconfigured SMTP server).
+     */
+    private function mailIsConfigured(): bool
+    {
+        $mailer = (string) config('mail.default');
+
+        if (in_array($mailer, ['log', 'array'], true)) {
+            return false;
+        }
+
+        if ($mailer === 'smtp') {
+            $host = (string) config('mail.mailers.smtp.host');
+
+            return ! in_array($host, ['', '127.0.0.1', 'localhost', 'mailhog', 'mailpit'], true)
+                && filled(config('mail.mailers.smtp.username'));
+        }
+
+        return true;
     }
 
     // ─── Experience ───

@@ -357,6 +357,19 @@
         [dir="rtl"] select.form-input { background-position:20px 52%,15px 52%; }
         .form-actions { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:.75rem; margin-top:.4rem; }
         .form-actions .btn { width:100%; }
+        .form-actions .btn[disabled] { opacity:.7; cursor:progress; transform:none; }
+        .form-input.is-invalid, .form-textarea.is-invalid { border-color:#dc2626; box-shadow:0 0 0 4px rgba(220,38,38,.12); }
+        .field-error { min-height:0; margin-top:.35rem; font-size:.82rem; font-weight:600; color:#dc2626; }
+        .field-error:empty { display:none; }
+        [data-theme]:not([data-theme="light"]) .field-error { color:#f87171; }
+        .form-status { display:flex; align-items:flex-start; gap:.6rem; padding:.9rem 1rem; margin-bottom:1.2rem; border-radius:12px; font-size:.92rem; font-weight:600; line-height:1.5; }
+        .form-status i { margin-top:.2rem; }
+        .form-status.is-success { background:rgba(34,197,94,.12); color:#15803d; border:1px solid rgba(34,197,94,.35); }
+        .form-status.is-error { background:rgba(220,38,38,.1); color:#b91c1c; border:1px solid rgba(220,38,38,.3); }
+        [data-theme]:not([data-theme="light"]) .form-status.is-success { color:#4ade80; }
+        [data-theme]:not([data-theme="light"]) .form-status.is-error { color:#f87171; }
+        .form-status[hidden] { display:none; }
+        .hp-field { position:absolute !important; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
 
         /* ═════════ FOOTER ═════════ */
         footer { background:var(--bg-secondary); border-top:1px solid var(--border); padding:3.5rem 0 2rem; }
@@ -957,44 +970,70 @@
             <div class="contact-form">
                 <div class="contact-form-head">
                     <h3>{{ __('Request a free consultation') }}</h3>
-                    <p>{{ $whatsappNumber ? __('Your message opens in WhatsApp or your email app — nothing is stored.') : __('Your message opens in your email app — nothing is stored.') }}</p>
+                    <p>{{ __('I reply personally, usually within 1–2 days. You will also get a confirmation email.') }}</p>
                 </div>
-                <form id="contactForm" data-whatsapp="{{ $whatsappNumber }}" data-email="{{ $contactEmail }}">
+
+                <div class="form-status is-success" id="contactStatus" role="status" aria-live="polite" @unless(session('contact_success')) hidden @endunless>
+                    <i class="fas fa-circle-check"></i><span>{{ session('contact_success') }}</span>
+                </div>
+                <div class="form-status is-error" id="contactError" role="alert" @unless(session('contact_error') || $errors->any()) hidden @endunless>
+                    <i class="fas fa-circle-exclamation"></i><span>{{ session('contact_error') ?: ($errors->any() ? __('Please check the highlighted fields.') : '') }}</span>
+                </div>
+
+                <form id="contactForm" method="POST" action="{{ route('contact.store') }}" novalidate data-whatsapp="{{ $whatsappNumber }}">
+                    @csrf
+                    <div class="hp-field" aria-hidden="true">
+                        <label for="cf-website">Website</label>
+                        <input type="text" id="cf-website" name="website" tabindex="-1" autocomplete="off">
+                    </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label" for="cf-name">{{ __('Name') }}</label>
-                            <input type="text" id="cf-name" name="name" class="form-input" placeholder="{{ __('Your name') }}" autocomplete="name" required>
+                            <input type="text" id="cf-name" name="name" class="form-input @error('name') is-invalid @enderror" value="{{ old('name') }}" placeholder="{{ __('Your name') }}" autocomplete="name" required maxlength="100" aria-describedby="cf-name-error">
+                            <p class="field-error" id="cf-name-error">@error('name'){{ $message }}@enderror</p>
                         </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cf-email">{{ __('Email') }}</label>
+                            <input type="email" id="cf-email" name="email" class="form-input @error('email') is-invalid @enderror" value="{{ old('email') }}" placeholder="you@company.com" autocomplete="email" required maxlength="150" dir="ltr" aria-describedby="cf-email-error">
+                            <p class="field-error" id="cf-email-error">@error('email'){{ $message }}@enderror</p>
+                        </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group">
                             <label class="form-label" for="cf-service">{{ __('What do you need?') }}</label>
                             <select id="cf-service" name="service" class="form-input">
                                 @foreach($services as $service)
-                                    <option value="{{ t($service, 'title') }}">{{ t($service, 'title') }}</option>
+                                    <option value="{{ t($service, 'title') }}" @selected(old('service') === t($service, 'title'))>{{ t($service, 'title') }}</option>
                                 @endforeach
-                                <option value="{{ __('Something else') }}">{{ __('Something else') }}</option>
+                                <option value="{{ __('Something else') }}" @selected(old('service') === __('Something else'))>{{ __('Something else') }}</option>
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cf-phone">{{ __('Phone / WhatsApp') }} <small>({{ __('optional') }})</small></label>
+                            <input type="tel" id="cf-phone" name="phone" class="form-input" value="{{ old('phone') }}" placeholder="+970 59 000 0000" autocomplete="tel" maxlength="30" dir="ltr">
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="cf-budget">{{ __('Estimated budget') }} <small>({{ __('optional') }})</small></label>
                         <select id="cf-budget" name="budget" class="form-input">
                             <option value="">{{ __('Not sure yet') }}</option>
-                            <option value="< $500">&lt; $500</option>
-                            <option value="$500 – $1,500">$500 – $1,500</option>
-                            <option value="$1,500 – $5,000">$1,500 – $5,000</option>
-                            <option value="$5,000+">$5,000+</option>
+                            @foreach(['< $500', '$500 – $1,500', '$1,500 – $5,000', '$5,000+'] as $budgetOption)
+                                <option value="{{ $budgetOption }}" @selected(old('budget') === $budgetOption)>{{ $budgetOption }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="cf-message">{{ __('Message') }}</label>
-                        <textarea id="cf-message" name="message" class="form-textarea" placeholder="{{ __('What is the problem, and what result do you want?') }}" required></textarea>
+                        <textarea id="cf-message" name="message" class="form-textarea @error('message') is-invalid @enderror" placeholder="{{ __('What is the problem, and what result do you want?') }}" required maxlength="5000" aria-describedby="cf-message-error">{{ old('message') }}</textarea>
+                        <p class="field-error" id="cf-message-error">@error('message'){{ $message }}@enderror</p>
                     </div>
                     <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="contactSubmit">
+                            <i class="fas fa-paper-plane"></i>
+                            <span class="btn-label">{{ __('Send Message') }}</span>
+                        </button>
                         @if($whatsappNumber)
-                        <button type="submit" class="btn btn-primary" data-channel="whatsapp"><i class="fab fa-whatsapp"></i> {{ __('Send via WhatsApp') }}</button>
-                        <button type="submit" class="btn btn-ghost" data-channel="email"><i class="fas fa-envelope"></i> {{ __('Send via Email') }}</button>
-                        @else
-                        <button type="submit" class="btn btn-primary" data-channel="email"><i class="fas fa-paper-plane"></i> {{ __('Send Message') }}</button>
+                        <button type="button" class="btn btn-ghost" id="contactWhatsapp"><i class="fab fa-whatsapp"></i> {{ __('Send via WhatsApp') }}</button>
                         @endif
                     </div>
                 </form>
@@ -1242,33 +1281,89 @@ document.querySelectorAll('.service-cta[data-service]').forEach(a => a.addEventL
     if (select) select.value = a.dataset.service;
 }));
 
-// ─── CONTACT FORM → WHATSAPP / EMAIL ───
+// ─── CONTACT FORM → SERVER (email) with WhatsApp as an alternative ───
 (function () {
     const form = document.getElementById('contactForm');
-    if (!form) return;
-    const labels = {{ \Illuminate\Support\Js::from([
+    if (!form || !window.fetch) return; // without fetch, the form posts normally
+    const submit = document.getElementById('contactSubmit');
+    const submitLabel = submit.querySelector('.btn-label');
+    const statusBox = document.getElementById('contactStatus');
+    const errorBox = document.getElementById('contactError');
+    const text = {{ \Illuminate\Support\Js::from([
+        'sending' => __('Sending…'),
+        'send' => __('Send Message'),
+        'checkFields' => __('Please check the highlighted fields.'),
+        'network' => __('Your message could not be sent. Please check your connection, or contact me on WhatsApp.'),
         'greeting' => __('Hello, I found you through your portfolio.'),
         'name' => __('Name'),
+        'email' => __('Email'),
         'service' => __('Service'),
         'budget' => __('Budget'),
         'message' => __('Message'),
-        'subject' => __('Project inquiry'),
     ]) }};
-    form.addEventListener('submit', e => {
+
+    const show = (box, message) => { box.querySelector('span').textContent = message; box.hidden = false; };
+    const clearErrors = () => {
+        errorBox.hidden = true;
+        form.querySelectorAll('.is-invalid').forEach(el => { el.classList.remove('is-invalid'); el.removeAttribute('aria-invalid'); });
+        form.querySelectorAll('.field-error').forEach(el => { el.textContent = ''; });
+    };
+
+    form.addEventListener('submit', async e => {
         e.preventDefault();
-        const channel = (e.submitter && e.submitter.dataset.channel) || (form.dataset.whatsapp ? 'whatsapp' : 'email');
-        const data = new FormData(form);
-        const lines = [labels.greeting, '', labels.name + ': ' + data.get('name'), labels.service + ': ' + data.get('service')];
-        if (data.get('budget')) lines.push(labels.budget + ': ' + data.get('budget'));
-        lines.push('', labels.message + ':', data.get('message'));
-        const text = lines.join('\n');
-        if (channel === 'whatsapp' && form.dataset.whatsapp) {
-            window.open('https://wa.me/' + form.dataset.whatsapp + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
-        } else {
-            const subject = labels.subject + ' — ' + data.get('service');
-            window.location.href = 'mailto:' + form.dataset.email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
+        clearErrors();
+        statusBox.hidden = true;
+        submit.disabled = true;
+        submit.setAttribute('aria-busy', 'true');
+        submitLabel.textContent = text.sending;
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: new FormData(form),
+            });
+            const data = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                form.reset();
+                show(statusBox, data.message);
+                statusBox.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
+            } else if (response.status === 422 && data.errors) {
+                let firstInvalid = null;
+                Object.entries(data.errors).forEach(([field, messages]) => {
+                    const input = form.querySelector('[name="' + field + '"]');
+                    const holder = document.getElementById('cf-' + field + '-error');
+                    if (input) { input.classList.add('is-invalid'); input.setAttribute('aria-invalid', 'true'); firstInvalid = firstInvalid || input; }
+                    if (holder) holder.textContent = messages[0];
+                });
+                show(errorBox, text.checkFields);
+                if (firstInvalid) firstInvalid.focus();
+            } else {
+                show(errorBox, data.message || text.network);
+            }
+        } catch (error) {
+            show(errorBox, text.network);
+        } finally {
+            submit.disabled = false;
+            submit.removeAttribute('aria-busy');
+            submitLabel.textContent = text.send;
         }
     });
+
+    // WhatsApp alternative: opens a chat pre-filled with whatever the visitor has typed
+    const whatsappButton = document.getElementById('contactWhatsapp');
+    if (whatsappButton && form.dataset.whatsapp) {
+        whatsappButton.addEventListener('click', () => {
+            const data = new FormData(form);
+            const lines = [text.greeting, ''];
+            if (data.get('name')) lines.push(text.name + ': ' + data.get('name'));
+            if (data.get('service')) lines.push(text.service + ': ' + data.get('service'));
+            if (data.get('budget')) lines.push(text.budget + ': ' + data.get('budget'));
+            if (data.get('message')) lines.push('', text.message + ':', data.get('message'));
+            window.open('https://wa.me/' + form.dataset.whatsapp + '?text=' + encodeURIComponent(lines.join('\n')), '_blank', 'noopener');
+        });
+    }
 })();
 </script>
 @include('partials.whatsapp-sticker')

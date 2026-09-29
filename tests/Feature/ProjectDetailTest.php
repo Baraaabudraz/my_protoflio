@@ -3,13 +3,21 @@
 namespace Tests\Feature;
 
 use App\Services\Database;
+use Database\Seeders\PortfolioSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Read-only checks against the portfolio SQLite database used by App\Services\Database.
+ * Runs against the in-memory test database, seeded with the exported portfolio content.
  */
 class ProjectDetailTest extends TestCase
 {
+    use RefreshDatabase;
+
+    protected $seed = true;
+
+    protected $seeder = PortfolioSeeder::class;
+
     public function test_every_visible_project_page_renders_in_both_languages(): void
     {
         $projects = Database::query('SELECT id, title, title_ar FROM projects WHERE visible = 1');

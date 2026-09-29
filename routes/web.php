@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\SeoController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,9 @@ Route::get('/lang/{locale}', [PortfolioController::class, 'switchLocale'])->name
 // ─── SEO ───
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
+
+// ─── Contact ───
+Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:contact')->name('contact.store');
 
 // ─── Admin Auth ───
 Route::get('/admin/login', [AdminController::class, 'loginForm'])->name('admin.login');
@@ -57,4 +61,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Settings
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     Route::post('/settings', [AdminController::class, 'settingsUpdate'])->name('settings.update');
+
+    // Contact messages
+    Route::get('/messages', [AdminController::class, 'messages'])->name('messages');
+    Route::patch('/messages/{id}/read', [AdminController::class, 'messageToggleRead'])->name('messages.read');
+    Route::delete('/messages/{id}', [AdminController::class, 'messageDelete'])->name('messages.delete');
 });

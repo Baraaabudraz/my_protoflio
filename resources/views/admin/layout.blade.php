@@ -107,6 +107,7 @@
         .nav-item.active::before { content:''; position:absolute; inset-inline-start:-.75rem; top:20%; bottom:20%; width:3px; border-radius:0 3px 3px 0; background:var(--cyan); }
         [dir="rtl"] .nav-item.active::before { border-radius:3px 0 0 3px; }
         .nav-item .ext { margin-inline-start:auto; font-size:.7rem; opacity:.6; }
+        .nav-count { margin-inline-start:auto; min-width:22px; height:22px; padding:0 .45rem; border-radius:999px; background:var(--gradient); color:var(--on-accent); font-size:.72rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
         .sidebar-footer { padding:.9rem; border-top:1px solid var(--border); display:flex; gap:.5rem; }
         .logout-btn { flex:1; display:flex; align-items:center; gap:.6rem; padding:.6rem .75rem; border-radius:var(--radius-sm); background:none; border:1px solid transparent; color:var(--text-2); font:500 .88rem var(--font-body); cursor:pointer; transition:all .2s; }
         .logout-btn:hover { background:var(--danger-dim); color:var(--danger); }
@@ -261,6 +262,10 @@
         <div class="nav-section">{{ __('Main') }}</div>
         <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" @if(request()->routeIs('admin.dashboard')) aria-current="page" @endif>
             <i class="fas fa-gauge-high"></i> {{ __('Dashboard') }}
+        </a>
+        <a href="{{ route('admin.messages') }}" class="nav-item {{ request()->routeIs('admin.messages*') ? 'active' : '' }}" @if(request()->routeIs('admin.messages*')) aria-current="page" @endif>
+            <i class="fas fa-inbox"></i> {{ __('Messages') }}
+            @if(($unreadMessages ?? 0) > 0)<span class="nav-count" aria-label="{{ $unreadMessages }} {{ __('unread') }}">{{ $unreadMessages }}</span>@endif
         </a>
         <a href="{{ url('/') }}" target="_blank" rel="noopener" class="nav-item">
             <i class="fas fa-globe"></i> {{ __('View Portfolio') }} <i class="fas fa-arrow-up-right-from-square ext"></i>

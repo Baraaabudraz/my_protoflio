@@ -3,13 +3,21 @@
 namespace Tests\Feature;
 
 use App\Services\Database;
+use Database\Seeders\PortfolioSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Read-only checks against the portfolio SQLite database used by App\Services\Database.
+ * Runs against the in-memory test database, seeded with the exported portfolio content.
  */
 class PortfolioCvTest extends TestCase
 {
+    use RefreshDatabase;
+
+    protected $seed = true;
+
+    protected $seeder = PortfolioSeeder::class;
+
     public function test_home_offers_the_cv_when_one_is_configured(): void
     {
         $cvPath = Database::first("SELECT value FROM settings WHERE key = 'cv_path'")?->value;

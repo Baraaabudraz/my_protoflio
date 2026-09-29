@@ -48,5 +48,16 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+
+        // Contact form: 5 messages per 10 minutes per visitor
+        RateLimiter::for('contact', function (Request $request) {
+            return Limit::perMinutes(10, 5)->by($request->ip())->response(function (Request $request, array $headers) {
+                $message = __('You have sent several messages in a short time. Please try again in a few minutes, or contact me on WhatsApp.');
+
+                return $request->expectsJson()
+                    ? response()->json(['message' => $message], 429, $headers)
+                    : redirect()->to(url()->previous().'#contact')->with('contact_error', $message);
+            });
+        });
     }
 }

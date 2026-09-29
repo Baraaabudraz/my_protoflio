@@ -38,7 +38,17 @@ return [
 
         'sqlite' => [
             'driver' => 'sqlite',
-            'database' => env('DB_DATABASE', database_path('portfolio.sqlite')),
+            // Relative file names (e.g. "portfolio.sqlite") resolve inside database/; absolute paths and :memory: are used as-is.
+            // A bare name without an extension (e.g. a leftover "laravel" MySQL database name) falls back to portfolio.sqlite.
+            'database' => (static function (?string $database): string {
+                if ($database === null || $database === '' || ($database !== ':memory:' && pathinfo($database, PATHINFO_EXTENSION) === '')) {
+                    return database_path('portfolio.sqlite');
+                }
+
+                $isAbsolute = $database === ':memory:' || str_starts_with($database, '/') || preg_match('~^[A-Za-z]:[\\\\/]~', $database) === 1;
+
+                return $isAbsolute ? $database : database_path($database);
+            })(env('DB_DATABASE')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
