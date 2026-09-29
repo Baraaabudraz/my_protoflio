@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use PDO;
-use PDOException;
 
 class Database
 {
@@ -12,11 +11,12 @@ class Database
     public static function connection(): PDO
     {
         if (self::$instance === null) {
-            $path = '/home/runner/workspace/database/portfolio.sqlite';
-            self::$instance = new PDO('sqlite:' . $path);
+            $path = database_path('portfolio.sqlite');
+            self::$instance = new PDO('sqlite:'.$path);
             self::$instance->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             self::$instance->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
         }
+
         return self::$instance;
     }
 
@@ -24,6 +24,7 @@ class Database
     {
         $stmt = self::connection()->prepare($sql);
         $stmt->execute($params);
+
         return $stmt->fetchAll();
     }
 
@@ -31,12 +32,14 @@ class Database
     {
         $stmt = self::connection()->prepare($sql);
         $stmt->execute($params);
+
         return $stmt->fetch() ?: null;
     }
 
     public static function execute(string $sql, array $params = []): bool
     {
         $stmt = self::connection()->prepare($sql);
+
         return $stmt->execute($params);
     }
 
