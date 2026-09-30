@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Services\GalleryImageProcessor;
 use Database\Seeders\PortfolioSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -60,6 +61,52 @@ class ProjectGalleryTest extends TestCase
             $this->assertSame(600, getimagesizefromstring(Storage::disk('gallery')->get($image->thumb_path))[0]);
         }
         $this->assertSame([0, 1], $images->pluck('sort_order')->map(fn ($o) => (int) $o)->all());
+    }
+
+    public function test_portrait_small_and_transparent_images_are_handled(): void
+    {
+        // Palette PNG with transparency (a common cause of GD resize failures)
+        $palette = imagecreate(900, 700);
+        imagecolortransparent($palette, imagecolorallocate($palette, 0, 0, 0));
+        imagefilledrectangle($palette, 100, 100, 500, 400, imagecolorallocate($palette, 255, 0, 0));
+        ob_start();
+        imagepng($palette);
+        $pngPath = tempnam(sys_get_temp_dir(), 'png');
+        file_put_contents($pngPath, ob_get_clean());
+
+        $files = [
+            UploadedFile::fake()->image('portrait.jpg', 1200, 3000),
+            UploadedFile::fake()->image('small.jpg', 400, 300),
+            new UploadedFile($pngPath, 'palette.png', 'image/png', null, true),
+        ];
+
+        $this->asAdmin()
+            ->post(route('admin.projects.gallery.upload', $this->projectId), ['images' => $files])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $images = DB::table('project_images')->orderBy('sort_order')->get();
+        $this->assertCount(3, $images);
+
+        // Portrait: the longest side is capped at 1600
+        $this->assertSame([640, 1600], [(int) $images[0]->width, (int) $images[0]->height]);
+        // Small images are never upscaled
+        $this->assertSame([400, 300], [(int) $images[1]->width, (int) $images[1]->height]);
+        // Palette PNG converted to WebP
+        $this->assertStringEndsWith('.webp', $images[2]->path);
+        Storage::disk('gallery')->assertExists([$images[2]->path, $images[2]->thumb_path]);
+    }
+
+    public function test_original_file_is_kept_when_optimisation_fails(): void
+    {
+        // A file whose header says "image" but cannot be decoded
+        $path = tempnam(sys_get_temp_dir(), 'bad');
+        file_put_contents($path, "\x89PNG\r\n\x1a\n".str_repeat("\0", 64));
+
+        $stored = (new GalleryImageProcessor)->store(new UploadedFile($path, 'broken.png', 'image/png', null, true), $this->projectId);
+
+        $this->assertSame($stored['path'], $stored['thumb_path']);
+        Storage::disk('gallery')->assertExists($stored['path']);
     }
 
     public function test_only_images_can_be_uploaded(): void

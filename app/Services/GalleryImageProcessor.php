@@ -2,15 +2,21 @@
 
 namespace App\Services;
 
-use GdImage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use RuntimeException;
+use Intervention\Image\Drivers\Gd\Driver as GdDriver;
+use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
+use Intervention\Image\Encoders\WebpEncoder;
+use Intervention\Image\ImageManager;
+use Throwable;
 
 /**
- * Turns an uploaded image into a web-optimised WebP (max 1600px) plus a thumbnail (max 600px)
- * on the "gallery" disk. Falls back to storing the original file when GD/WebP is unavailable.
+ * Optimises uploaded gallery images with Intervention Image: a WebP (max 1600px) plus a
+ * thumbnail (max 600px) on the "gallery" disk. Uses Imagick when available, otherwise GD.
+ *
+ * If optimisation fails (unsupported format, missing WebP support, memory), the original file
+ * is stored instead so the upload never fails because of image processing.
  */
 class GalleryImageProcessor
 {
@@ -20,6 +26,9 @@ class GalleryImageProcessor
 
     private const QUALITY = 82;
 
+    /** Large photos need more than PHP's default 128M when decoded into memory. */
+    private const MEMORY_LIMIT = '512M';
+
     /**
      * @return array{path: string, thumb_path: string, width: ?int, height: ?int}
      */
@@ -27,26 +36,14 @@ class GalleryImageProcessor
     {
         $directory = "projects/{$projectId}";
         $name = Str::lower(Str::random(20));
-        $disk = Storage::disk('gallery');
 
-        $source = function_exists('imagewebp') ? $this->load($file) : null;
+        try {
+            return $this->storeOptimized($file, $directory, $name);
+        } catch (Throwable $exception) {
+            report($exception);
 
-        if (! $source) {
-            $extension = $file->guessExtension() ?: 'jpg';
-            $path = $disk->putFileAs($directory, $file, "{$name}.{$extension}");
-
-            return ['path' => $path, 'thumb_path' => $path, 'width' => null, 'height' => null];
+            return $this->storeOriginal($file, $directory, $name);
         }
-
-        $large = $this->resize($source, self::MAX_SIZE);
-        $thumb = $this->resize($source, self::THUMB_SIZE);
-
-        $path = "{$directory}/{$name}.webp";
-        $thumbPath = "{$directory}/{$name}-thumb.webp";
-        $disk->put($path, $this->encode($large));
-        $disk->put($thumbPath, $this->encode($thumb));
-
-        return ['path' => $path, 'thumb_path' => $thumbPath, 'width' => imagesx($large), 'height' => imagesy($large)];
     }
 
     /**
@@ -57,56 +54,67 @@ class GalleryImageProcessor
         Storage::disk('gallery')->delete(array_unique([$path, $thumbPath]));
     }
 
-    private function load(UploadedFile $file): ?GdImage
+    /**
+     * @return array{path: string, thumb_path: string, width: int, height: int}
+     */
+    private function storeOptimized(UploadedFile $file, string $directory, string $name): array
     {
-        $image = @imagecreatefromstring((string) file_get_contents($file->getRealPath()));
+        $this->raiseMemoryLimit();
 
-        if (! $image) {
-            return null;
-        }
+        $image = $this->manager()->decodePath($file->getRealPath());
 
-        // Respect camera orientation for JPEG photos
-        if (function_exists('exif_read_data') && in_array($file->getMimeType(), ['image/jpeg', 'image/jpg'], true)) {
-            $orientation = @exif_read_data($file->getRealPath())['Orientation'] ?? 1;
-            $image = match ($orientation) {
-                3 => imagerotate($image, 180, 0),
-                6 => imagerotate($image, -90, 0),
-                8 => imagerotate($image, 90, 0),
-                default => $image,
-            };
-        }
+        $large = (clone $image)->scaleDown(self::MAX_SIZE, self::MAX_SIZE);
+        $thumb = (clone $image)->scaleDown(self::THUMB_SIZE, self::THUMB_SIZE);
 
-        imagepalettetotruecolor($image);
-        imagealphablending($image, true);
-        imagesavealpha($image, true);
+        $encoder = new WebpEncoder(quality: self::QUALITY);
+        $path = "{$directory}/{$name}.webp";
+        $thumbPath = "{$directory}/{$name}-thumb.webp";
 
-        return $image;
+        $disk = Storage::disk('gallery');
+        $disk->put($path, $large->encode($encoder)->toString());
+        $disk->put($thumbPath, $thumb->encode($encoder)->toString());
+
+        return ['path' => $path, 'thumb_path' => $thumbPath, 'width' => $large->width(), 'height' => $large->height()];
     }
 
-    private function resize(GdImage $image, int $maxSize): GdImage
+    /**
+     * @return array{path: string, thumb_path: string, width: ?int, height: ?int}
+     */
+    private function storeOriginal(UploadedFile $file, string $directory, string $name): array
     {
-        $width = imagesx($image);
-        $height = imagesy($image);
-        $scale = min(1, $maxSize / max($width, $height));
+        $extension = $file->guessExtension() ?: 'jpg';
+        $path = Storage::disk('gallery')->putFileAs($directory, $file, "{$name}.{$extension}");
+        [$width, $height] = @getimagesize($file->getRealPath()) ?: [null, null];
 
-        if ($scale >= 1) {
-            return $image;
-        }
-
-        $resized = imagescale($image, (int) round($width * $scale), (int) round($height * $scale), IMG_BICUBIC);
-
-        if (! $resized) {
-            throw new RuntimeException('Could not resize the image.');
-        }
-
-        return $resized;
+        return ['path' => $path, 'thumb_path' => $path, 'width' => $width, 'height' => $height];
     }
 
-    private function encode(GdImage $image): string
+    private function manager(): ImageManager
     {
-        ob_start();
-        imagewebp($image, null, self::QUALITY);
+        $driver = extension_loaded('imagick') ? ImagickDriver::class : GdDriver::class;
 
-        return (string) ob_get_clean();
+        // autoOrientation: rotate phone photos correctly; strip: drop EXIF (incl. GPS location)
+        return new ImageManager($driver, autoOrientation: true, strip: true);
+    }
+
+    private function raiseMemoryLimit(): void
+    {
+        $current = ini_get('memory_limit');
+
+        if ($current !== '-1' && $this->bytes((string) $current) < $this->bytes(self::MEMORY_LIMIT)) {
+            @ini_set('memory_limit', self::MEMORY_LIMIT);
+        }
+    }
+
+    private function bytes(string $value): int
+    {
+        $number = (int) $value;
+
+        return match (strtolower(substr(trim($value), -1))) {
+            'g' => $number * 1024 ** 3,
+            'm' => $number * 1024 ** 2,
+            'k' => $number * 1024,
+            default => $number,
+        };
     }
 }
