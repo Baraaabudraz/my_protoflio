@@ -19,6 +19,7 @@ class PortfolioContent
         'settings' => [],
         'services' => ['deliverables', 'deliverables_ar'],
         'projects' => ['stack', 'work_stages', 'work_stages_ar'],
+        'project_images' => [],
         'experiences' => ['tags'],
         'skill_categories' => [],
         'skills' => [],

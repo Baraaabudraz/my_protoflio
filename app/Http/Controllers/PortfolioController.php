@@ -16,6 +16,7 @@ class PortfolioController extends Controller
         foreach ($projects as $p) {
             $p->stack = json_decode($p->stack ?? '[]');
         }
+        $this->useGalleryAsCover($projects);
 
         $services = Database::query(
             'SELECT * FROM services WHERE visible = 1 ORDER BY sort_order ASC'
@@ -102,9 +103,42 @@ class PortfolioController extends Controller
         $previousProject = $position !== false && $position > 0 ? $ordered[$position - 1] : null;
         $nextProject = $position !== false ? ($ordered[$position + 1] ?? null) : null;
 
+        $gallery = Database::query('SELECT * FROM project_images WHERE project_id = ? ORDER BY sort_order ASC, id ASC', [$id]);
+        $this->useGalleryAsCover([$project]);
+        $this->useGalleryAsCover($related);
+        $project->gallery = $gallery;
+
         $seo = $seoBuilder->project($project, $settings);
 
-        return view('project-detail', compact('project', 'related', 'settings', 'seo', 'previousProject', 'nextProject'));
+        return view('project-detail', compact('project', 'related', 'settings', 'seo', 'previousProject', 'nextProject', 'gallery'));
+    }
+
+    /**
+     * Projects without a cover image use their first gallery image instead.
+     *
+     * @param  array<int, object>  $projects
+     */
+    private function useGalleryAsCover(array $projects): void
+    {
+        $withoutCover = array_filter($projects, fn (object $project): bool => empty($project->image));
+        if ($withoutCover === []) {
+            return;
+        }
+
+        $ids = array_map(fn (object $project): int => (int) $project->id, $withoutCover);
+        $firstImages = Database::query(
+            'SELECT pi.project_id, pi.path FROM project_images pi
+             WHERE pi.project_id IN ('.implode(',', array_fill(0, count($ids), '?')).')
+               AND pi.id = (SELECT id FROM project_images WHERE project_id = pi.project_id ORDER BY sort_order ASC, id ASC LIMIT 1)',
+            array_values($ids)
+        );
+
+        $covers = array_column($firstImages, 'path', 'project_id');
+        foreach ($withoutCover as $project) {
+            if (isset($covers[$project->id])) {
+                $project->image = 'uploads/'.$covers[$project->id];
+            }
+        }
     }
 
     public function switchLocale(Request $request, string $locale)

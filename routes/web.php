@@ -35,6 +35,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('/projects/{id}', [AdminController::class, 'projectUpdate'])->name('projects.update');
     Route::delete('/projects/{id}', [AdminController::class, 'projectDelete'])->name('projects.delete');
 
+    // Project gallery
+    Route::post('/projects/{id}/gallery', [AdminController::class, 'galleryUpload'])->name('projects.gallery.upload');
+    Route::put('/projects/{id}/gallery', [AdminController::class, 'galleryUpdate'])->name('projects.gallery.update');
+    Route::delete('/gallery/{imageId}', [AdminController::class, 'galleryDelete'])->name('projects.gallery.delete');
+
     // Services
     Route::get('/services', [AdminController::class, 'services'])->name('services');
     Route::get('/services/create', [AdminController::class, 'serviceCreate'])->name('services.create');

@@ -97,6 +97,10 @@ class SeoBuilder
         $homeUrl = SetLocale::localizedUrl(url('/'), SetLocale::SUPPORTED[0]);
         $pageUrl = SetLocale::localizedUrl(url()->current(), app()->getLocale());
         $image = $project->image ? project_image_url($project->image) : null;
+        $images = array_values(array_unique(array_filter(array_merge(
+            [$image],
+            array_map(fn (object $galleryImage): string => asset('uploads/'.$galleryImage->path), (array) ($project->gallery ?? []))
+        ))));
 
         $seo = [
             'title' => $projectTitle.' — '.$name,
@@ -114,7 +118,7 @@ class SeoBuilder
                         'name' => $projectTitle,
                         'description' => $description,
                         'url' => $pageUrl,
-                        'image' => $image,
+                        'image' => count($images) > 1 ? $images : ($images[0] ?? null),
                         'inLanguage' => app()->getLocale(),
                         'genre' => t($project, 'category') ?: null,
                         'keywords' => implode(', ', (array) ($project->stack ?? [])) ?: null,

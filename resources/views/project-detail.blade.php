@@ -168,6 +168,41 @@
         .share-row .round-btn { width:44px; height:44px; border-radius:12px; }
         .copy-feedback { font-size:.8rem; color:var(--cyan); font-weight:600; min-height:1.2em; margin-top:.5rem; }
 
+        /* ═════════ GALLERY ═════════ */
+        .gallery-count { display:inline-flex; align-items:center; justify-content:center; min-width:30px; height:30px; padding:0 .55rem; margin-inline-start:.4rem; border-radius:999px; background:var(--accent-soft); color:var(--cyan); font:700 .85rem var(--font-body); vertical-align:middle; }
+        .gallery-grid { list-style:none; display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:.75rem; }
+        .gallery-grid li.is-wide { grid-column:1 / -1; }
+        .gallery-item { position:relative; display:block; aspect-ratio:4/3; overflow:hidden; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg-primary); }
+        .gallery-grid li.is-wide .gallery-item { aspect-ratio:16/8; }
+        .gallery-item img { width:100%; height:100%; object-fit:cover; transition:transform .5s var(--ease); }
+        .gallery-item:hover img, .gallery-item:focus-visible img { transform:scale(1.05); }
+        .gallery-zoom { position:absolute; top:.6rem; inset-inline-end:.6rem; width:34px; height:34px; border-radius:10px; display:grid; place-items:center; background:rgba(2,6,23,.55); color:#fff; font-size:.8rem; opacity:0; transition:opacity .25s; backdrop-filter:blur(6px); }
+        .gallery-item:hover .gallery-zoom, .gallery-item:focus-visible .gallery-zoom { opacity:1; }
+        .gallery-caption { position:absolute; inset-inline:0; bottom:0; padding:1.4rem .8rem .6rem; background:linear-gradient(to top, rgba(2,6,23,.75), transparent); color:#fff; font-size:.82rem; font-weight:600; text-align:start; }
+
+        /* Lightbox */
+        .lightbox { width:100vw; height:100vh; max-width:none; max-height:none; margin:0; padding:0; border:none; background:rgba(2,6,23,.94); color:#fff; overflow:hidden; }
+        .lightbox[open] { display:flex; flex-direction:column; animation:lb-in .25s ease; }
+        .lightbox::backdrop { background:transparent; }
+        @keyframes lb-in { from { opacity:0; } }
+        .lightbox-bar { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.9rem 1.2rem; }
+        .lightbox-counter { font-size:.9rem; font-weight:600; opacity:.85; }
+        .lightbox-btn { width:46px; height:46px; display:inline-grid; place-items:center; border-radius:50%; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08); color:#fff; cursor:pointer; font-size:1rem; transition:background .2s; text-decoration:none; }
+        .lightbox-btn:hover { background:rgba(255,255,255,.2); }
+        .lightbox-btn:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+        .lightbox-stage { position:relative; flex:1; display:flex; align-items:center; justify-content:center; padding:0 4.5rem; min-height:0; touch-action:pan-y; }
+        .lightbox-stage img { max-width:100%; max-height:100%; object-fit:contain; border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,.5); user-select:none; }
+        .lightbox-nav { position:absolute; top:50%; transform:translateY(-50%); }
+        .lightbox-prev { inset-inline-start:1rem; }
+        .lightbox-next { inset-inline-end:1rem; }
+        .lightbox-caption { min-height:3.2rem; padding:.9rem 1.2rem 1.3rem; text-align:center; font-size:.95rem; opacity:.9; }
+        @media (max-width:768px) {
+            .gallery-grid { grid-template-columns:repeat(2, 1fr); gap:.5rem; }
+            .lightbox-stage { padding:0 .5rem; }
+            .lightbox-nav { top:auto; bottom:-3.6rem; transform:none; }
+            .lightbox-caption { padding-top:1rem; min-height:4.5rem; }
+        }
+
         /* ═════════ PREV / NEXT ═════════ */
         .pager { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1.5rem; }
         .pager a { display:flex; align-items:center; gap:1rem; padding:1.2rem 1.4rem; border-radius:var(--radius-md); background:var(--bg-card); border:1px solid var(--border); text-decoration:none; transition:all .25s; min-width:0; }
@@ -347,6 +382,30 @@
                 </article>
                 @endif
 
+                @if(!empty($gallery))
+                <article class="card block reveal" id="gallery" aria-labelledby="galleryTitle">
+                    <div class="eyebrow">{{ __('Gallery') }}</div>
+                    <h2 class="block-title" id="galleryTitle">{{ __('Screenshots') }} <span class="gallery-count">{{ count($gallery) }}</span></h2>
+                    <ul class="gallery-grid">
+                        @foreach($gallery as $image)
+                            @php($caption = t($image, 'caption'))
+                            <li class="{{ $loop->first && count($gallery) > 2 ? 'is-wide' : '' }}">
+                                <a href="{{ asset('uploads/'.$image->path) }}" class="gallery-item" data-gallery-index="{{ $loop->index }}"
+                                   data-full="{{ asset('uploads/'.$image->path) }}" data-caption="{{ $caption }}"
+                                   aria-label="{{ __('Open image :number of :total', ['number' => $loop->iteration, 'total' => count($gallery)]) }}{{ $caption ? ' — '.$caption : '' }}">
+                                    <img src="{{ asset('uploads/'.($loop->first && count($gallery) > 2 ? $image->path : $image->thumb_path)) }}"
+                                         alt="{{ $caption ?: $projectTitle.' — '.__('screenshot :number', ['number' => $loop->iteration]) }}"
+                                         loading="lazy" decoding="async"
+                                         @if($image->width && $image->height) width="{{ $image->width }}" height="{{ $image->height }}" @endif>
+                                    <span class="gallery-zoom" aria-hidden="true"><i class="fas fa-expand"></i></span>
+                                    @if($caption)<span class="gallery-caption">{{ $caption }}</span>@endif
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </article>
+                @endif
+
                 <article class="card block reveal">
                     <div class="eyebrow">{{ __('Work Stages') }}</div>
                     <h2 class="block-title">{{ __('How I built it') }}</h2>
@@ -475,6 +534,24 @@
     </div>
 </footer>
 
+@if(!empty($gallery))
+<dialog class="lightbox" id="lightbox" aria-label="{{ __('Gallery') }} — {{ $projectTitle }}">
+    <div class="lightbox-bar">
+        <span class="lightbox-counter" id="lightboxCounter" aria-live="polite"></span>
+        <div style="display:flex;gap:.5rem">
+            <a class="lightbox-btn" id="lightboxOpen" href="#" target="_blank" rel="noopener" aria-label="{{ __('Open in new tab') }}"><i class="fas fa-up-right-from-square"></i></a>
+            <button type="button" class="lightbox-btn" id="lightboxClose" aria-label="{{ __('Close') }}" autofocus><i class="fas fa-xmark"></i></button>
+        </div>
+    </div>
+    <div class="lightbox-stage" id="lightboxStage">
+        <button type="button" class="lightbox-btn lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="{{ __('Previous image') }}"><i class="fas {{ $backIcon }}"></i></button>
+        <img id="lightboxImage" src="" alt="">
+        <button type="button" class="lightbox-btn lightbox-nav lightbox-next" id="lightboxNext" aria-label="{{ __('Next image') }}"><i class="fas {{ $arrowIcon }}"></i></button>
+    </div>
+    <p class="lightbox-caption" id="lightboxCaption"></p>
+</dialog>
+@endif
+
 <script>
 // Theme menu (shared with the homepage via localStorage)
 (function () {
@@ -530,6 +607,71 @@
             window.prompt(@json(__('Copy link')), button.dataset.url);
         }
         setTimeout(() => { feedback.textContent = ''; }, 2500);
+    });
+})();
+
+// Gallery lightbox (links open the full image when JavaScript or <dialog> is unavailable)
+(function () {
+    const dialog = document.getElementById('lightbox');
+    if (!dialog || typeof dialog.showModal !== 'function') return;
+    const items = [...document.querySelectorAll('.gallery-item')];
+    const image = document.getElementById('lightboxImage');
+    const caption = document.getElementById('lightboxCaption');
+    const counter = document.getElementById('lightboxCounter');
+    const openLink = document.getElementById('lightboxOpen');
+    const isRtl = document.documentElement.dir === 'rtl';
+    const ofLabel = @json(__('of'));
+    const title = @json($projectTitle);
+    let index = 0;
+    let opener = null;
+
+    function show(i) {
+        index = (i + items.length) % items.length;
+        const item = items[index];
+        image.src = item.dataset.full;
+        image.alt = item.querySelector('img').alt;
+        caption.textContent = item.dataset.caption || title;
+        counter.textContent = (index + 1) + ' ' + ofLabel + ' ' + items.length;
+        openLink.href = item.dataset.full;
+        // Preload neighbours for instant navigation
+        [index + 1, index - 1].forEach(n => { const next = items[(n + items.length) % items.length]; if (next) new Image().src = next.dataset.full; });
+    }
+    const next = () => show(index + 1);
+    const prev = () => show(index - 1);
+
+    items.forEach((item, i) => item.addEventListener('click', e => {
+        e.preventDefault();
+        opener = item;
+        show(i);
+        dialog.showModal();
+        document.documentElement.style.overflow = 'hidden';
+    }));
+    dialog.addEventListener('close', () => {
+        document.documentElement.style.overflow = '';
+        if (opener) opener.focus();
+    });
+    document.getElementById('lightboxClose').addEventListener('click', () => dialog.close());
+    document.getElementById('lightboxNext').addEventListener('click', next);
+    document.getElementById('lightboxPrev').addEventListener('click', prev);
+    dialog.addEventListener('click', e => { if (e.target === dialog || e.target.id === 'lightboxStage') dialog.close(); });
+    dialog.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight') { isRtl ? prev() : next(); }
+        if (e.key === 'ArrowLeft') { isRtl ? next() : prev(); }
+    });
+    if (items.length < 2) {
+        document.getElementById('lightboxNext').hidden = true;
+        document.getElementById('lightboxPrev').hidden = true;
+    }
+
+    // Swipe on touch screens
+    let startX = null;
+    const stage = document.getElementById('lightboxStage');
+    stage.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+    stage.addEventListener('touchend', e => {
+        if (startX === null) return;
+        const delta = e.changedTouches[0].clientX - startX;
+        if (Math.abs(delta) > 50) { (delta < 0) !== isRtl ? next() : prev(); }
+        startX = null;
     });
 })();
 </script>

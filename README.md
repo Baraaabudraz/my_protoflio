@@ -47,6 +47,7 @@
 **Admin CMS** (`/admin`)
 - Manage services, projects, experience, skills, and site settings — every text field in both languages
 - Upload project covers and the CV (PDF)
+- **Project galleries:** multi-image upload with drag & drop, automatic WebP resizing (1600 px + 600 px thumbnail), captions in both languages, ordering; shown on the project page with a keyboard/swipe lightbox
 - **Messages** inbox for contact-form inquiries (unread badge, reply by email / WhatsApp, delivery status)
 - Dashboard with a website-health checklist and a live Google search preview
 - Light / dark mode and a mobile-friendly layout
@@ -116,6 +117,8 @@ The real site content (settings, services, projects, experience, skills — in b
 
 Project IDs are preserved, so URLs such as `/projects/7` stay the same in every environment.
 
+Gallery images are exported as rows only; the files live in `public/uploads/projects/<id>/`. Commit that folder along with the export when you want locally uploaded images to reach the server.
+
 ### Run
 
 ```bash
@@ -145,7 +148,7 @@ Everything else — name, texts, WhatsApp number, social links, SEO title/descri
 |---|---|
 | **Settings** | Hero text, "Who Am I" paragraphs, stats, email, WhatsApp, GitHub/LinkedIn, CV upload, SEO title & description, footer |
 | **Services** | Service cards (icon, title, summary, deliverables) |
-| **Projects** | Project cards and case-study pages (cover, client, duration, category, overview, work stages, stack, links) |
+| **Projects** | Project cards and case-study pages (cover, client, duration, category, overview, work stages, stack, links) and each project's **gallery** (bottom of the edit page). Without a cover image, the first gallery image is used as the cover. |
 | **Experience** | Career timeline |
 | **Skills** | Skill categories with progress bars or tags |
 | **Messages** | Inquiries from the contact form — mark read/unread, reply, delete |
@@ -222,7 +225,7 @@ vendor/bin/pint              # format PHP (Laravel preset)
 - [ ] `touch database/portfolio.sqlite` (first deploy only), then `php artisan migrate --force`
 - [ ] `php artisan portfolio:seed` to load the content (safe to run on every deploy)
 - [ ] Back up `database/portfolio.sqlite` regularly — edits made in the admin live only there
-- [ ] Writable by the web server: `storage/`, `bootstrap/cache/`, `database/` (SQLite writes), `public/cv/`, and `storage/app/public`
+- [ ] Writable by the web server: `storage/`, `bootstrap/cache/`, `database/` (SQLite writes), `public/cv/`, `public/uploads/` (project galleries), and `storage/app/public`
 - [ ] `php artisan storage:link` (project cover uploads)
 - [ ] `php artisan config:cache && php artisan route:cache && php artisan view:cache`
 - [ ] Submit `https://your-domain.com/sitemap.xml` in Google Search Console

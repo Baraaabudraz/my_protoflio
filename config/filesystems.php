@@ -44,6 +44,15 @@ return [
             'throw' => false,
         ],
 
+        // Project gallery images, served directly from public/uploads (no storage:link needed).
+        // Views build URLs with asset('uploads/'.$path).
+        'gallery' => [
+            'driver' => 'local',
+            'root' => public_path('uploads'),
+            'visibility' => 'public',
+            'throw' => true,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Services\Database;
+use App\Services\GalleryImageProcessor;
 use App\Services\SeoBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AdminController extends Controller
@@ -164,7 +166,7 @@ class AdminController extends Controller
             return redirect()->route('admin.login');
         }
 
-        return view('admin.projects.form', ['project' => null]);
+        return view('admin.projects.form', ['project' => null, 'galleryImages' => []]);
     }
 
     public function projectStore(Request $request)
@@ -224,8 +226,91 @@ class AdminController extends Controller
         $project->work_stages_ar = json_decode($project->work_stages_ar ?? '[]');
         $project->featured = (bool) $project->featured;
         $project->visible = (bool) $project->visible;
+        $galleryImages = Database::query('SELECT * FROM project_images WHERE project_id = ? ORDER BY sort_order ASC, id ASC', [$id]);
 
-        return view('admin.projects.form', compact('project'));
+        return view('admin.projects.form', compact('project', 'galleryImages'));
+    }
+
+    // ─── Project gallery ───
+    public function galleryUpload(Request $request, int $id, GalleryImageProcessor $processor)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+        if (! Database::first('SELECT id FROM projects WHERE id = ?', [$id])) {
+            abort(404);
+        }
+
+        $request->validate([
+            'images' => 'required|array|min:1|max:12',
+            'images.*' => 'image|mimes:jpeg,jpg,png,webp|max:8192',
+        ], [
+            'images.required' => __('Choose at least one image.'),
+            'images.max' => __('You can upload up to 12 images at a time.'),
+            'images.*.image' => __('Only image files (JPG, PNG, WebP) can be uploaded.'),
+            'images.*.mimes' => __('Only image files (JPG, PNG, WebP) can be uploaded.'),
+            'images.*.max' => __('Each image must be smaller than 8 MB.'),
+        ]);
+
+        $nextOrder = (int) (Database::first('SELECT MAX(sort_order) AS m FROM project_images WHERE project_id = ?', [$id])->m ?? -1) + 1;
+        $now = now()->toDateTimeString();
+
+        foreach ($request->file('images') as $file) {
+            $stored = $processor->store($file, $id);
+            Database::execute(
+                'INSERT INTO project_images (project_id, path, thumb_path, width, height, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [$id, $stored['path'], $stored['thumb_path'], $stored['width'], $stored['height'], $nextOrder++, $now, $now]
+            );
+        }
+
+        return redirect()->to(route('admin.projects.edit', $id).'#gallery')
+            ->with('success', trans_choice('{1} :count image added.|[2,*] :count images added.', count($request->file('images')), ['count' => count($request->file('images'))]));
+    }
+
+    public function galleryUpdate(Request $request, int $id)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+
+        $request->validate([
+            'caption' => 'array', 'caption.*' => 'nullable|string|max:255',
+            'caption_ar' => 'array', 'caption_ar.*' => 'nullable|string|max:255',
+            'sort_order' => 'array', 'sort_order.*' => 'nullable|integer',
+        ]);
+
+        $now = now()->toDateTimeString();
+        foreach (Database::query('SELECT id FROM project_images WHERE project_id = ?', [$id]) as $image) {
+            Database::execute(
+                'UPDATE project_images SET caption = ?, caption_ar = ?, sort_order = ?, updated_at = ? WHERE id = ?',
+                [
+                    $request->input("caption.{$image->id}") ?: null,
+                    $request->input("caption_ar.{$image->id}") ?: null,
+                    (int) $request->input("sort_order.{$image->id}", 0),
+                    $now,
+                    $image->id,
+                ]
+            );
+        }
+
+        return redirect()->to(route('admin.projects.edit', $id).'#gallery')->with('success', __('Gallery updated.'));
+    }
+
+    public function galleryDelete(int $imageId, GalleryImageProcessor $processor)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+
+        $image = Database::first('SELECT * FROM project_images WHERE id = ?', [$imageId]);
+        if (! $image) {
+            abort(404);
+        }
+
+        $processor->delete($image->path, $image->thumb_path);
+        Database::execute('DELETE FROM project_images WHERE id = ?', [$imageId]);
+
+        return redirect()->to(route('admin.projects.edit', $image->project_id).'#gallery')->with('success', __('Image deleted.'));
     }
 
     public function projectUpdate(Request $request, int $id)
@@ -317,9 +402,12 @@ class AdminController extends Controller
         if (! $this->auth()) {
             return redirect()->route('admin.login');
         }
+        // Gallery rows cascade with the project; remove their files too
+        Storage::disk('gallery')->deleteDirectory("projects/{$id}");
+        Database::execute('DELETE FROM project_images WHERE project_id = ?', [$id]);
         Database::execute('DELETE FROM projects WHERE id = ?', [$id]);
 
-        return redirect()->route('admin.projects')->with('success', 'Project deleted.');
+        return redirect()->route('admin.projects')->with('success', __('Project deleted.'));
     }
 
     // ─── Services ───

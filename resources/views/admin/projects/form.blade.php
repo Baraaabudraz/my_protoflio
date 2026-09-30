@@ -191,6 +191,81 @@
     </div>
 </div>
 
+{{-- ── GALLERY ── --}}
+<div class="card" id="gallery" style="max-width:900px;margin-top:1.5rem;scroll-margin-top:90px">
+    <div class="card-header">
+        <span class="card-title"><i class="fas fa-images" style="color:var(--cyan)"></i> {{ __('Gallery') }}
+            @if($project)<span class="badge badge-cyan">{{ count($galleryImages) }}</span>@endif
+        </span>
+    </div>
+    <div class="card-body">
+        @if(! $project)
+            <p class="form-hint" style="margin:0"><i class="fas fa-circle-info" style="color:var(--cyan)"></i> {{ __('Save the project first, then you can add gallery images.') }}</p>
+        @else
+            <form method="POST" action="{{ route('admin.projects.gallery.upload', $project->id) }}" enctype="multipart/form-data" class="gallery-upload" id="galleryUploadForm">
+                @csrf
+                <label class="gallery-drop" for="galleryFiles">
+                    <i class="fas fa-cloud-arrow-up"></i>
+                    <strong>{{ __('Choose images or drag them here') }}</strong>
+                    <span>{{ __('JPG, PNG or WebP · up to 12 at a time · 8 MB each. Images are resized and converted to WebP automatically.') }}</span>
+                    <input type="file" name="images[]" id="galleryFiles" accept="image/jpeg,image/png,image/webp" multiple required>
+                </label>
+                <div class="gallery-selected" id="gallerySelected" hidden></div>
+                <button type="submit" class="btn btn-primary" id="galleryUploadBtn" disabled><i class="fas fa-upload"></i> {{ __('Upload images') }}</button>
+            </form>
+
+            @if(count($galleryImages))
+                <form method="POST" action="{{ route('admin.projects.gallery.update', $project->id) }}" style="margin-top:1.5rem">
+                    @csrf @method('PUT')
+                    <div class="gallery-admin-grid">
+                        @foreach($galleryImages as $image)
+                            <div class="gallery-admin-item">
+                                <a href="{{ asset('uploads/'.$image->path) }}" target="_blank" rel="noopener" class="gallery-admin-thumb">
+                                    <img src="{{ asset('uploads/'.$image->thumb_path) }}" alt="" loading="lazy">
+                                    @if($loop->first && ! $project->image)<span class="badge badge-cyan gallery-cover-badge">{{ __('Used as cover') }}</span>@endif
+                                </a>
+                                <div class="gallery-admin-fields">
+                                    <input type="text" name="caption[{{ $image->id }}]" class="form-control" value="{{ $image->caption }}" placeholder="{{ __('Caption') }} (EN)" maxlength="255">
+                                    <input type="text" name="caption_ar[{{ $image->id }}]" class="form-control" value="{{ $image->caption_ar }}" placeholder="الوصف (AR)" maxlength="255" dir="rtl">
+                                    <div style="display:flex;gap:.5rem;align-items:center">
+                                        <label class="form-hint" style="margin:0" for="order-{{ $image->id }}">{{ __('Order') }}</label>
+                                        <input type="number" id="order-{{ $image->id }}" name="sort_order[{{ $image->id }}]" class="form-control" value="{{ $image->sort_order }}" style="max-width:90px">
+                                        <button type="submit" form="delete-image-{{ $image->id }}" class="btn btn-danger btn-sm" style="margin-inline-start:auto" aria-label="{{ __('Delete') }}"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <button type="submit" class="btn btn-secondary" style="margin-top:1rem"><i class="fas fa-save"></i> {{ __('Save captions & order') }}</button>
+                </form>
+                @foreach($galleryImages as $image)
+                    <form method="POST" action="{{ route('admin.projects.gallery.delete', $image->id) }}" id="delete-image-{{ $image->id }}" onsubmit="return confirm('{{ __('Delete this image?') }}')">
+                        @csrf @method('DELETE')
+                    </form>
+                @endforeach
+            @endif
+        @endif
+    </div>
+</div>
+
+<style>
+.gallery-drop { position:relative; display:flex; flex-direction:column; align-items:center; gap:.35rem; padding:1.8rem 1rem; border:2px dashed var(--border); border-radius:var(--radius); background:var(--bg); text-align:center; cursor:pointer; transition:border-color .2s, background .2s; }
+.gallery-drop:hover, .gallery-drop.dragover { border-color:var(--cyan); background:var(--cyan-dim); }
+.gallery-drop i { font-size:1.8rem; color:var(--cyan); }
+.gallery-drop span { font-size:.82rem; color:var(--muted); }
+.gallery-drop input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.gallery-selected { display:flex; flex-wrap:wrap; gap:.5rem; margin:.9rem 0; }
+.gallery-selected img { width:72px; height:54px; object-fit:cover; border-radius:8px; border:1px solid var(--border); }
+.gallery-upload .btn { margin-top:.9rem; }
+.gallery-admin-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:1rem; }
+.gallery-admin-item { border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; background:var(--bg); }
+.gallery-admin-thumb { position:relative; display:block; aspect-ratio:16/10; background:var(--bg3); }
+.gallery-admin-thumb img { width:100%; height:100%; object-fit:cover; }
+.gallery-cover-badge { position:absolute; top:.5rem; inset-inline-start:.5rem; }
+.gallery-admin-fields { display:flex; flex-direction:column; gap:.5rem; padding:.75rem; }
+.gallery-admin-fields .form-control { min-height:38px; padding:.45rem .7rem; font-size:.85rem; }
+</style>
+
 <script>
 function switchLang(lang, btn) {
     document.querySelectorAll('.bi-tab').forEach(t => t.classList.remove('active'));
@@ -221,5 +296,31 @@ projectImageUrl?.addEventListener('input', () => {
 projectImagePreviewImage?.addEventListener('error', () => {
     projectImagePreview.style.display = 'none';
 });
+
+// Gallery upload: previews, drag & drop highlight, enable the button once files are chosen
+(function () {
+    const input = document.getElementById('galleryFiles');
+    if (!input) return;
+    const drop = input.closest('.gallery-drop');
+    const selected = document.getElementById('gallerySelected');
+    const button = document.getElementById('galleryUploadBtn');
+    input.addEventListener('change', () => {
+        selected.innerHTML = '';
+        [...input.files].forEach(file => {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.alt = file.name;
+            selected.appendChild(img);
+        });
+        selected.hidden = input.files.length === 0;
+        button.disabled = input.files.length === 0;
+    });
+    ['dragenter', 'dragover'].forEach(type => drop.addEventListener(type, () => drop.classList.add('dragover')));
+    ['dragleave', 'drop'].forEach(type => drop.addEventListener(type, () => drop.classList.remove('dragover')));
+    document.getElementById('galleryUploadForm').addEventListener('submit', () => {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> ' + @json(__('Uploading…'));
+    });
+})();
 </script>
 @endsection
