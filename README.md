@@ -47,7 +47,7 @@
 **Admin CMS** (`/admin`)
 - Manage services, projects, experience, skills, and site settings — every text field in both languages
 - Upload project covers and the CV (PDF)
-- **Project galleries:** multi-image upload with drag & drop, automatic optimisation with Intervention Image (WebP, 1600 px + 600 px thumbnail, auto-rotation, EXIF/GPS stripped; the original is kept if optimisation fails), captions in both languages, ordering; shown on the project page with a keyboard/swipe lightbox
+- **Project galleries:** multi-image upload with drag & drop, automatic optimisation with Laravel's Image component (WebP, 1600 px + 600 px thumbnail, auto-rotation, EXIF/GPS stripped; the original is kept if optimisation fails), captions in both languages, ordering; shown on the project page with a keyboard/swipe lightbox
 - **Messages** inbox for contact-form inquiries (unread badge, reply by email / WhatsApp, delivery status)
 - Dashboard with a website-health checklist and a live Google search preview
 - Light / dark mode and a mobile-friendly layout
@@ -64,7 +64,7 @@
 | Data | SQLite via a small PDO service (`App\Services\Database`) |
 | Frontend | Blade, hand-written CSS (no build step), Font Awesome, Google Fonts |
 | Fonts | Plus Jakarta Sans + Inter (EN), Cairo (AR, public), IBM Plex Sans Arabic (admin) |
-| Images | Intervention Image v4 (Imagick if installed, otherwise GD) |
+| Images | Laravel's Image component (`Illuminate\Image`), powered by `intervention/image` v4 — Imagick if installed, otherwise GD (`config/images.php`, `IMAGE_DRIVER`) |
 | Tooling | PHPUnit, Laravel Pint, Laravel Boost |
 
 ## Getting started

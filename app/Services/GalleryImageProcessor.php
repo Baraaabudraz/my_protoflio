@@ -3,17 +3,14 @@
 namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Drivers\Gd\Driver as GdDriver;
-use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
-use Intervention\Image\Encoders\WebpEncoder;
-use Intervention\Image\ImageManager;
 use Throwable;
 
 /**
- * Optimises uploaded gallery images with Intervention Image: a WebP (max 1600px) plus a
- * thumbnail (max 600px) on the "gallery" disk. Uses Imagick when available, otherwise GD.
+ * Optimises uploaded gallery images with Laravel's Image component: a WebP (max 1600px) plus a
+ * thumbnail (max 600px) on the "gallery" disk. Photos are auto-oriented from their EXIF data.
  *
  * If optimisation fails (unsupported format, missing WebP support, memory), the original file
  * is stored instead so the upload never fails because of image processing.
@@ -61,18 +58,13 @@ class GalleryImageProcessor
     {
         $this->raiseMemoryLimit();
 
-        $image = $this->manager()->decodePath($file->getRealPath());
+        // Image is immutable: each scale() returns a new instance from the same upload
+        $image = Image::fromUpload($file);
+        $large = $image->scale(self::MAX_SIZE, self::MAX_SIZE)->optimize('webp', self::QUALITY);
+        $thumb = $image->scale(self::THUMB_SIZE, self::THUMB_SIZE)->optimize('webp', self::QUALITY);
 
-        $large = (clone $image)->scaleDown(self::MAX_SIZE, self::MAX_SIZE);
-        $thumb = (clone $image)->scaleDown(self::THUMB_SIZE, self::THUMB_SIZE);
-
-        $encoder = new WebpEncoder(quality: self::QUALITY);
-        $path = "{$directory}/{$name}.webp";
-        $thumbPath = "{$directory}/{$name}-thumb.webp";
-
-        $disk = Storage::disk('gallery');
-        $disk->put($path, $large->encode($encoder)->toString());
-        $disk->put($thumbPath, $thumb->encode($encoder)->toString());
+        $path = $large->storeAs($directory, "{$name}.webp", 'gallery');
+        $thumbPath = $thumb->storeAs($directory, "{$name}-thumb.webp", 'gallery');
 
         return ['path' => $path, 'thumb_path' => $thumbPath, 'width' => $large->width(), 'height' => $large->height()];
     }
@@ -87,14 +79,6 @@ class GalleryImageProcessor
         [$width, $height] = @getimagesize($file->getRealPath()) ?: [null, null];
 
         return ['path' => $path, 'thumb_path' => $path, 'width' => $width, 'height' => $height];
-    }
-
-    private function manager(): ImageManager
-    {
-        $driver = extension_loaded('imagick') ? ImagickDriver::class : GdDriver::class;
-
-        // autoOrientation: rotate phone photos correctly; strip: drop EXIF (incl. GPS location)
-        return new ImageManager($driver, autoOrientation: true, strip: true);
     }
 
     private function raiseMemoryLimit(): void
