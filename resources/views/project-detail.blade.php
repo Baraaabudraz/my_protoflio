@@ -169,28 +169,27 @@
 
 {{-- ═════════ MORE CASE STUDIES ═════════ --}}
 @if(!empty($related))
-<section class="section section-alt" aria-labelledby="relatedTitle">
+<section class="section section-tint" aria-labelledby="relatedTitle">
     <div class="wrap">
         <header class="section-head">
-            <p class="eyebrow">{{ __('Case studies') }}</p>
-            <h2 id="relatedTitle">{{ __('More projects') }}</h2>
+            <p class="label">{{ __('Case studies') }}</p>
+            <h2 class="title" id="relatedTitle">{{ __('More projects') }}</h2>
         </header>
-        <div class="case-grid">
+        <div class="work-grid is-three">
             @foreach($related as $item)
                 @php
                     $itemImage = $item->image ? project_image_url($item->image) : null;
                     $itemResult = t($item, 'result');
                 @endphp
-                <a href="{{ $projectUrl($item->id) }}" class="case-card reveal" style="--d: {{ $loop->index * .08 }}s">
-                    <div class="case-media">
-                        @if($itemImage)<img src="{{ $itemImage }}" alt="" loading="lazy">@else<span class="case-emoji" aria-hidden="true">{{ $item->icon ?: '🚀' }}</span>@endif
+                <a href="{{ $projectUrl($item->id) }}" class="work-card reveal" style="--d: {{ $loop->index * .08 }}s">
+                    <div class="work-media">
+                        @if($itemImage)<img src="{{ $itemImage }}" alt="" loading="lazy">@else<span class="work-emoji" aria-hidden="true">{{ $item->icon ?: '🚀' }}</span>@endif
                     </div>
-                    <div class="case-body">
-                        @if(t($item, 'category'))<span class="tag">{{ t($item, 'category') }}</span>@endif
+                    <div class="work-body">
+                        <p class="work-meta">{{ t($item, 'category') }}</p>
                         <h3>{{ t($item, 'title') }}</h3>
-                        <p class="clamp-3">{{ t($item, 'description') }}</p>
-                        @if($itemResult)<p class="result is-compact"><i class="fas fa-arrow-trend-up" aria-hidden="true"></i><span>{{ $itemResult }}</span></p>@endif
-                        <span class="card-link">{{ __('Read the case study') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></span>
+                        @if($itemResult)<p class="work-result"><i class="fas fa-arrow-trend-up" aria-hidden="true"></i>{{ $itemResult }}</p>@endif
+                        <span class="text-link">{{ __('Read the case study') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></span>
                     </div>
                 </a>
             @endforeach

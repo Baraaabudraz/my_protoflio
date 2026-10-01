@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Results-first — public site behaviour (no dependencies)
+   Quiet Premium — public site behaviour (no dependencies)
    Every module only runs when its elements exist; motion respects
    prefers-reduced-motion.
    ========================================================================== */

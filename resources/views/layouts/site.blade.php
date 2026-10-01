@@ -42,9 +42,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     @if($isRtl)
-        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Naskh+Arabic:wght@500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     @else
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     @endif
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{{ $asset('css/site.css') }}">
@@ -68,7 +68,7 @@
         <div class="header-tools">
             <a class="icon-btn" href="{{ $switchUrl }}" hreflang="{{ $otherLocale }}" lang="{{ $otherLocale }}" aria-label="{{ $locale === 'ar' ? 'English' : 'العربية' }}"><span class="lang-mark">{{ $locale === 'ar' ? 'EN' : 'ع' }}</span></a>
             <div class="theme-switch">
-                <button type="button" class="icon-btn" id="themeToggle" aria-haspopup="true" aria-expanded="false" aria-controls="themeMenu" aria-label="{{ __('Theme') }}"><i class="fas fa-palette" aria-hidden="true"></i></button>
+                <button type="button" class="icon-btn" id="themeToggle" aria-haspopup="true" aria-expanded="false" aria-controls="themeMenu" aria-label="{{ __('Theme') }}"><i class="fas fa-circle-half-stroke" aria-hidden="true"></i></button>
                 <div class="theme-menu" id="themeMenu" role="menu">
                     @foreach(['light' => __('Light'), 'dark' => __('Dark'), 'ocean' => __('Ocean'), 'sunset' => __('Sunset')] as $themeKey => $themeLabel)
                         <button type="button" class="theme-option" role="menuitemradio" aria-checked="false" data-theme-choice="{{ $themeKey }}"><span class="swatch sw-{{ $themeKey }}" aria-hidden="true"></span>{{ $themeLabel }}</button>
