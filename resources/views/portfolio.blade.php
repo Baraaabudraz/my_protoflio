@@ -1,4 +1,5 @@
 @extends('layouts.site')
+@use('Illuminate\Support\Str')
 
 @php
     $heroName = ts($settings, 'hero_name') ?: ($settings['hero_name'] ?? 'Your Name');
@@ -14,80 +15,176 @@
     $aboutHeading = ts($settings, 'about_heading') ?: ($settings['about_heading'] ?? '');
     $aboutParagraphs = array_values(array_filter([ts($settings, 'about_p1'), ts($settings, 'about_p2'), ts($settings, 'about_p3')]));
     $arrow = $isRtl ? '←' : '→';
-    $stats = [
-        [$settings['hero_stat_projects'] ?? '30+', __('Projects delivered')],
-        [$settings['hero_stat_clients'] ?? '15+', __('Happy clients')],
-        [$settings['hero_stat_years'] ?? '4+', __('Years of experience')],
-    ];
-    $industries = array_values(array_unique(array_filter(array_map(fn ($p) => t($p, 'category'), $projects))));
+    $statProjects = $settings['hero_stat_projects'] ?? '30+';
+    $statClients = $settings['hero_stat_clients'] ?? '15+';
+    $statYears = $settings['hero_stat_years'] ?? '4+';
     $projectUrl = fn ($id) => \App\Http\Middleware\SetLocale::localizedUrl(route('project.show', $id), $locale);
-    $featured = $projects[0] ?? null;
-    $moreProjects = array_slice($projects, 1);
-    $serviceIcons = ['fa-solid fa-laptop-code', 'fa-solid fa-screwdriver-wrench', 'fa-solid fa-gauge-high'];
+
+    // Real, measured outcomes (projects whose result contains a number) float around the hero diagram.
+    $metricProjects = array_values(array_filter($projects, fn ($p) => preg_match('/\d+\s*%/', (string) $p->result)));
+    $heroMetrics = array_map(fn ($p) => [Str::before(t($p, 'result'), $locale === 'ar' ? ' و' : ','), t($p, 'title')], array_slice($metricProjects, 0, 3));
+
+    // "Diagnose your system": each symptom maps to a service (by position) and the case study that best proves the fix.
+    $findCase = function (string $pattern) use ($projects) {
+        foreach ($projects as $p) {
+            if (preg_match($pattern, (string) $p->result.' '.$p->description)) {
+                return $p;
+            }
+        }
+
+        return $projects[0] ?? null;
+    };
+    $serviceAt = fn (int $i) => $services[$i] ?? ($services[0] ?? null);
+    $symptoms = [
+        ['slow', 'fa-gauge-high', __('My system is slow'), __('Pages take forever, reports time out and users leave.'),
+            [__('Measure exactly where the time goes'), __('Fix slow queries, add indexes and caching'), __('Prove it with before/after numbers')],
+            $serviceAt(2), $findCase('/efficien|faster|speed|performance/i')],
+        ['breaking', 'fa-triangle-exclamation', __('It keeps breaking'), __('Bugs, crashes or failed notifications keep coming back.'),
+            [__('Find the root cause, not just the symptom'), __('Fix it, test it and add monitoring'), __('Stabilise the system so it stays fixed')],
+            $serviceAt(1), $findCase('/stable|error/i')],
+        ['outdated', 'fa-clock-rotate-left', __('It’s outdated or hard to change'), __('Old Laravel/PHP, messy code, and every change feels risky.'),
+            [__('Review the code and plan safe upgrades'), __('Upgrade Laravel and PHP step by step'), __('Clean up the code so new features are easy')],
+            $serviceAt(1), $findCase('/duplicat|maintain|code/i')],
+        ['idea', 'fa-lightbulb', __('I have an idea to build'), __('A process on spreadsheets and WhatsApp, or a product that doesn’t exist yet.'),
+            [__('Turn your idea into a clear plan and price'), __('Build it step by step with regular demos'), __('Launch, document and hand everything over')],
+            $serviceAt(0), $projects[0] ?? null],
+    ];
 @endphp
 
 @section('content')
 
 {{-- ═════════ HERO ═════════ --}}
 <section class="hero" id="top" aria-labelledby="heroTitle">
+    <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div class="grid-bg" aria-hidden="true"></div>
     <div class="wrap hero-grid">
         <div class="hero-copy">
-            <p class="pill reveal"><span class="status-dot" aria-hidden="true"></span>{{ __('Available for new projects') }} · {{ __('Replies within 1–2 days') }}</p>
-            <h1 class="hero-title reveal" id="heroTitle" style="--d:.05s">
-                {{ __('Laravel systems that run your business —') }}
-                <span class="hl">{{ __('built right, or fixed fast.') }}</span>
+            <p class="pill reveal"><span class="status-dot" aria-hidden="true"></span>{{ __('Available for new projects') }} <span class="pill-sep" aria-hidden="true"></span> {{ __('Replies within 1–2 days') }}</p>
+            <h1 class="hero-title reveal" id="heroTitle" style="--d:.06s">
+                {{ __('Your business runs on its system.') }}
+                <span class="grad">{{ __('I make sure it never lets you down.') }}</span>
             </h1>
-            <p class="lead reveal" style="--d:.12s">{!! $heroSubtitle !!}</p>
-            <div class="hero-actions reveal" style="--d:.18s">
-                <a href="#contact" class="btn btn-primary btn-lg">{{ __('Get a free consultation') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></a>
-                <a href="#projects" class="btn btn-ghost btn-lg">{{ __('See the results') }}</a>
+            <p class="lead reveal" style="--d:.14s">{!! $heroSubtitle !!}</p>
+            <div class="hero-actions reveal" style="--d:.22s">
+                <a href="#diagnose" class="btn btn-primary btn-lg"><i class="fas fa-stethoscope" aria-hidden="true"></i> {{ __('Diagnose my system') }}</a>
+                <a href="#contact" class="btn btn-ghost btn-lg">{{ __('Get a free consultation') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></a>
             </div>
-            <ul class="trust-list reveal" style="--d:.24s">
-                <li><i class="fas fa-circle-check" aria-hidden="true"></i>{{ __('Fixed quote before any work starts') }}</li>
-                <li><i class="fas fa-circle-check" aria-hidden="true"></i>{{ __('You own the code') }}</li>
-                <li><i class="fas fa-circle-check" aria-hidden="true"></i>{{ __('Support after delivery') }}</li>
-            </ul>
+            <dl class="hero-stats reveal" style="--d:.3s">
+                <div><dd data-count dir="ltr">{{ $statProjects }}</dd><dt>{{ __('Projects delivered') }}</dt></div>
+                <div><dd data-count dir="ltr">{{ $statClients }}</dd><dt>{{ __('Happy clients') }}</dt></div>
+                <div><dd data-count dir="ltr">{{ $statYears }}</dd><dt>{{ __('Years of experience') }}</dt></div>
+            </dl>
         </div>
 
-        <div class="hero-visual reveal" style="--d:.1s">
-            <div class="portrait">
-                <picture>
-                    <source srcset="{{ asset('images/me.webp') }}" type="image/webp">
-                    <img src="{{ asset('images/me.jpeg') }}" alt="{{ $heroName }} — {{ $heroTagline }}" width="900" height="900" fetchpriority="high">
-                </picture>
+        <div class="hero-visual reveal" style="--d:.12s" aria-hidden="true">
+            <div class="console">
+                <div class="console-bar">
+                    <span class="dots"><i></i><i></i><i></i></span>
+                    <span class="mono">system.health</span>
+                    <span class="console-status mono"><span class="status-dot"></span>{{ __('Healthy') }}</span>
+                </div>
+                <svg class="diagram" viewBox="0 0 480 380" direction="ltr" focusable="false">
+                    <defs>
+                        <linearGradient id="wire" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0" stop-color="var(--accent)" stop-opacity=".7"/>
+                            <stop offset="1" stop-color="var(--accent-2)" stop-opacity=".7"/>
+                        </linearGradient>
+                        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>
+                    </defs>
+                    <g class="wires" fill="none" stroke="url(#wire)" stroke-width="1.5">
+                        <path id="w1" d="M80 66 C80 110 200 112 222 148"/>
+                        <path id="w2" d="M240 66 L240 148"/>
+                        <path id="w3" d="M400 66 C400 110 280 112 258 148"/>
+                        <path id="w4" d="M222 212 C200 252 80 256 80 296"/>
+                        <path id="w5" d="M240 212 L240 296"/>
+                        <path id="w6" d="M258 212 C280 252 400 256 400 296"/>
+                    </g>
+                    <g class="packets">
+                        @foreach([['w1', '0s', '2.6s'], ['w2', '.7s', '2.2s'], ['w3', '1.3s', '2.8s']] as [$wire, $begin, $dur])
+                            <circle r="4" class="packet"><animateMotion dur="{{ $dur }}" begin="{{ $begin }}" repeatCount="indefinite"><mpath href="#{{ $wire }}"/></animateMotion></circle>
+                        @endforeach
+                        @foreach([['w4', '.4s', '2.4s'], ['w5', '1.1s', '2s'], ['w6', '1.8s', '2.6s']] as [$wire, $begin, $dur])
+                            <circle r="4" class="packet packet-2"><animateMotion dur="{{ $dur }}" begin="{{ $begin }}" repeatCount="indefinite" keyPoints="0;1;0" keyTimes="0;.5;1" calcMode="linear"><mpath href="#{{ $wire }}"/></animateMotion></circle>
+                        @endforeach
+                    </g>
+                    @foreach([[16, 18, "\u{f3cd}", __('Mobile app')], [176, 18, "\u{f0ac}", __('Website')], [336, 18, "\u{f625}", __('Dashboard')], [16, 296, "\u{f1c0}", 'MySQL'], [176, 296, "\u{f0e7}", 'Redis'], [336, 296, "\u{f0ae}", __('Queue')]] as [$x, $y, $icon, $label])
+                        <g class="node" transform="translate({{ $x }} {{ $y }})">
+                            <rect width="128" height="48" rx="14"/>
+                            <text x="22" y="30" class="node-icon">{{ $icon }}</text>
+                            <text x="44" y="29.5" class="node-label">{{ $label }}</text>
+                        </g>
+                    @endforeach
+                    <g class="node node-core" transform="translate(150 148)">
+                        <rect width="180" height="64" rx="18" class="core-glow" filter="url(#glow)"/>
+                        <rect width="180" height="64" rx="18"/>
+                        <text x="26" y="40" class="node-icon">&#xf233;</text>
+                        <text x="52" y="31" class="node-label">Laravel API</text>
+                        <text x="52" y="48" class="node-sub">{{ __('secure · fast · tested') }}</text>
+                    </g>
+                </svg>
             </div>
-            <div class="float-card fc-top">
-                <span class="fc-icon"><i class="fas fa-rocket" aria-hidden="true"></i></span>
-                <span><strong dir="ltr">{{ $stats[0][0] }}</strong><small>{{ $stats[0][1] }}</small></span>
-            </div>
-            <div class="float-card fc-bottom">
-                <span class="fc-icon is-good"><i class="fas fa-shield-halved" aria-hidden="true"></i></span>
-                <span><strong>{{ $heroName }}</strong><small>{{ $heroTagline }}</small></span>
-            </div>
-        </div>
-    </div>
-
-    <div class="wrap">
-        <dl class="stats-band reveal">
-            @foreach($stats as [$value, $label])
-                <div><dt>{{ $label }}</dt><dd data-count dir="ltr">{{ $value }}</dd></div>
+            @foreach($heroMetrics as [$metric, $metricProject])
+                <div class="metric-badge mb-{{ $loop->index }}">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span><strong>{{ $metric }}</strong><small>{{ Str::limit($metricProject, 28) }}</small></span>
+                </div>
             @endforeach
-            <div><dt>{{ __('Clients in') }}</dt><dd class="stat-text">{{ __('Palestine · KSA · Iraq') }}</dd></div>
-        </dl>
+        </div>
     </div>
 </section>
 
-{{-- ═════════ INDUSTRIES ═════════ --}}
-@if(!empty($industries))
-<section class="industries" aria-label="{{ __('Industries I have built for') }}">
+{{-- ═════════ DIAGNOSE ═════════ --}}
+<section class="section" id="diagnose" aria-labelledby="diagnoseTitle">
     <div class="wrap">
-        <p>{{ __('Systems I have built for') }}</p>
-        <ul>
-            @foreach($industries as $industry)<li>{{ $industry }}</li>@endforeach
-        </ul>
+        <header class="section-head center reveal">
+            <p class="eyebrow">{{ __('Free diagnosis') }}</p>
+            <h2 id="diagnoseTitle">{{ __('What’s going on with your system?') }}</h2>
+            <p class="section-sub">{{ __('Pick what sounds like you — see how I would fix it, and a real project where I already did.') }}</p>
+        </header>
+
+        <div class="diagnose reveal">
+            <div class="symptoms" role="tablist" aria-label="{{ __('Choose a symptom') }}">
+                @foreach($symptoms as [$key, $icon, $title, $text])
+                    <button type="button" class="symptom @if($loop->first) is-active @endif" role="tab" id="tab-{{ $key }}" aria-controls="panel-{{ $key }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" @unless($loop->first) tabindex="-1" @endunless>
+                        <span class="symptom-icon" aria-hidden="true"><i class="fas {{ $icon }}"></i></span>
+                        <span><strong>{{ $title }}</strong><small>{{ $text }}</small></span>
+                    </button>
+                @endforeach
+            </div>
+
+            @foreach($symptoms as [$key, $icon, $title, $text, $plan, $service, $case])
+                <div class="diag-panel @if($loop->first) is-active @endif" role="tabpanel" id="panel-{{ $key }}" aria-labelledby="tab-{{ $key }}" tabindex="0">
+                    <div class="diag-plan">
+                        <p class="mono diag-label"><i class="fas fa-terminal" aria-hidden="true"></i> {{ __('Diagnosis & plan') }}</p>
+                        <ol class="plan-steps">
+                            @foreach($plan as $step)
+                                <li style="--i: {{ $loop->index }}"><span class="n mono" aria-hidden="true">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>{{ $step }}</li>
+                            @endforeach
+                        </ol>
+                        @if($service)
+                            <div class="diag-service">
+                                <span class="mono">{{ __('Recommended service') }}</span>
+                                <strong>{{ t($service, 'title') }}</strong>
+                            </div>
+                        @endif
+                        <a href="#contact" class="btn btn-primary" @if($service) data-service="{{ t($service, 'title') }}" @endif data-message="{{ $title }}. ">{{ __('Fix this with me') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></a>
+                    </div>
+                    @if($case)
+                        <a class="diag-case" href="{{ $projectUrl($case->id) }}">
+                            <p class="mono diag-label"><i class="fas fa-circle-check" aria-hidden="true"></i> {{ __('Proof — a similar case') }}</p>
+                            <div class="diag-case-media">
+                                @if($case->image)<img src="{{ project_image_url($case->image) }}" alt="" loading="lazy">@else<span aria-hidden="true">{{ $case->icon ?: '🚀' }}</span>@endif
+                            </div>
+                            <strong>{{ t($case, 'title') }}</strong>
+                            @if(t($case, 'result'))<span class="result-chip"><i class="fas fa-arrow-trend-up" aria-hidden="true"></i> {{ t($case, 'result') }}</span>@endif
+                            <span class="card-link">{{ __('Read the case study') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></span>
+                        </a>
+                    @endif
+                </div>
+            @endforeach
+        </div>
     </div>
 </section>
-@endif
 
 {{-- ═════════ SERVICES ═════════ --}}
 <section class="section" id="services" aria-labelledby="servicesTitle">
@@ -103,8 +200,11 @@
                 @php
                     $deliverables = ($locale === 'ar' && ! empty($service->deliverables_ar)) ? $service->deliverables_ar : ($service->deliverables ?? []);
                 @endphp
-                <article class="service-card reveal" style="--d: {{ $loop->index * .08 }}s">
-                    <span class="service-icon" aria-hidden="true"><i class="{{ $service->icon ?: $serviceIcons[$loop->index % 3] }}"></i></span>
+                <article class="glass-card service-card reveal" data-spotlight style="--d: {{ $loop->index * .08 }}s">
+                    <div class="service-top">
+                        <span class="service-icon" aria-hidden="true"><i class="{{ $service->icon ?: 'fa-solid fa-code' }}"></i></span>
+                        <span class="mono service-num" aria-hidden="true">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                    </div>
                     <h3>{{ t($service, 'title') }}</h3>
                     <p>{{ t($service, 'summary') }}</p>
                     @if(!empty($deliverables))
@@ -116,20 +216,11 @@
                 </article>
             @endforeach
         </div>
-
-        <div class="help-note reveal">
-            <span class="help-icon" aria-hidden="true"><i class="fas fa-comments"></i></span>
-            <div>
-                <strong>{{ __('Not sure what you need?') }}</strong>
-                <p>{{ __('Describe the problem in your own words — I’ll tell you honestly what it needs, even if it’s a small fix.') }}</p>
-            </div>
-            <a href="#contact" class="btn btn-ghost">{{ __('Ask me') }}</a>
-        </div>
     </div>
 </section>
 
 {{-- ═════════ RESULTS / CASE STUDIES ═════════ --}}
-<section class="section section-alt" id="projects" aria-labelledby="workTitle">
+<section class="section" id="projects" aria-labelledby="workTitle">
     <div class="wrap">
         <header class="section-head reveal">
             <p class="eyebrow">{{ __('Case studies') }}</p>
@@ -137,59 +228,31 @@
             <p class="section-sub">{{ __('Real systems I have built and improved — open any project to see the challenge, the approach, and the result.') }}</p>
         </header>
 
-        @if($featured)
-            @php
-                $featuredImage = $featured->image ? project_image_url($featured->image) : null;
-                $featuredResult = t($featured, 'result');
-            @endphp
-            <a href="{{ $projectUrl($featured->id) }}" class="case-featured reveal">
-                <div class="case-media">
-                    @if($featuredImage)
-                        <img src="{{ $featuredImage }}" alt="" loading="lazy">
-                    @else
-                        <span class="case-emoji" aria-hidden="true">{{ $featured->icon ?: '🚀' }}</span>
-                    @endif
-                </div>
-                <div class="case-body">
-                    <div class="case-meta">
-                        @if(t($featured, 'category'))<span class="tag">{{ t($featured, 'category') }}</span>@endif
-                        @if($featured->featured)<span class="tag tag-accent"><i class="fas fa-star" aria-hidden="true"></i> {{ __('Featured') }}</span>@endif
+        <div class="case-grid">
+            @foreach($projects as $project)
+                @php
+                    $image = $project->image ? project_image_url($project->image) : null;
+                    $result = t($project, 'result');
+                @endphp
+                <a href="{{ $projectUrl($project->id) }}" class="glass-card case-card reveal @if($loop->first) is-featured @endif" data-spotlight style="--d: {{ ($loop->index % 3) * .08 }}s">
+                    <div class="case-media">
+                        @if($image)
+                            <img src="{{ $image }}" alt="" loading="lazy">
+                        @else
+                            <span class="case-emoji" aria-hidden="true">{{ $project->icon ?: '🚀' }}</span>
+                        @endif
+                        @if(t($project, 'category'))<span class="tag case-tag">{{ t($project, 'category') }}</span>@endif
                     </div>
-                    <h3>{{ t($featured, 'title') }}</h3>
-                    <p>{{ t($featured, 'description') }}</p>
-                    @if($featuredResult)<p class="result"><i class="fas fa-arrow-trend-up" aria-hidden="true"></i><span><small>{{ __('Result') }}</small>{{ $featuredResult }}</span></p>@endif
-                    @if(!empty($featured->stack))<ul class="stack">@foreach(array_slice($featured->stack, 0, 5) as $tech)<li>{{ $tech }}</li>@endforeach</ul>@endif
-                    <span class="card-link">{{ __('Read the case study') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></span>
-                </div>
-            </a>
-        @endif
-
-        @if(!empty($moreProjects))
-            <div class="case-grid">
-                @foreach($moreProjects as $project)
-                    @php
-                        $image = $project->image ? project_image_url($project->image) : null;
-                        $result = t($project, 'result');
-                    @endphp
-                    <a href="{{ $projectUrl($project->id) }}" class="case-card reveal" style="--d: {{ ($loop->index % 3) * .08 }}s">
-                        <div class="case-media">
-                            @if($image)
-                                <img src="{{ $image }}" alt="" loading="lazy">
-                            @else
-                                <span class="case-emoji" aria-hidden="true">{{ $project->icon ?: '🚀' }}</span>
-                            @endif
-                        </div>
-                        <div class="case-body">
-                            @if(t($project, 'category'))<span class="tag">{{ t($project, 'category') }}</span>@endif
-                            <h3>{{ t($project, 'title') }}</h3>
-                            <p class="clamp-3">{{ t($project, 'description') }}</p>
-                            @if($result)<p class="result is-compact"><i class="fas fa-arrow-trend-up" aria-hidden="true"></i><span>{{ $result }}</span></p>@endif
-                            <span class="card-link">{{ __('Read the case study') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></span>
-                        </div>
-                    </a>
-                @endforeach
-            </div>
-        @endif
+                    <div class="case-body">
+                        <h3>{{ t($project, 'title') }}</h3>
+                        <p class="clamp-3">{{ t($project, 'description') }}</p>
+                        @if($result)<span class="result-chip"><i class="fas fa-arrow-trend-up" aria-hidden="true"></i> {{ $result }}</span>@endif
+                        @if($loop->first && !empty($project->stack))<ul class="stack">@foreach(array_slice($project->stack, 0, 5) as $tech)<li>{{ $tech }}</li>@endforeach</ul>@endif
+                        <span class="card-link">{{ __('Read the case study') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></span>
+                    </div>
+                </a>
+            @endforeach
+        </div>
     </div>
 </section>
 
@@ -197,13 +260,13 @@
 @if(!empty($testimonials))
 <section class="section" id="testimonials" aria-labelledby="testimonialsTitle">
     <div class="wrap">
-        <header class="section-head reveal">
+        <header class="section-head center reveal">
             <p class="eyebrow">{{ __('Testimonials') }}</p>
             <h2 id="testimonialsTitle">{{ __('What clients say') }}</h2>
         </header>
         <div class="quote-grid">
             @foreach($testimonials as $testimonial)
-                <figure class="quote-card reveal" style="--d: {{ ($loop->index % 3) * .08 }}s">
+                <figure class="glass-card quote-card reveal" data-spotlight style="--d: {{ ($loop->index % 3) * .08 }}s">
                     <i class="fas fa-quote-left quote-mark" aria-hidden="true"></i>
                     <blockquote>{{ t($testimonial, 'quote') }}</blockquote>
                     <figcaption>
@@ -223,47 +286,59 @@
 </section>
 @endif
 
-{{-- ═════════ PROCESS ═════════ --}}
-<section class="section {{ empty($testimonials) ? '' : 'section-alt' }}" id="process" aria-labelledby="processTitle">
-    <div class="wrap">
-        <header class="section-head reveal">
+{{-- ═════════ PROCESS (deploy pipeline) ═════════ --}}
+<section class="section" id="process" aria-labelledby="processTitle">
+    <div class="wrap process-grid">
+        <header class="section-head process-head reveal">
             <p class="eyebrow">{{ __('Process') }}</p>
             <h2 id="processTitle">{{ __('How we work together') }}</h2>
             <p class="section-sub">{{ __('A simple, transparent process — you always know what is happening and what comes next.') }}</p>
+            <ul class="guarantees">
+                <li><i class="fas fa-file-signature" aria-hidden="true"></i>{{ __('Clear scope & price before starting') }}</li>
+                <li><i class="fas fa-clock-rotate-left" aria-hidden="true"></i>{{ __('Regular progress updates') }}</li>
+                <li><i class="fas fa-book-open" aria-hidden="true"></i>{{ __('Clean, documented code you own') }}</li>
+                <li><i class="fas fa-life-ring" aria-hidden="true"></i>{{ __('Support after delivery') }}</li>
+            </ul>
         </header>
-        <ol class="steps-row">
+        <ol class="pipeline" data-pipeline>
+            <span class="pipeline-line" aria-hidden="true"><span></span></span>
             @foreach([
                 ['fa-comments', __('Discovery'), __('We talk about your project, the problem, and the goal. No technical jargon needed.')],
                 ['fa-clipboard-list', __('Audit & Plan'), __('I review the code or requirements and send a clear plan with scope, timeline, and price.')],
                 ['fa-code', __('Build & Update'), __('I get to work and share regular progress updates, so there are no surprises.')],
-                ['fa-circle-check', __('Deliver & Support'), __('You get tested, documented work — plus support after delivery to make sure everything runs smoothly.')],
+                ['fa-rocket', __('Deliver & Support'), __('You get tested, documented work — plus support after delivery to make sure everything runs smoothly.')],
             ] as [$icon, $title, $text])
-                <li class="step reveal" style="--d: {{ $loop->index * .08 }}s">
-                    <span class="step-num" aria-hidden="true"><i class="fas {{ $icon }}"></i></span>
-                    <small>{{ __('Step') }} {{ $loop->iteration }}</small>
-                    <h3>{{ $title }}</h3>
-                    <p>{{ $text }}</p>
+                <li class="stage">
+                    <span class="stage-node" aria-hidden="true"><i class="fas {{ $icon }}"></i></span>
+                    <div class="glass-card stage-card">
+                        <span class="mono stage-step">{{ __('Step') }} {{ $loop->iteration }}</span>
+                        <h3>{{ $title }}</h3>
+                        <p>{{ $text }}</p>
+                    </div>
                 </li>
             @endforeach
         </ol>
-        <ul class="guarantees reveal">
-            <li><i class="fas fa-file-signature" aria-hidden="true"></i>{{ __('Clear scope & price before starting') }}</li>
-            <li><i class="fas fa-clock-rotate-left" aria-hidden="true"></i>{{ __('Regular progress updates') }}</li>
-            <li><i class="fas fa-book-open" aria-hidden="true"></i>{{ __('Clean, documented code you own') }}</li>
-            <li><i class="fas fa-life-ring" aria-hidden="true"></i>{{ __('Support after delivery') }}</li>
-        </ul>
     </div>
 </section>
 
 {{-- ═════════ ABOUT ═════════ --}}
-<section class="section {{ empty($testimonials) ? 'section-alt' : '' }}" id="about" aria-labelledby="aboutTitle">
+<section class="section" id="about" aria-labelledby="aboutTitle">
     <div class="wrap about-grid">
-        <div class="about-photo reveal">
-            <picture>
-                <source srcset="{{ asset('images/me.webp') }}" type="image/webp">
-                <img src="{{ asset('images/me.jpeg') }}" alt="{{ $heroName }} — {{ $heroTagline }}" width="900" height="900" loading="lazy">
-            </picture>
-            <div class="about-badge"><i class="fas fa-location-dot" aria-hidden="true"></i> {{ __('Gaza, Palestine — working remotely worldwide') }}</div>
+        <div class="about-visual reveal">
+            <div class="frame">
+                <span class="corner c1" aria-hidden="true"></span><span class="corner c2" aria-hidden="true"></span><span class="corner c3" aria-hidden="true"></span><span class="corner c4" aria-hidden="true"></span>
+                <picture>
+                    <source srcset="{{ asset('images/me.webp') }}" type="image/webp">
+                    <img src="{{ asset('images/me.jpeg') }}" alt="{{ $heroName }} — {{ $heroTagline }}" width="900" height="900" loading="lazy">
+                </picture>
+            </div>
+            <dl class="glass-card spec-sheet">
+                <div><dt class="mono">{{ __('Role') }}</dt><dd>{{ $heroTagline }}</dd></div>
+                <div><dt class="mono">{{ __('Based in') }}</dt><dd>{{ __('Gaza, Palestine — working remotely worldwide') }}</dd></div>
+                <div><dt class="mono">{{ __('Experience') }}</dt><dd><span dir="ltr">{{ $statYears }}</span> {{ __('years') }} · <span dir="ltr">{{ $statProjects }}</span> {{ __('projects') }}</dd></div>
+                <div><dt class="mono">{{ __('Languages') }}</dt><dd>{{ __('Arabic · English') }}</dd></div>
+                @if(!empty($techTags))<div><dt class="mono">{{ __('Stack') }}</dt><dd dir="ltr">{{ implode(' · ', array_slice($techTags, 0, 4)) }}</dd></div>@endif
+            </dl>
         </div>
         <div class="about-copy">
             <p class="eyebrow reveal">{{ __('Who Am I') }}</p>
@@ -291,12 +366,12 @@
     @if(!empty($experiences) || !empty($categories))
     <div class="wrap exp-skills">
         @if(!empty($experiences))
-        <div class="reveal" id="experience">
+        <div class="glass-card panel reveal" id="experience">
             <h3 class="sub-title"><i class="fas fa-briefcase" aria-hidden="true"></i> {{ __('Experience') }}</h3>
             <ol class="timeline">
                 @foreach($experiences as $exp)
                     <li>
-                        <span class="dates" dir="ltr">{{ $exp->date_range }}</span>
+                        <span class="dates mono" dir="ltr">{{ $exp->date_range }}</span>
                         <strong>{{ t($exp, 'title') }}</strong>
                         <span class="company">{{ t($exp, 'company') }}</span>
                         @if(t($exp, 'description'))<p>{{ t($exp, 'description') }}</p>@endif
@@ -305,12 +380,12 @@
             </ol>
         </div>
         @endif
-        @if(!empty($categories) || !empty($techTags))
-        <div class="reveal" id="skills" style="--d:.1s">
+        @if(!empty($categories))
+        <div class="glass-card panel reveal" id="skills" style="--d:.1s">
             <h3 class="sub-title"><i class="fas fa-layer-group" aria-hidden="true"></i> {{ __('Toolkit') }}</h3>
             @foreach($categories as $cat)
                 <div class="skill-group">
-                    <h4>{{ t($cat, 'name') }}</h4>
+                    <h4 class="mono">{{ t($cat, 'name') }}</h4>
                     <ul class="chips">@foreach($cat->skills as $skill)<li>{{ t($skill, 'name') }}</li>@endforeach</ul>
                 </div>
             @endforeach
@@ -335,8 +410,8 @@
         </header>
         <div class="faq-list reveal" style="--d:.08s">
             @foreach($faqs as $faq)
-                <details class="faq-item" @if($loop->first) open @endif>
-                    <summary>{{ t($faq, 'question') }}<span class="faq-icon" aria-hidden="true"></span></summary>
+                <details class="glass-card faq-item" @if($loop->first) open @endif>
+                    <summary><span class="mono faq-n" aria-hidden="true">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><span class="faq-q">{{ t($faq, 'question') }}</span><span class="faq-icon" aria-hidden="true"></span></summary>
                     <div class="faq-answer"><p>{{ t($faq, 'answer') }}</p></div>
                 </details>
             @endforeach
@@ -347,25 +422,31 @@
 
 {{-- ═════════ CONTACT ═════════ --}}
 <section class="section contact" id="contact" aria-labelledby="contactTitle">
-    <div class="wrap">
-        <div class="contact-card">
-            <div class="contact-intro">
-                <p class="eyebrow">{{ __('Contact') }}</p>
-                <h2 id="contactTitle">{{ __('Let’s talk about your project') }}</h2>
-                <p>{{ __('Tell me briefly what you need. You will get a clear answer on how I can help, how long it takes, and what it costs — no obligation.') }}</p>
-                <ol class="contact-steps">
-                    <li>{{ __('You send a short message about your project.') }}</li>
-                    <li>{{ __('I reply with questions or a first recommendation.') }}</li>
-                    <li>{{ __('You get a clear plan with scope, timeline, and price.') }}</li>
-                </ol>
-                <div class="direct">
-                    @if($whatsappNumber)<a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i><span><small>WhatsApp</small><span dir="ltr">+{{ $whatsappNumber }}</span></span></a>@endif
-                    @if($contactEmail)<a href="mailto:{{ $contactEmail }}"><i class="fas fa-envelope" aria-hidden="true"></i><span><small>{{ __('Email') }}</small><span>{{ $contactEmail }}</span></span></a>@endif
-                    @if($cvUrl)<a href="{{ $cvUrl }}" target="_blank" rel="noopener" data-cv-open><i class="fas fa-file-lines" aria-hidden="true"></i><span><small>{{ __('Curriculum Vitae') }}</small><span>{{ __('View & download my CV') }}</span></span></a>@endif
-                </div>
+    <div class="aurora is-soft" aria-hidden="true"><span></span><span></span></div>
+    <div class="wrap contact-grid">
+        <div class="contact-intro reveal">
+            <p class="eyebrow">{{ __('Contact') }}</p>
+            <h2 id="contactTitle">{{ __('Let’s talk about your project') }}</h2>
+            <p class="section-sub">{{ __('Tell me briefly what you need. You will get a clear answer on how I can help, how long it takes, and what it costs — no obligation.') }}</p>
+            <ol class="contact-steps">
+                <li>{{ __('You send a short message about your project.') }}</li>
+                <li>{{ __('I reply with questions or a first recommendation.') }}</li>
+                <li>{{ __('You get a clear plan with scope, timeline, and price.') }}</li>
+            </ol>
+            <div class="direct">
+                @if($whatsappNumber)<a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i><span><small>WhatsApp</small><span dir="ltr">+{{ $whatsappNumber }}</span></span></a>@endif
+                @if($contactEmail)<a href="mailto:{{ $contactEmail }}"><i class="fas fa-envelope" aria-hidden="true"></i><span><small>{{ __('Email') }}</small><span>{{ $contactEmail }}</span></span></a>@endif
+                @if($cvUrl)<a href="{{ $cvUrl }}" target="_blank" rel="noopener" data-cv-open><i class="fas fa-file-lines" aria-hidden="true"></i><span><small>{{ __('Curriculum Vitae') }}</small><span>{{ __('View & download my CV') }}</span></span></a>@endif
             </div>
+        </div>
 
-            <div class="contact-form">
+        <div class="terminal reveal" style="--d:.08s">
+            <div class="console-bar">
+                <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="mono">new-project.request</span>
+                <span class="console-status mono"><span class="status-dot" aria-hidden="true"></span>{{ __('Online') }}</span>
+            </div>
+            <div class="terminal-body">
                 <div class="form-status is-success" id="contactStatus" role="status" aria-live="polite" @unless(session('contact_success')) hidden @endunless>
                     <i class="fas fa-circle-check" aria-hidden="true"></i><span>{{ session('contact_success') }}</span>
                 </div>

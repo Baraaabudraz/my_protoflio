@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Results-first — public site behaviour (no dependencies)
+   System Health — public site behaviour (no dependencies)
    Every module only runs when its elements exist; motion respects
    prefers-reduced-motion.
    ========================================================================== */
@@ -105,6 +105,64 @@
         obs.observe(el);
     });
 
+    /* ── Scroll progress bar ───────────────────────────────────────────── */
+    (function progress() {
+        const bar = $('.scroll-progress');
+        if (!bar) return;
+        onScroll(y => {
+            const max = document.documentElement.scrollHeight - innerHeight;
+            bar.style.transform = 'scaleX(' + (max > 0 ? y / max : 0) + ')';
+        });
+    })();
+
+    /* ── Cursor spotlight on glass cards ───────────────────────────────── */
+    if (window.matchMedia('(hover: hover)').matches) {
+        $$('[data-spotlight]').forEach(card => card.addEventListener('pointermove', e => {
+            const r = card.getBoundingClientRect();
+            card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+            card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+        }));
+    }
+
+    /* ── Diagnose: symptom tabs ────────────────────────────────────────── */
+    (function diagnose() {
+        const tabs = $$('.symptom[role="tab"]');
+        if (!tabs.length) return;
+        const select = (tab, focus) => {
+            tabs.forEach(t => {
+                const on = t === tab;
+                t.classList.toggle('is-active', on);
+                t.setAttribute('aria-selected', String(on));
+                t.tabIndex = on ? 0 : -1;
+                document.getElementById(t.getAttribute('aria-controls')).classList.toggle('is-active', on);
+            });
+            if (focus) tab.focus();
+        };
+        tabs.forEach((tab, i) => {
+            tab.addEventListener('click', () => select(tab, false));
+            tab.addEventListener('keydown', e => {
+                const keys = { ArrowDown: 1, ArrowRight: isRtl ? -1 : 1, ArrowUp: -1, ArrowLeft: isRtl ? 1 : -1 };
+                if (e.key in keys) { e.preventDefault(); select(tabs[(i + keys[e.key] + tabs.length) % tabs.length], true); }
+                if (e.key === 'Home') { e.preventDefault(); select(tabs[0], true); }
+                if (e.key === 'End') { e.preventDefault(); select(tabs[tabs.length - 1], true); }
+            });
+        });
+    })();
+
+    /* ── Process pipeline fills as you scroll ──────────────────────────── */
+    (function pipeline() {
+        const list = $('[data-pipeline]');
+        if (!list) return;
+        const fill = $('.pipeline-line', list);
+        const stages = $$('.stage', list);
+        onScroll(() => {
+            const r = list.getBoundingClientRect();
+            const p = Math.min(1, Math.max(0, (innerHeight * .6 - r.top) / r.height));
+            fill.style.setProperty('--progress', reduced ? 1 : p);
+            stages.forEach(s => s.classList.toggle('is-done', reduced || s.getBoundingClientRect().top < innerHeight * .6));
+        });
+    })();
+
     /* ── Sticky consultation bar ───────────────────────────────────────── */
     (function consultBar() {
         const bar = $('#consultBar');
@@ -152,9 +210,11 @@
     })();
 
     /* ── Service CTA → preselect in form ───────────────────────────────── */
-    $$('[data-service]').forEach(a => a.addEventListener('click', () => {
+    $$('[data-service], [data-message]').forEach(a => a.addEventListener('click', () => {
         const select = $('#cf-service');
-        if (select) select.value = a.dataset.service;
+        const message = $('#cf-message');
+        if (select && a.dataset.service) select.value = a.dataset.service;
+        if (message && a.dataset.message && !message.value.trim()) message.value = a.dataset.message;
     }));
 
     /* ── Contact form (server) + WhatsApp alternative ──────────────────── */

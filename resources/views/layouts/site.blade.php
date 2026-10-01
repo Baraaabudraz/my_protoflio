@@ -1,7 +1,6 @@
 @php
     $heroName = ts($settings, 'hero_name') ?: ($settings['hero_name'] ?? 'Portfolio');
     $heroTagline = ts($settings, 'hero_tagline') ?: ($settings['hero_tagline'] ?? '');
-    $firstName = explode(' ', $heroName)[0];
     $whatsappNumber = preg_replace('/\D+/', '', $settings['whatsapp_number'] ?? '');
     $contactEmail = $settings['email'] ?? '';
     $githubUrl = $settings['github_url'] ?? '';
@@ -12,6 +11,7 @@
     $homeUrl = \App\Http\Middleware\SetLocale::localizedUrl(url('/'), $locale);
     $anchor = fn (string $id) => ($onHome ? '' : $homeUrl).'#'.$id;
     $navItems = [
+        ['diagnose', __('Diagnose')],
         ['services', __('Services')],
         ['projects', __('Results')],
         ['process', __('Process')],
@@ -25,7 +25,7 @@
     $asset = fn (string $path) => asset($path).'?v='.(@filemtime(public_path($path)) ?: 1);
 @endphp
 <!DOCTYPE html>
-<html lang="{{ $locale }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}" data-theme="light">
+<html lang="{{ $locale }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}" data-theme="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -36,15 +36,15 @@
             root.classList.add('js');
             try { saved = localStorage.getItem('theme'); } catch (e) {}
             var themes = ['light', 'dark', 'ocean', 'sunset'];
-            root.setAttribute('data-theme', themes.indexOf(saved) > -1 ? saved : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+            root.setAttribute('data-theme', themes.indexOf(saved) > -1 ? saved : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     @if($isRtl)
-        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
     @else
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
     @endif
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{{ $asset('css/site.css') }}">
@@ -53,11 +53,12 @@
 <body>
 
 <a href="#main" class="skip-link">{{ __('Skip to content') }}</a>
+<div class="scroll-progress" aria-hidden="true"></div>
 
 <header class="site-header">
-    <div class="wrap header-inner">
+    <div class="header-island">
         <a class="brand" href="{{ $homeUrl }}" aria-label="{{ $heroName }}">
-            <img src="{{ asset('images/me-thumb.webp') }}" alt="" width="36" height="36">
+            <span class="brand-avatar"><img src="{{ asset('images/me-thumb.webp') }}" alt="" width="36" height="36"><span class="brand-status" aria-hidden="true"></span></span>
             <span class="brand-text"><strong>{{ $heroName }}</strong><small>{{ $heroTagline }}</small></span>
         </a>
         <nav class="nav" aria-label="{{ __('Main navigation') }}">
@@ -68,9 +69,9 @@
         <div class="header-tools">
             <a class="icon-btn" href="{{ $switchUrl }}" hreflang="{{ $otherLocale }}" lang="{{ $otherLocale }}" aria-label="{{ $locale === 'ar' ? 'English' : 'العربية' }}"><span class="lang-mark">{{ $locale === 'ar' ? 'EN' : 'ع' }}</span></a>
             <div class="theme-switch">
-                <button type="button" class="icon-btn" id="themeToggle" aria-haspopup="true" aria-expanded="false" aria-controls="themeMenu" aria-label="{{ __('Theme') }}"><i class="fas fa-palette" aria-hidden="true"></i></button>
+                <button type="button" class="icon-btn" id="themeToggle" aria-haspopup="true" aria-expanded="false" aria-controls="themeMenu" aria-label="{{ __('Theme') }}"><i class="fas fa-circle-half-stroke" aria-hidden="true"></i></button>
                 <div class="theme-menu" id="themeMenu" role="menu">
-                    @foreach(['light' => __('Light'), 'dark' => __('Dark'), 'ocean' => __('Ocean'), 'sunset' => __('Sunset')] as $themeKey => $themeLabel)
+                    @foreach(['dark' => __('Dark'), 'light' => __('Light'), 'ocean' => __('Ocean'), 'sunset' => __('Sunset')] as $themeKey => $themeLabel)
                         <button type="button" class="theme-option" role="menuitemradio" aria-checked="false" data-theme-choice="{{ $themeKey }}"><span class="swatch sw-{{ $themeKey }}" aria-hidden="true"></span>{{ $themeLabel }}</button>
                     @endforeach
                 </div>
@@ -80,9 +81,9 @@
         </div>
     </div>
     <div class="menu-panel" id="menuPanel" hidden>
-        <nav class="wrap" aria-label="{{ __('Main navigation') }}">
+        <nav aria-label="{{ __('Main navigation') }}">
             @foreach($navItems as [$id, $label])
-                <a href="{{ $anchor($id) }}">{{ $label }} <i class="fas fa-chevron-{{ $isRtl ? 'left' : 'right' }}" aria-hidden="true"></i></a>
+                <a href="{{ $anchor($id) }}"><span class="mono">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span> {{ $label }}</a>
             @endforeach
             <a class="btn btn-primary" href="{{ $anchor('contact') }}">{{ __('Get a free consultation') }}</a>
         </nav>
@@ -97,15 +98,11 @@
     <div class="wrap footer-grid">
         <div class="footer-brand">
             <a class="brand" href="{{ $homeUrl }}">
-                <img src="{{ asset('images/me-thumb.webp') }}" alt="" width="36" height="36" loading="lazy">
+                <span class="brand-avatar"><img src="{{ asset('images/me-thumb.webp') }}" alt="" width="36" height="36" loading="lazy"><span class="brand-status" aria-hidden="true"></span></span>
                 <span class="brand-text"><strong>{{ $heroName }}</strong><small>{{ $heroTagline }}</small></span>
             </a>
             <p>{{ __('I build and fix Laravel systems for businesses — secure, fast and easy to grow.') }}</p>
-            <div class="footer-social">
-                @if($linkedinUrl)<a class="icon-btn" href="{{ $linkedinUrl }}" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>@endif
-                @if($githubUrl)<a class="icon-btn" href="{{ $githubUrl }}" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>@endif
-                @if($whatsappNumber)<a class="icon-btn" href="https://wa.me/{{ $whatsappNumber }}" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>@endif
-            </div>
+            <p class="status-line mono"><span class="status-dot" aria-hidden="true"></span>{{ __('All systems operational — accepting new projects') }}</p>
         </div>
         <div>
             <h2 class="footer-title">{{ __('Explore') }}</h2>
@@ -123,7 +120,11 @@
                 @if($whatsappNumber)<li><a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" rel="noopener" dir="ltr">+{{ $whatsappNumber }}</a></li>@endif
                 <li>{{ __('Gaza, Palestine — working remotely worldwide') }}</li>
             </ul>
-            <a class="btn btn-primary btn-sm" href="{{ $anchor('contact') }}" style="margin-top:1rem">{{ __('Free consultation') }}</a>
+            <div class="footer-social">
+                @if($linkedinUrl)<a class="icon-btn" href="{{ $linkedinUrl }}" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>@endif
+                @if($githubUrl)<a class="icon-btn" href="{{ $githubUrl }}" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>@endif
+                @if($whatsappNumber)<a class="icon-btn" href="https://wa.me/{{ $whatsappNumber }}" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>@endif
+            </div>
         </div>
     </div>
     <div class="wrap footer-bottom">

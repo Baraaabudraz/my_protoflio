@@ -26,6 +26,8 @@
 
 {{-- ═════════ HEADER ═════════ --}}
 <section class="p-hero">
+    <div class="aurora is-soft" aria-hidden="true"><span></span><span></span></div>
+    <div class="grid-bg" aria-hidden="true"></div>
     <div class="wrap">
         <nav class="crumbs" aria-label="{{ __('Breadcrumb') }}">
             <a href="{{ $homeUrl }}">{{ __('Home') }}</a><span aria-hidden="true">/</span>
@@ -47,7 +49,7 @@
                 </div>
             </div>
 
-            <aside class="p-summary reveal" style="--d:.08s" aria-label="{{ __('Project summary') }}">
+            <aside class="glass-card p-summary reveal" style="--d:.08s" aria-label="{{ __('Project summary') }}">
                 @if($result)
                     <div class="result-box">
                         <span class="result-icon" aria-hidden="true"><i class="fas fa-arrow-trend-up"></i></span>
@@ -68,6 +70,11 @@
 {{-- ═════════ COVER ═════════ --}}
 <div class="wrap">
     <div class="p-cover reveal">
+        <div class="console-bar" aria-hidden="true">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="mono url-bar">{{ $project->live_url ? preg_replace('#^https?://#', '', rtrim($project->live_url, '/')) : \Illuminate\Support\Str::slug($project->title).'.app' }}</span>
+            <span></span>
+        </div>
         @if($projectImage)
             <img src="{{ $projectImage }}" alt="{{ $projectTitle }}" fetchpriority="high">
         @else
@@ -92,7 +99,7 @@
         <section class="p-section reveal" aria-labelledby="stagesTitle">
             <h2 id="stagesTitle"><span class="p-num" aria-hidden="true"><i class="fas fa-list-check"></i></span>{{ __('How I built it') }}</h2>
             @if(!empty($stages))
-                <ol class="p-steps">
+                <ol class="p-steps pipeline-mini">
                     @foreach($stages as $stage)
                         <li><span class="n" aria-hidden="true">{{ $loop->iteration }}</span><span>{{ $stage }}</span></li>
                     @endforeach
@@ -126,7 +133,7 @@
         @endif
 
         @foreach($testimonials as $testimonial)
-            <figure class="quote-card is-wide reveal">
+            <figure class="glass-card quote-card is-wide reveal">
                 <i class="fas fa-quote-left quote-mark" aria-hidden="true"></i>
                 <blockquote>{{ t($testimonial, 'quote') }}</blockquote>
                 <figcaption>
@@ -138,7 +145,7 @@
     </div>
 
     <aside class="p-side">
-        <div class="side-card reveal">
+        <div class="glass-card side-card reveal">
             <h2 class="side-title">{{ __('Tech Stack') }}</h2>
             <ul class="chips">@foreach($stack as $tech)<li>{{ $tech }}</li>@endforeach</ul>
             @if($project->live_url || $project->github_url)
@@ -148,13 +155,13 @@
                 </div>
             @endif
         </div>
-        <div class="side-card side-cta reveal">
+        <div class="glass-card side-card side-cta reveal">
             <h2 class="side-title">{{ __('Need something similar?') }}</h2>
             <p>{{ __('Tell me about your project and get a clear plan with scope, timeline and price — free.') }}</p>
             @if($whatsappNumber)<a href="{{ $similarUrl }}" target="_blank" rel="noopener" class="btn btn-wa"><i class="fab fa-whatsapp" aria-hidden="true"></i> {{ __('Chat on WhatsApp') }}</a>@endif
             <a href="{{ $homeUrl }}#contact" class="btn btn-primary">{{ __('Get a free consultation') }}</a>
         </div>
-        <div class="side-card reveal">
+        <div class="glass-card side-card reveal">
             <h2 class="side-title">{{ __('Share this project') }}</h2>
             <div class="share">
                 <button type="button" class="icon-btn" id="copyLink" data-url="{{ $pageUrl }}" aria-label="{{ __('Copy link') }}"><i class="fas fa-link"></i></button>
@@ -181,7 +188,7 @@
                     $itemImage = $item->image ? project_image_url($item->image) : null;
                     $itemResult = t($item, 'result');
                 @endphp
-                <a href="{{ $projectUrl($item->id) }}" class="case-card reveal" style="--d: {{ $loop->index * .08 }}s">
+                <a href="{{ $projectUrl($item->id) }}" class="glass-card case-card reveal" data-spotlight style="--d: {{ $loop->index * .08 }}s">
                     <div class="case-media">
                         @if($itemImage)<img src="{{ $itemImage }}" alt="" loading="lazy">@else<span class="case-emoji" aria-hidden="true">{{ $item->icon ?: '🚀' }}</span>@endif
                     </div>
@@ -189,7 +196,7 @@
                         @if(t($item, 'category'))<span class="tag">{{ t($item, 'category') }}</span>@endif
                         <h3>{{ t($item, 'title') }}</h3>
                         <p class="clamp-3">{{ t($item, 'description') }}</p>
-                        @if($itemResult)<p class="result is-compact"><i class="fas fa-arrow-trend-up" aria-hidden="true"></i><span>{{ $itemResult }}</span></p>@endif
+                        @if($itemResult)<span class="result-chip"><i class="fas fa-arrow-trend-up" aria-hidden="true"></i> {{ $itemResult }}</span>@endif
                         <span class="card-link">{{ __('Read the case study') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></span>
                     </div>
                 </a>
