@@ -13,11 +13,15 @@
     $anchor = fn (string $id) => ($onHome ? '' : $homeUrl).'#'.$id;
     $navItems = [
         ['services', __('Services')],
-        ['projects', __('My Work')],
+        ['projects', __('Results')],
         ['process', __('Process')],
         ['about', __('About')],
-        ['contact', __('Contact')],
     ];
+    if (! isset($faqs) || ! empty($faqs)) {
+        $navItems[] = ['faq', __('FAQ')];
+    }
+    $otherLocale = $locale === 'ar' ? 'en' : 'ar';
+    $switchUrl = url()->current().'?lang='.$otherLocale;
     $asset = fn (string $path) => asset($path).'?v='.(@filemtime(public_path($path)) ?: 1);
 @endphp
 <!DOCTYPE html>
@@ -28,108 +32,99 @@
     @include('partials.seo')
     <script>
         (function () {
-            var saved = null;
+            var root = document.documentElement, saved = null;
+            root.classList.add('js');
             try { saved = localStorage.getItem('theme'); } catch (e) {}
             var themes = ['light', 'dark', 'ocean', 'sunset'];
-            var theme = themes.indexOf(saved) > -1 ? saved : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            document.documentElement.setAttribute('data-theme', theme);
+            root.setAttribute('data-theme', themes.indexOf(saved) > -1 ? saved : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     @if($isRtl)
-        <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
     @else
-        <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
     @endif
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{{ $asset('css/site.css') }}">
     @stack('head')
 </head>
-<body class="@yield('body-class')">
+<body>
 
 <a href="#main" class="skip-link">{{ __('Skip to content') }}</a>
-<div class="progress-bar" aria-hidden="true"></div>
-<div class="cursor" aria-hidden="true"><span class="cursor-dot"></span><span class="cursor-label"></span></div>
 
 <header class="site-header">
-    <div class="wrap">
-        <a class="brand" href="{{ $homeUrl }}" aria-label="{{ $heroName }}" data-magnetic>
-            <img src="{{ asset('images/me-thumb.webp') }}" alt="" width="34" height="34">
-            <span>{{ $firstName }}<span class="dot">.</span></span>
+    <div class="wrap header-inner">
+        <a class="brand" href="{{ $homeUrl }}" aria-label="{{ $heroName }}">
+            <img src="{{ asset('images/me-thumb.webp') }}" alt="" width="36" height="36">
+            <span class="brand-text"><strong>{{ $heroName }}</strong><small>{{ $heroTagline }}</small></span>
         </a>
         <nav class="nav" aria-label="{{ __('Main navigation') }}">
             @foreach($navItems as [$id, $label])
-                <a class="ulink" href="{{ $anchor($id) }}">{{ $label }}</a>
+                <a href="{{ $anchor($id) }}">{{ $label }}</a>
             @endforeach
         </nav>
         <div class="header-tools">
-            <a class="tool-btn" href="{{ url()->current() }}?lang={{ $locale === 'ar' ? 'en' : 'ar' }}" hreflang="{{ $locale === 'ar' ? 'en' : 'ar' }}" lang="{{ $locale === 'ar' ? 'en' : 'ar' }}" aria-label="{{ $locale === 'ar' ? 'English' : 'العربية' }}">{{ $locale === 'ar' ? 'EN' : 'ع' }}</a>
+            <a class="icon-btn" href="{{ $switchUrl }}" hreflang="{{ $otherLocale }}" lang="{{ $otherLocale }}" aria-label="{{ $locale === 'ar' ? 'English' : 'العربية' }}"><span class="lang-mark">{{ $locale === 'ar' ? 'EN' : 'ع' }}</span></a>
             <div class="theme-switch">
-                <button type="button" class="tool-btn" id="themeToggle" aria-haspopup="true" aria-expanded="false" aria-controls="themeMenu" aria-label="{{ __('Theme') }}"><i class="fas fa-circle-half-stroke"></i></button>
+                <button type="button" class="icon-btn" id="themeToggle" aria-haspopup="true" aria-expanded="false" aria-controls="themeMenu" aria-label="{{ __('Theme') }}"><i class="fas fa-palette" aria-hidden="true"></i></button>
                 <div class="theme-menu" id="themeMenu" role="menu">
-                    @foreach(['light' => __('Paper'), 'dark' => __('Ink'), 'ocean' => __('Ocean'), 'sunset' => __('Sunset')] as $themeKey => $themeLabel)
-                        <button type="button" class="theme-option" role="menuitemradio" aria-checked="false" data-theme-choice="{{ $themeKey }}"><span class="swatch sw-{{ $themeKey }}"></span>{{ $themeLabel }}</button>
+                    @foreach(['light' => __('Light'), 'dark' => __('Dark'), 'ocean' => __('Ocean'), 'sunset' => __('Sunset')] as $themeKey => $themeLabel)
+                        <button type="button" class="theme-option" role="menuitemradio" aria-checked="false" data-theme-choice="{{ $themeKey }}"><span class="swatch sw-{{ $themeKey }}" aria-hidden="true"></span>{{ $themeLabel }}</button>
                     @endforeach
                 </div>
             </div>
-            <a class="btn btn-accent header-cta" href="{{ $anchor('contact') }}" data-magnetic>{{ __('Let’s talk') }}</a>
-            <button type="button" class="tool-btn menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="menuOverlay"><span class="label">{{ __('Menu') }}</span></button>
+            <a class="btn btn-primary btn-sm header-cta" href="{{ $anchor('contact') }}">{{ __('Free consultation') }}</a>
+            <button type="button" class="icon-btn menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="menuPanel" aria-label="{{ __('Menu') }}"><i class="fas fa-bars" aria-hidden="true"></i></button>
         </div>
     </div>
-</header>
-
-<div class="menu-overlay" id="menuOverlay">
-    <nav aria-label="{{ __('Main navigation') }}">
-        @foreach($navItems as [$id, $label])
-            <a href="{{ $anchor($id) }}"><span style="--i: {{ $loop->index }}">{{ $label }}</span></a>
-        @endforeach
-    </nav>
-    <div class="menu-foot">
-        <a class="tool-btn" href="{{ url()->current() }}?lang={{ $locale === 'ar' ? 'en' : 'ar' }}" lang="{{ $locale === 'ar' ? 'en' : 'ar' }}">{{ $locale === 'ar' ? 'English' : 'العربية' }}</a>
-        <button type="button" class="tool-btn" data-theme-cycle><i class="fas fa-circle-half-stroke"></i>&nbsp; {{ __('Theme') }}</button>
-        @if($whatsappNumber)<a class="tool-btn" href="https://wa.me/{{ $whatsappNumber }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i>&nbsp; WhatsApp</a>@endif
+    <div class="menu-panel" id="menuPanel" hidden>
+        <nav class="wrap" aria-label="{{ __('Main navigation') }}">
+            @foreach($navItems as [$id, $label])
+                <a href="{{ $anchor($id) }}">{{ $label }} <i class="fas fa-chevron-{{ $isRtl ? 'left' : 'right' }}" aria-hidden="true"></i></a>
+            @endforeach
+            <a class="btn btn-primary" href="{{ $anchor('contact') }}">{{ __('Get a free consultation') }}</a>
+        </nav>
     </div>
-</div>
+</header>
 
 <main id="main">
     @yield('content')
 </main>
 
-<footer class="site-footer @yield('footer-class')">
-    <div class="wrap">
-        <div class="footer-top">
-            <div>
-                <h4>{{ __('Navigate') }}</h4>
-                <ul>
-                    @foreach($navItems as [$id, $label])
-                        <li><a class="ulink" href="{{ $anchor($id) }}">{{ $label }}</a></li>
-                    @endforeach
-                </ul>
-            </div>
-            <div>
-                <h4>{{ __('Elsewhere') }}</h4>
-                <ul>
-                    @if($linkedinUrl)<li><a class="ulink" href="{{ $linkedinUrl }}" target="_blank" rel="noopener">LinkedIn</a></li>@endif
-                    @if($githubUrl)<li><a class="ulink" href="{{ $githubUrl }}" target="_blank" rel="noopener">GitHub</a></li>@endif
-                    @if($whatsappNumber)<li><a class="ulink" href="https://wa.me/{{ $whatsappNumber }}" target="_blank" rel="noopener">WhatsApp</a></li>@endif
-                    @if($cvUrl)<li><a class="ulink" href="{{ $cvUrl }}" target="_blank" rel="noopener" data-cv-open>{{ __('CV') }}</a></li>@endif
-                </ul>
-            </div>
-            <div>
-                <h4>{{ __('Say hello') }}</h4>
-                <ul>
-                    @if($contactEmail)<li><a class="ulink" href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a></li>@endif
-                    @if($whatsappNumber)<li><a class="ulink" href="https://wa.me/{{ $whatsappNumber }}" dir="ltr">+{{ $whatsappNumber }}</a></li>@endif
-                </ul>
-            </div>
-            <div>
-                <h4>{{ __('Local time') }}</h4>
-                <p><span data-clock="Asia/Gaza" dir="ltr">--:--</span> · {{ __('Gaza, Palestine') }}</p>
-                <p style="margin-top:.8rem"><a class="ulink" href="#main">{{ __('Back to top') }} ↑</a></p>
+<footer class="site-footer">
+    <div class="wrap footer-grid">
+        <div class="footer-brand">
+            <a class="brand" href="{{ $homeUrl }}">
+                <img src="{{ asset('images/me-thumb.webp') }}" alt="" width="36" height="36" loading="lazy">
+                <span class="brand-text"><strong>{{ $heroName }}</strong><small>{{ $heroTagline }}</small></span>
+            </a>
+            <p>{{ __('I build and fix Laravel systems for businesses — secure, fast and easy to grow.') }}</p>
+            <div class="footer-social">
+                @if($linkedinUrl)<a class="icon-btn" href="{{ $linkedinUrl }}" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>@endif
+                @if($githubUrl)<a class="icon-btn" href="{{ $githubUrl }}" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>@endif
+                @if($whatsappNumber)<a class="icon-btn" href="https://wa.me/{{ $whatsappNumber }}" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>@endif
             </div>
         </div>
-        <span class="wordmark" aria-hidden="true">{{ $firstName }}<span class="dot">.</span></span>
+        <div>
+            <h2 class="footer-title">{{ __('Explore') }}</h2>
+            <ul>
+                @foreach($navItems as [$id, $label])
+                    <li><a href="{{ $anchor($id) }}">{{ $label }}</a></li>
+                @endforeach
+                @if($cvUrl)<li><a href="{{ $cvUrl }}" target="_blank" rel="noopener" data-cv-open>{{ __('CV') }}</a></li>@endif
+            </ul>
+        </div>
+        <div>
+            <h2 class="footer-title">{{ __('Get in touch') }}</h2>
+            <ul>
+                @if($contactEmail)<li><a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a></li>@endif
+                @if($whatsappNumber)<li><a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" rel="noopener" dir="ltr">+{{ $whatsappNumber }}</a></li>@endif
+                <li>{{ __('Gaza, Palestine — working remotely worldwide') }}</li>
+            </ul>
+            <a class="btn btn-primary btn-sm" href="{{ $anchor('contact') }}" style="margin-top:1rem">{{ __('Free consultation') }}</a>
+        </div>
     </div>
     <div class="wrap footer-bottom">
         <span>© {{ date('Y') }} {{ $heroName }}</span>
@@ -137,15 +132,25 @@
     </div>
 </footer>
 
+{{-- Sticky consultation bar --}}
+<aside class="consult-bar" id="consultBar" aria-label="{{ __('Free consultation') }}" hidden>
+    <p><span class="status-dot" aria-hidden="true"></span><span><strong>{{ __('Have a project in mind?') }}</strong> <span class="consult-sub">{{ __('Get a free consultation — no obligation.') }}</span></span></p>
+    <div class="consult-actions">
+        <a class="btn btn-primary btn-sm" href="{{ $anchor('contact') }}">{{ __('Free consultation') }}</a>
+        @if($whatsappNumber)<a class="btn btn-wa btn-sm" href="https://wa.me/{{ $whatsappNumber }}?text={{ rawurlencode(__('Hello, I found you through your portfolio.')) }}" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp" aria-hidden="true"></i><span class="wa-label">WhatsApp</span></a>@endif
+        <button type="button" class="consult-close" id="consultClose" aria-label="{{ __('Close') }}"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+    </div>
+</aside>
+
 @if($cvUrl)
 <dialog class="cv-modal" id="cvModal" aria-labelledby="cvModalTitle">
     <div class="cv-modal-head">
         <div>
             <h2 id="cvModalTitle">{{ __('Curriculum Vitae') }}</h2>
-            <p class="muted" style="font-size:.88rem">{{ $heroName }} · {{ $heroTagline }}</p>
+            <p class="muted">{{ $heroName }} · {{ $heroTagline }}</p>
         </div>
         <div class="cv-modal-actions">
-            <a href="{{ $cvUrl }}" download="{{ basename($cvPath) }}" class="btn btn-accent"><i class="fas fa-download"></i> {{ __('Download') }}</a>
+            <a href="{{ $cvUrl }}" download="{{ basename($cvPath) }}" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> {{ __('Download') }}</a>
             <a href="{{ $cvUrl }}" target="_blank" rel="noopener" class="icon-btn" aria-label="{{ __('Open in new tab') }}"><i class="fas fa-up-right-from-square"></i></a>
             <button type="button" class="icon-btn" data-cv-close autofocus aria-label="{{ __('Close') }}"><i class="fas fa-xmark"></i></button>
         </div>
@@ -157,8 +162,6 @@
 @stack('dialogs')
 
 <script type="application/json" id="site-i18n">{!! json_encode([
-    'menu' => __('Menu'),
-    'close' => __('Close'),
     'sending' => __('Sending…'),
     'send' => __('Send Message'),
     'checkFields' => __('Please check the highlighted fields.'),

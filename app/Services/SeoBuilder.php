@@ -12,9 +12,10 @@ class SeoBuilder
      *
      * @param  array<string, string>  $settings
      * @param  array<int, object>  $services
+     * @param  array<int, object>  $faqs
      * @return array{title: string, description: string, author: string, site_name: string, image_alt: string, type: string, json_ld: array<string, mixed>}
      */
-    public function home(array $settings, array $services): array
+    public function home(array $settings, array $services, array $faqs = []): array
     {
         $name = $this->name($settings);
         $tagline = ts($settings, 'hero_tagline') ?: 'Backend Engineer';
@@ -78,6 +79,16 @@ class SeoBuilder
                             'itemListElement' => $offers,
                         ],
                     ],
+                    ...($faqs === [] ? [] : [[
+                        '@type' => 'FAQPage',
+                        '@id' => $pageUrl.'#faq',
+                        'inLanguage' => app()->getLocale(),
+                        'mainEntity' => array_map(fn (object $faq): array => [
+                            '@type' => 'Question',
+                            'name' => t($faq, 'question'),
+                            'acceptedAnswer' => ['@type' => 'Answer', 'text' => t($faq, 'answer')],
+                        ], $faqs),
+                    ]]),
                 ],
             ],
         ];

@@ -192,8 +192,8 @@ class AdminController extends Controller
             'INSERT INTO projects
              (title,title_ar,description,description_ar,icon,image,stack,github_url,live_url,featured,sort_order,visible,
               client,client_ar,duration,duration_ar,category,category_ar,overview,overview_ar,work_stages,work_stages_ar,
-              created_at,updated_at)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+              result,result_ar,created_at,updated_at)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [
                 $request->title,          $request->title_ar,
                 $request->description,    $request->description_ar,
@@ -205,6 +205,7 @@ class AdminController extends Controller
                 $request->category,       $request->category_ar,
                 $request->overview,       $request->overview_ar,
                 $workStages,              $workStagesAr,
+                $request->result ?: null, $request->result_ar ?: null,
                 $now, $now,
             ]
         );
@@ -337,7 +338,7 @@ class AdminController extends Controller
              title=?,title_ar=?,description=?,description_ar=?,icon=?,image=?,stack=?,github_url=?,live_url=?,
              featured=?,sort_order=?,visible=?,
              client=?,client_ar=?,duration=?,duration_ar=?,category=?,category_ar=?,
-             overview=?,overview_ar=?,work_stages=?,work_stages_ar=?,updated_at=?
+             overview=?,overview_ar=?,work_stages=?,work_stages_ar=?,result=?,result_ar=?,updated_at=?
              WHERE id=?',
             [
                 $request->title,       $request->title_ar,
@@ -350,6 +351,7 @@ class AdminController extends Controller
                 $request->category,    $request->category_ar,
                 $request->overview,    $request->overview_ar,
                 $workStages,           $workStagesAr,
+                $request->result ?: null, $request->result_ar ?: null,
                 now()->toDateTimeString(), $id,
             ]
         );
@@ -517,6 +519,208 @@ class AdminController extends Controller
         Database::execute('DELETE FROM services WHERE id = ?', [$id]);
 
         return redirect()->route('admin.services')->with('success', __('Service deleted.'));
+    }
+
+    // ─── Testimonials ───
+    public function testimonials()
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+        $testimonials = Database::query(
+            'SELECT t.*, p.title AS project_title FROM testimonials t LEFT JOIN projects p ON p.id = t.project_id ORDER BY t.sort_order ASC, t.id ASC'
+        );
+
+        return view('admin.testimonials.index', compact('testimonials'));
+    }
+
+    public function testimonialCreate()
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+
+        return view('admin.testimonials.form', ['testimonial' => null, 'projects' => $this->projectOptions()]);
+    }
+
+    public function testimonialStore(Request $request)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+        $data = $this->validateTestimonial($request);
+        $now = now()->toDateTimeString();
+
+        Database::execute(
+            'INSERT INTO testimonials (name,role,role_ar,quote,quote_ar,project_id,sort_order,visible,created_at,updated_at)
+             VALUES (?,?,?,?,?,?,?,?,?,?)',
+            [...$data, $now, $now]
+        );
+
+        return redirect()->route('admin.testimonials')->with('success', __('Testimonial created!'));
+    }
+
+    public function testimonialEdit(int $id)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+        $testimonial = Database::first('SELECT * FROM testimonials WHERE id = ?', [$id]);
+        if (! $testimonial) {
+            abort(404);
+        }
+
+        return view('admin.testimonials.form', ['testimonial' => $testimonial, 'projects' => $this->projectOptions()]);
+    }
+
+    public function testimonialUpdate(Request $request, int $id)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+        $data = $this->validateTestimonial($request);
+
+        Database::execute(
+            'UPDATE testimonials SET name=?,role=?,role_ar=?,quote=?,quote_ar=?,project_id=?,sort_order=?,visible=?,updated_at=? WHERE id=?',
+            [...$data, now()->toDateTimeString(), $id]
+        );
+
+        return redirect()->route('admin.testimonials')->with('success', __('Testimonial updated!'));
+    }
+
+    public function testimonialDelete(int $id)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+        Database::execute('DELETE FROM testimonials WHERE id = ?', [$id]);
+
+        return redirect()->route('admin.testimonials')->with('success', __('Testimonial deleted.'));
+    }
+
+    /**
+     * @return list<mixed> name, role, role_ar, quote, quote_ar, project_id, sort_order, visible
+     */
+    private function validateTestimonial(Request $request): array
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'role' => 'nullable|string|max:255',
+            'role_ar' => 'nullable|string|max:255',
+            'quote' => 'required|string|max:2000',
+            'quote_ar' => 'nullable|string|max:2000',
+            'project_id' => 'nullable|integer',
+        ]);
+        $projectId = $request->integer('project_id') ?: null;
+        if ($projectId && ! Database::first('SELECT id FROM projects WHERE id = ?', [$projectId])) {
+            $projectId = null;
+        }
+
+        return [
+            $request->name, $request->role, $request->role_ar,
+            $request->quote, $request->quote_ar, $projectId,
+            (int) ($request->sort_order ?? 0), $request->has('visible') ? 1 : 0,
+        ];
+    }
+
+    /**
+     * @return array<int, object>
+     */
+    private function projectOptions(): array
+    {
+        return Database::query('SELECT id, title, title_ar FROM projects ORDER BY sort_order ASC, id ASC');
+    }
+
+    // ─── FAQs ───
+    public function faqs()
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+        $faqs = Database::query('SELECT * FROM faqs ORDER BY sort_order ASC, id ASC');
+
+        return view('admin.faqs.index', compact('faqs'));
+    }
+
+    public function faqCreate()
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+
+        return view('admin.faqs.form', ['faq' => null]);
+    }
+
+    public function faqStore(Request $request)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+        $data = $this->validateFaq($request);
+        $now = now()->toDateTimeString();
+
+        Database::execute(
+            'INSERT INTO faqs (question,question_ar,answer,answer_ar,sort_order,visible,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)',
+            [...$data, $now, $now]
+        );
+
+        return redirect()->route('admin.faqs')->with('success', __('Question created!'));
+    }
+
+    public function faqEdit(int $id)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+        $faq = Database::first('SELECT * FROM faqs WHERE id = ?', [$id]);
+        if (! $faq) {
+            abort(404);
+        }
+
+        return view('admin.faqs.form', compact('faq'));
+    }
+
+    public function faqUpdate(Request $request, int $id)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+        $data = $this->validateFaq($request);
+
+        Database::execute(
+            'UPDATE faqs SET question=?,question_ar=?,answer=?,answer_ar=?,sort_order=?,visible=?,updated_at=? WHERE id=?',
+            [...$data, now()->toDateTimeString(), $id]
+        );
+
+        return redirect()->route('admin.faqs')->with('success', __('Question updated!'));
+    }
+
+    public function faqDelete(int $id)
+    {
+        if (! $this->auth()) {
+            return redirect()->route('admin.login');
+        }
+        Database::execute('DELETE FROM faqs WHERE id = ?', [$id]);
+
+        return redirect()->route('admin.faqs')->with('success', __('Question deleted.'));
+    }
+
+    /**
+     * @return list<mixed> question, question_ar, answer, answer_ar, sort_order, visible
+     */
+    private function validateFaq(Request $request): array
+    {
+        $request->validate([
+            'question' => 'required|string|max:255',
+            'question_ar' => 'nullable|string|max:255',
+            'answer' => 'required|string|max:3000',
+            'answer_ar' => 'nullable|string|max:3000',
+        ]);
+
+        return [
+            $request->question, $request->question_ar, $request->answer, $request->answer_ar,
+            (int) ($request->sort_order ?? 0), $request->has('visible') ? 1 : 0,
+        ];
     }
 
     // ─── Contact messages ───

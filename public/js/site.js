@@ -1,21 +1,17 @@
 /* ==========================================================================
-   Kinetic Editorial — public site behaviour (no dependencies)
-   Every effect is skipped under prefers-reduced-motion and only runs when its
-   elements exist on the page.
+   Results-first — public site behaviour (no dependencies)
+   Every module only runs when its elements exist; motion respects
+   prefers-reduced-motion.
    ========================================================================== */
 (function () {
     'use strict';
 
     const root = document.documentElement;
     const isRtl = root.dir === 'rtl';
-    const isArabic = root.lang === 'ar';
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     const i18n = (() => { try { return JSON.parse(document.getElementById('site-i18n').textContent); } catch (e) { return {}; } })();
     const $ = (s, c = document) => c.querySelector(s);
     const $$ = (s, c = document) => [...c.querySelectorAll(s)];
-    const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-    const lerp = (a, b, t) => a + (b - a) * t;
 
     // One shared rAF-throttled scroll loop
     const scrollHandlers = [];
@@ -42,304 +38,100 @@
         options.forEach(o => o.addEventListener('click', () => { apply(o.dataset.themeChoice); close(true); }));
         document.addEventListener('click', e => { if (!menu.contains(e.target)) close(false); });
         document.addEventListener('keydown', e => { if (e.key === 'Escape' && menu.classList.contains('is-open')) close(true); });
-        $$('[data-theme-cycle]').forEach(b => b.addEventListener('click', () => {
-            const keys = ['light', 'dark', 'ocean', 'sunset'];
-            apply(keys[(keys.indexOf(root.getAttribute('data-theme')) + 1) % keys.length]);
-        }));
     })();
 
-    /* ── Header: hide on scroll down, active section, progress ──────────── */
+    /* ── Header: shadow on scroll + active section ─────────────────────── */
     (function header() {
         const head = $('.site-header');
-        const bar = $('.progress-bar');
-        let last = 0;
-        if (head) {
-            onScroll(y => {
-                head.classList.toggle('is-scrolled', y > 20);
-                const menuOpen = $('.menu-overlay')?.classList.contains('is-open');
-                head.classList.toggle('is-hidden', !menuOpen && y > 400 && y > last);
-                last = y;
-            });
-        }
-        if (bar) {
-            onScroll(y => {
-                const max = document.documentElement.scrollHeight - innerHeight;
-                bar.style.transform = 'scaleX(' + (max > 0 ? y / max : 0) + ')';
-            });
-        }
+        if (head) onScroll(y => head.classList.toggle('is-scrolled', y > 8));
         const links = $$('.nav a[href*="#"]');
         const sections = links.map(a => document.getElementById(a.hash.slice(1))).filter(Boolean);
-        if (sections.length) {
-            onScroll(y => {
-                let current = '';
-                sections.forEach(s => { if (y >= s.offsetTop - innerHeight * .4) current = s.id; });
-                links.forEach(a => a.classList.toggle('is-active', a.hash === '#' + current));
-            });
-        }
+        if (!sections.length) return;
+        onScroll(y => {
+            let current = '';
+            sections.forEach(s => { if (y >= s.offsetTop - innerHeight * .35) current = s.id; });
+            links.forEach(a => a.classList.toggle('is-active', a.hash === '#' + current));
+        });
     })();
 
     /* ── Mobile menu ───────────────────────────────────────────────────── */
     (function menu() {
         const toggle = $('#menuToggle');
-        const overlay = $('#menuOverlay');
-        if (!toggle || !overlay) return;
+        const panel = $('#menuPanel');
+        if (!toggle || !panel) return;
+        const icon = $('i', toggle);
         const set = open => {
-            overlay.classList.toggle('is-open', open);
+            panel.hidden = !open;
             toggle.setAttribute('aria-expanded', String(open));
-            toggle.querySelector('.label').textContent = open ? i18n.close : i18n.menu;
-            overlay.inert = !open;
-            root.style.overflow = open ? 'hidden' : '';
+            icon.className = open ? 'fas fa-xmark' : 'fas fa-bars';
         };
-        overlay.inert = true;
-        toggle.addEventListener('click', () => set(!overlay.classList.contains('is-open')));
-        $$('a', overlay).forEach(a => a.addEventListener('click', () => set(false)));
-        document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay.classList.contains('is-open')) { set(false); toggle.focus(); } });
+        toggle.addEventListener('click', () => set(panel.hidden));
+        $$('a', panel).forEach(a => a.addEventListener('click', () => set(false)));
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) { set(false); toggle.focus(); } });
+        window.addEventListener('resize', () => { if (innerWidth > 980 && !panel.hidden) set(false); });
     })();
 
-    /* ── Split text (letters for Latin, words for Arabic) ──────────────── */
-    function split(el) {
-        if (el.dataset.splitDone) return;
-        el.dataset.splitDone = '1';
-        const byWord = isArabic || el.dataset.split === 'words';
-        let i = 0;
-        const walk = node => {
-            [...node.childNodes].forEach(child => {
-                if (child.nodeType === Node.TEXT_NODE) {
-                    const frag = document.createDocumentFragment();
-                    child.textContent.split(/(\s+)/).forEach(part => {
-                        if (!part) return;
-                        if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
-                        const wd = document.createElement('span');
-                        wd.className = 'wd';
-                        if (byWord) {
-                            const w = document.createElement('span');
-                            w.className = 'word';
-                            w.style.setProperty('--i', i++);
-                            w.textContent = part;
-                            wd.appendChild(w);
-                        } else {
-                            [...part].forEach(ch => {
-                                const c = document.createElement('span');
-                                c.className = 'char';
-                                c.style.setProperty('--i', i++);
-                                c.textContent = ch;
-                                wd.appendChild(c);
-                            });
-                        }
-                        frag.appendChild(wd);
-                    });
-                    child.replaceWith(frag);
-                } else if (child.nodeType === Node.ELEMENT_NODE && !child.matches('img, svg, .no-split')) {
-                    walk(child);
-                }
-            });
-        };
-        walk(el);
-        el.setAttribute('aria-label', el.textContent.replace(/\s+/g, ' ').trim());
-        $$('.wd', el).forEach(w => w.setAttribute('aria-hidden', 'true'));
-    }
-    if (!reduced) $$('[data-split]').forEach(split);
-
     /* ── Reveal on view ────────────────────────────────────────────────── */
-    const io = new IntersectionObserver(entries => entries.forEach(e => {
-        if (!e.isIntersecting) return;
-        e.target.classList.add('is-in');
-        io.unobserve(e.target);
-    }), { threshold: .15, rootMargin: '0px 0px -8% 0px' });
-    $$('.reveal, .split, [data-split], .line-grow, .p-cover').forEach(el => io.observe(el));
-    window.addEventListener('load', () => { $$('.hero, .hero [data-split], .p-hero [data-split]').forEach(el => el.classList.add('is-in')); });
-    if (document.readyState === 'complete') $$('.hero, .hero [data-split]').forEach(el => el.classList.add('is-in'));
+    (function reveal() {
+        const items = $$('.reveal');
+        if (reduced || !('IntersectionObserver' in window)) { items.forEach(el => el.classList.add('is-in')); return; }
+        const io = new IntersectionObserver(entries => entries.forEach(e => {
+            if (!e.isIntersecting) return;
+            e.target.classList.add('is-in');
+            io.unobserve(e.target);
+        }), { threshold: .12, rootMargin: '0px 0px -6% 0px' });
+        items.forEach(el => io.observe(el));
+    })();
 
-    /* ── Scroll-scrubbed statement words ───────────────────────────────── */
-    $$('[data-scrub]').forEach(el => {
-        if (reduced) return;
-        const words = [];
-        const walk = node => [...node.childNodes].forEach(child => {
-            if (child.nodeType === Node.TEXT_NODE) {
-                const frag = document.createDocumentFragment();
-                child.textContent.split(/(\s+)/).forEach(p => {
-                    if (!p) return;
-                    if (/^\s+$/.test(p)) { frag.appendChild(document.createTextNode(p)); return; }
-                    const s = document.createElement('span');
-                    s.className = 'w';
-                    s.textContent = p;
-                    words.push(s);
-                    frag.appendChild(s);
-                });
-                child.replaceWith(frag);
-            } else if (child.nodeType === Node.ELEMENT_NODE) walk(child);
-        });
-        walk(el);
-        onScroll(() => {
-            const r = el.getBoundingClientRect();
-            const progress = clamp((innerHeight * .85 - r.top) / (r.height + innerHeight * .35), 0, 1);
-            const lit = Math.round(progress * words.length);
-            words.forEach((w, idx) => w.classList.toggle('is-lit', idx < lit));
-        });
-    });
-
-    /* ── Count-up numbers ──────────────────────────────────────────────── */
+    /* ── Count-up numbers ("30+" → animates 0 → 30, keeps the suffix) ─── */
     $$('[data-count]').forEach(el => {
         const match = el.textContent.trim().match(/^(\D*)(\d+)(.*)$/);
-        if (!match || reduced) return;
+        if (!match || reduced || !('IntersectionObserver' in window)) return;
         const [, pre, num, post] = match;
         const target = parseInt(num, 10);
-        const render = v => { el.innerHTML = pre + v + (post ? '<sup>' + post + '</sup>' : ''); };
+        const render = v => { el.textContent = pre + v + post; };
         render(0);
         const obs = new IntersectionObserver(([e]) => {
             if (!e.isIntersecting) return;
             obs.disconnect();
             const start = performance.now();
             const step = now => {
-                const t = clamp((now - start) / 1400, 0, 1);
-                render(Math.round(target * (1 - Math.pow(1 - t, 4))));
+                const t = Math.min(1, (now - start) / 1300);
+                render(Math.round(target * (1 - Math.pow(1 - t, 3))));
                 if (t < 1) requestAnimationFrame(step);
             };
             requestAnimationFrame(step);
-        }, { threshold: .6 });
+        }, { threshold: .5 });
         obs.observe(el);
     });
 
-    /* ── Marquees (speed reacts to scroll velocity) ────────────────────── */
-    (function marquees() {
-        const tracks = $$('.marquee-track');
-        if (!tracks.length || reduced) return;
-        let velocity = 0;
-        let lastY = window.scrollY;
-        onScroll(y => { velocity = clamp((y - lastY) * .08, -12, 12); lastY = y; });
-        const state = tracks.map(t => ({ el: t, x: 0, dir: parseFloat(t.dataset.dir || '-1'), speed: parseFloat(t.dataset.speed || '0.6') }));
-        const loop = () => {
-            velocity *= .92;
-            state.forEach(s => {
-                const half = s.el.scrollWidth / 2;
-                if (!half) return;
-                s.x += s.dir * (s.speed + Math.abs(velocity));
-                if (s.x <= -half) s.x += half;
-                if (s.x > 0) s.x -= half;
-                s.el.style.transform = 'translate3d(' + s.x + 'px,0,0)';
-            });
-            requestAnimationFrame(loop);
-        };
-        requestAnimationFrame(loop);
-    })();
-
-    /* ── Parallax images ───────────────────────────────────────────────── */
-    if (!reduced) {
-        $$('[data-parallax]').forEach(img => {
-            const amount = parseFloat(img.dataset.parallax || '0.12');
-            onScroll(() => {
-                const r = img.parentElement.getBoundingClientRect();
-                if (r.bottom < 0 || r.top > innerHeight) return;
-                const p = (r.top + r.height / 2 - innerHeight / 2) / innerHeight;
-                img.style.transform = 'translate3d(0,' + (p * amount * -100) + '%,0)';
-            });
+    /* ── Sticky consultation bar ───────────────────────────────────────── */
+    (function consultBar() {
+        const bar = $('#consultBar');
+        if (!bar) return;
+        let dismissed = false;
+        try { dismissed = sessionStorage.getItem('consultBarClosed') === '1'; } catch (e) {}
+        if (dismissed) return;
+        bar.hidden = false;
+        const contact = $('#contact');
+        const hero = $('.hero, .p-hero');
+        const set = on => { bar.classList.toggle('is-visible', on); document.body.classList.toggle('consult-on', on); bar.inert = !on; };
+        let closed = false;
+        onScroll(y => {
+            if (closed) return;
+            const pastHero = hero ? y > hero.offsetTop + hero.offsetHeight * .7 : y > innerHeight;
+            const r = contact ? contact.getBoundingClientRect() : null;
+            const atContact = r ? r.top < innerHeight && r.bottom > 0 : false;
+            const nearEnd = y + innerHeight > document.documentElement.scrollHeight - 160;
+            set(pastHero && !atContact && !nearEnd);
         });
-    }
-
-    /* ── Horizontal process (pinned) ───────────────────────────────────── */
-    (function process() {
-        const section = $('.process');
-        const track = $('.process-track');
-        const fill = $('.process-progress span');
-        if (!section || !track) return;
-        const enabled = () => !reduced && innerWidth > 900;
-        const layout = () => {
-            if (!enabled()) { section.style.height = ''; track.style.transform = ''; return; }
-            const distance = track.scrollWidth - innerWidth;
-            section.style.height = (distance + innerHeight) + 'px';
-        };
-        layout();
-        window.addEventListener('resize', layout);
-        window.addEventListener('load', layout);
-        onScroll(() => {
-            if (!enabled()) return;
-            const distance = track.scrollWidth - innerWidth;
-            const p = clamp(-section.getBoundingClientRect().top / (section.offsetHeight - innerHeight), 0, 1);
-            track.style.transform = 'translate3d(' + (isRtl ? 1 : -1) * p * distance + 'px,0,0)';
-            if (fill) fill.style.transform = 'scaleX(' + p + ')';
+        $('#consultClose').addEventListener('click', () => {
+            closed = true;
+            set(false);
+            try { sessionStorage.setItem('consultBarClosed', '1'); } catch (e) {}
+            setTimeout(() => { bar.hidden = true; }, 500);
         });
     })();
-
-    /* ── Work list floating preview ────────────────────────────────────── */
-    (function workPreview() {
-        const preview = $('.work-preview');
-        const rows = $$('.work-row[data-preview]');
-        if (!preview || !rows.length || !finePointer || reduced) return;
-        const panes = rows.map(row => {
-            const pane = document.createElement('div');
-            pane.className = 'pane';
-            if (row.dataset.img) {
-                const img = new Image();
-                img.src = row.dataset.img;
-                img.alt = '';
-                pane.appendChild(img);
-            } else {
-                pane.textContent = row.dataset.emoji || '';
-            }
-            preview.appendChild(pane);
-            return pane;
-        });
-        let mx = 0, my = 0, x = 0, y = 0, active = false;
-        document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-        rows.forEach((row, i) => {
-            row.addEventListener('mouseenter', () => { active = true; preview.classList.add('is-on'); panes.forEach((p, j) => p.classList.toggle('is-on', j === i)); });
-            row.addEventListener('mouseleave', () => { active = false; preview.classList.remove('is-on'); });
-        });
-        const loop = () => {
-            x = lerp(x, mx, .14);
-            y = lerp(y, my, .14);
-            if (active || preview.classList.contains('is-on')) preview.style.left = x + 'px', preview.style.top = y + 'px';
-            requestAnimationFrame(loop);
-        };
-        requestAnimationFrame(loop);
-    })();
-
-    /* ── Magnetic buttons ──────────────────────────────────────────────── */
-    if (finePointer && !reduced) {
-        $$('[data-magnetic]').forEach(el => {
-            el.addEventListener('mousemove', e => {
-                const r = el.getBoundingClientRect();
-                const dx = (e.clientX - r.left - r.width / 2) * .25;
-                const dy = (e.clientY - r.top - r.height / 2) * .35;
-                el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
-            });
-            el.addEventListener('mouseleave', () => { el.style.transform = ''; });
-        });
-    }
-
-    /* ── Custom cursor ─────────────────────────────────────────────────── */
-    (function cursor() {
-        const c = $('.cursor');
-        if (!c || !finePointer || reduced) return;
-        root.classList.add('has-cursor');
-        const label = $('.cursor-label', c);
-        let mx = -100, my = -100, x = -100, y = -100;
-        document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-        document.addEventListener('mousedown', () => c.classList.add('is-down'));
-        document.addEventListener('mouseup', () => c.classList.remove('is-down'));
-        document.addEventListener('mouseover', e => {
-            const target = e.target.closest('[data-cursor], a, button, summary, label');
-            c.classList.toggle('is-label', !!(target && target.dataset.cursor));
-            c.classList.toggle('is-hover', !!target && !target.dataset.cursor);
-            if (target && target.dataset.cursor) label.textContent = target.dataset.cursor;
-        });
-        document.addEventListener('mouseleave', () => { mx = my = -100; });
-        const loop = () => {
-            x = lerp(x, mx, .22);
-            y = lerp(y, my, .22);
-            c.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
-            requestAnimationFrame(loop);
-        };
-        requestAnimationFrame(loop);
-    })();
-
-    /* ── Local clock ───────────────────────────────────────────────────── */
-    $$('[data-clock]').forEach(el => {
-        const fmt = new Intl.DateTimeFormat(isArabic ? 'ar' : 'en-GB', { hour: '2-digit', minute: '2-digit', timeZone: el.dataset.clock || 'Asia/Gaza' });
-        const tick = () => { el.textContent = fmt.format(new Date()); };
-        tick();
-        setInterval(tick, 30000);
-    });
 
     /* ── CV viewer ─────────────────────────────────────────────────────── */
     (function cv() {
