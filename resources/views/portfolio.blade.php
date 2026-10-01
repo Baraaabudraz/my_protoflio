@@ -1,5 +1,4 @@
 @extends('layouts.site')
-@use('Illuminate\Support\Str')
 
 @php
     $heroName = ts($settings, 'hero_name') ?: ($settings['hero_name'] ?? 'Your Name');
@@ -19,10 +18,6 @@
     $statClients = $settings['hero_stat_clients'] ?? '15+';
     $statYears = $settings['hero_stat_years'] ?? '4+';
     $projectUrl = fn ($id) => \App\Http\Middleware\SetLocale::localizedUrl(route('project.show', $id), $locale);
-
-    // Real, measured outcomes (projects whose result contains a number) float around the hero diagram.
-    $metricProjects = array_values(array_filter($projects, fn ($p) => preg_match('/\d+\s*%/', (string) $p->result)));
-    $heroMetrics = array_map(fn ($p) => [Str::before(t($p, 'result'), $locale === 'ar' ? ' و' : ','), t($p, 'title')], array_slice($metricProjects, 0, 3));
 
     // "Diagnose your system": each symptom maps to a service (by position) and the case study that best proves the fix.
     $findCase = function (string $pattern) use ($projects) {
@@ -48,6 +43,16 @@
         ['idea', 'fa-lightbulb', __('I have an idea to build'), __('A process on spreadsheets and WhatsApp, or a product that doesn’t exist yet.'),
             [__('Turn your idea into a clear plan and price'), __('Build it step by step with regular demos'), __('Launch, document and hand everything over')],
             $serviceAt(0), $projects[0] ?? null],
+    ];
+
+    // Hero chat: a client describes the problem in plain words, I answer, and a real project proves it.
+    $chats = [
+        ['slow', __('Slow website'), __('My website is so slow that customers leave before it even loads 😟'),
+            __('I’ll find exactly what’s slowing it down, fix it, and show you the before/after numbers. I did the same for a recent client:'), $symptoms[0][6]],
+        ['breaking', __('Keeps breaking'), __('Our app keeps breaking and customers complain every day.'),
+            __('I’ll find the real cause, fix it properly and make sure it stays fixed. Here’s a similar case:'), $symptoms[1][6]],
+        ['idea', __('New idea'), __('We still run everything on Excel and WhatsApp. Can you build us a proper system?'),
+            __('Yes! I’ll turn it into a clear plan with a fixed price, then build it step by step with you. Like this one:'), $symptoms[3][6]],
     ];
 @endphp
 
@@ -76,60 +81,46 @@
             </dl>
         </div>
 
-        <div class="hero-visual reveal" style="--d:.12s" aria-hidden="true">
-            <div class="console">
-                <div class="console-bar">
-                    <span class="dots"><i></i><i></i><i></i></span>
-                    <span class="mono">system.health</span>
-                    <span class="console-status mono"><span class="status-dot"></span>{{ __('Healthy') }}</span>
+        <figure class="hero-visual reveal" style="--d:.12s" aria-label="{{ __('How a conversation with me usually goes') }}">
+            <div class="chat" data-chat>
+                <div class="chat-head">
+                    <span class="chat-avatar"><img src="{{ asset('images/me-thumb.webp') }}" alt="" width="40" height="40"><span class="chat-online" aria-hidden="true"></span></span>
+                    <span class="chat-who"><strong>{{ $heroName }}</strong><small>{{ __('Online · replies within 1–2 days') }}</small></span>
+                    <i class="fab fa-whatsapp chat-brand" aria-hidden="true"></i>
                 </div>
-                <svg class="diagram" viewBox="0 0 480 380" direction="ltr" focusable="false">
-                    <defs>
-                        <linearGradient id="wire" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0" stop-color="var(--accent)" stop-opacity=".7"/>
-                            <stop offset="1" stop-color="var(--accent-2)" stop-opacity=".7"/>
-                        </linearGradient>
-                        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>
-                    </defs>
-                    <g class="wires" fill="none" stroke="url(#wire)" stroke-width="1.5">
-                        <path id="w1" d="M80 66 C80 110 200 112 222 148"/>
-                        <path id="w2" d="M240 66 L240 148"/>
-                        <path id="w3" d="M400 66 C400 110 280 112 258 148"/>
-                        <path id="w4" d="M222 212 C200 252 80 256 80 296"/>
-                        <path id="w5" d="M240 212 L240 296"/>
-                        <path id="w6" d="M258 212 C280 252 400 256 400 296"/>
-                    </g>
-                    <g class="packets">
-                        @foreach([['w1', '0s', '2.6s'], ['w2', '.7s', '2.2s'], ['w3', '1.3s', '2.8s']] as [$wire, $begin, $dur])
-                            <circle r="4" class="packet"><animateMotion dur="{{ $dur }}" begin="{{ $begin }}" repeatCount="indefinite"><mpath href="#{{ $wire }}"/></animateMotion></circle>
-                        @endforeach
-                        @foreach([['w4', '.4s', '2.4s'], ['w5', '1.1s', '2s'], ['w6', '1.8s', '2.6s']] as [$wire, $begin, $dur])
-                            <circle r="4" class="packet packet-2"><animateMotion dur="{{ $dur }}" begin="{{ $begin }}" repeatCount="indefinite" keyPoints="0;1;0" keyTimes="0;.5;1" calcMode="linear"><mpath href="#{{ $wire }}"/></animateMotion></circle>
-                        @endforeach
-                    </g>
-                    @foreach([[16, 18, "\u{f3cd}", __('Mobile app')], [176, 18, "\u{f0ac}", __('Website')], [336, 18, "\u{f625}", __('Dashboard')], [16, 296, "\u{f1c0}", 'MySQL'], [176, 296, "\u{f0e7}", 'Redis'], [336, 296, "\u{f0ae}", __('Queue')]] as [$x, $y, $icon, $label])
-                        <g class="node" transform="translate({{ $x }} {{ $y }})">
-                            <rect width="128" height="48" rx="14"/>
-                            <text x="22" y="30" class="node-icon">{{ $icon }}</text>
-                            <text x="44" y="29.5" class="node-label">{{ $label }}</text>
-                        </g>
+
+                <div class="chat-body">
+                    @foreach($chats as [$key, $tabLabel, $problem, $reply, $case])
+                        <div class="chat-thread @if($loop->first) is-active @endif" id="chat-{{ $key }}" role="tabpanel" aria-labelledby="chat-tab-{{ $key }}">
+                            <p class="bubble bubble-client"><span class="sr-only">{{ __('Client') }}: </span>{{ $problem }}</p>
+                            <p class="bubble bubble-typing" aria-hidden="true"><i></i><i></i><i></i></p>
+                            <p class="bubble bubble-me"><span class="sr-only">{{ $heroName }}: </span>{{ $reply }}</p>
+                            @if($case)
+                                <a class="bubble bubble-proof" href="{{ $projectUrl($case->id) }}">
+                                    <span class="proof-media" aria-hidden="true">@if($case->image)<img src="{{ project_image_url($case->image) }}" alt="" loading="lazy">@else{{ $case->icon ?: '🚀' }}@endif</span>
+                                    <span class="proof-text">
+                                        <strong>{{ t($case, 'title') }}</strong>
+                                        @if(t($case, 'result'))<span class="proof-result"><i class="fas fa-circle-check" aria-hidden="true"></i> {{ t($case, 'result') }}</span>@endif
+                                    </span>
+                                </a>
+                            @endif
+                        </div>
                     @endforeach
-                    <g class="node node-core" transform="translate(150 148)">
-                        <rect width="180" height="64" rx="18" class="core-glow" filter="url(#glow)"/>
-                        <rect width="180" height="64" rx="18"/>
-                        <text x="26" y="40" class="node-icon">&#xf233;</text>
-                        <text x="52" y="31" class="node-label">Laravel API</text>
-                        <text x="52" y="48" class="node-sub">{{ __('secure · fast · tested') }}</text>
-                    </g>
-                </svg>
-            </div>
-            @foreach($heroMetrics as [$metric, $metricProject])
-                <div class="metric-badge mb-{{ $loop->index }}">
-                    <i class="fas fa-arrow-trend-up"></i>
-                    <span><strong>{{ $metric }}</strong><small>{{ Str::limit($metricProject, 28) }}</small></span>
                 </div>
-            @endforeach
-        </div>
+
+                <div class="chat-foot">
+                    <div class="chat-tabs" role="tablist" aria-label="{{ __('Example problems') }}">
+                        @foreach($chats as [$key, $tabLabel])
+                            <button type="button" class="chat-tab @if($loop->first) is-active @endif" role="tab" id="chat-tab-{{ $key }}" aria-controls="chat-{{ $key }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" @unless($loop->first) tabindex="-1" @endunless>{{ $tabLabel }}</button>
+                        @endforeach
+                    </div>
+                    <a class="chat-input" href="{{ $whatsappNumber ? 'https://wa.me/'.$whatsappNumber.'?text='.rawurlencode(__('Hello, I found you through your portfolio.')) : '#contact' }}" @if($whatsappNumber) target="_blank" rel="noopener" @endif>
+                        <span>{{ __('Tell me about your problem…') }}</span>
+                        <span class="chat-send" aria-hidden="true"><i class="fas fa-paper-plane"></i></span>
+                    </a>
+                </div>
+            </div>
+        </figure>
     </div>
 </section>
 

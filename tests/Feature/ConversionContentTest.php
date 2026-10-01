@@ -54,6 +54,19 @@ class ConversionContentTest extends TestCase
         $this->get('/?lang=ar')->assertOk()->assertSee('id="diagnose"', false);
     }
 
+    public function test_hero_chat_shows_plain_language_problems_with_real_proof(): void
+    {
+        $response = $this->get('/?lang=en')->assertOk()->assertSee('data-chat', false);
+
+        foreach (['slow', 'breaking', 'idea'] as $chat) {
+            $response->assertSee('id="chat-'.$chat.'"', false)->assertSee('id="chat-tab-'.$chat.'"', false);
+        }
+        $response->assertSee('My website is so slow that customers leave before it even loads')
+            ->assertDontSee('system.health');
+
+        $this->get('/?lang=ar')->assertOk()->assertSee('موقعي بطيء جدًا');
+    }
+
     public function test_testimonials_section_only_appears_once_there_is_one(): void
     {
         $this->get('/?lang=en')->assertOk()->assertDontSee('id="testimonials"', false);

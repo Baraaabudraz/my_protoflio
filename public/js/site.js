@@ -124,6 +124,42 @@
         }));
     }
 
+    /* ── Hero chat: rotate example conversations, or pick one ──────────── */
+    (function heroChat() {
+        const chat = $('[data-chat]');
+        if (!chat) return;
+        const tabs = $$('.chat-tab', chat);
+        if (!tabs.length) return;
+        let index = 0, timer = null, paused = false;
+        const show = i => {
+            index = (i + tabs.length) % tabs.length;
+            tabs.forEach((t, n) => {
+                const on = n === index;
+                t.classList.toggle('is-active', on);
+                t.setAttribute('aria-selected', String(on));
+                t.tabIndex = on ? 0 : -1;
+                document.getElementById(t.getAttribute('aria-controls')).classList.toggle('is-active', on);
+            });
+        };
+        const start = () => {
+            if (reduced) return;
+            clearInterval(timer);
+            timer = setInterval(() => { if (!paused && !document.hidden) show(index + 1); }, 8500);
+        };
+        tabs.forEach((tab, i) => {
+            tab.addEventListener('click', () => { show(i); start(); });
+            tab.addEventListener('keydown', e => {
+                const step = { ArrowRight: isRtl ? -1 : 1, ArrowLeft: isRtl ? 1 : -1 }[e.key];
+                if (step) { e.preventDefault(); show(index + step); tabs[index].focus(); start(); }
+            });
+        });
+        chat.addEventListener('mouseenter', () => { paused = true; });
+        chat.addEventListener('mouseleave', () => { paused = false; });
+        chat.addEventListener('focusin', () => { paused = true; });
+        chat.addEventListener('focusout', () => { paused = false; });
+        start();
+    })();
+
     /* ── Diagnose: symptom tabs ────────────────────────────────────────── */
     (function diagnose() {
         const tabs = $$('.symptom[role="tab"]');

@@ -268,34 +268,58 @@ html[lang="ar"] .hero-title { font-size: clamp(2.2rem, 4.6vw, 3.6rem); line-heig
 .hero-stats dd { font: 600 clamp(1.6rem, 2.6vw, 2.1rem)/1.1 var(--f-mono); letter-spacing: -.04em; color: var(--ink); }
 .hero-stats dt { margin-top: .3rem; color: var(--muted); font-size: .85rem; }
 .hero-visual { position: relative; }
-.console { position: relative; border: 1px solid var(--line-2); border-radius: var(--radius); background: color-mix(in srgb, var(--solid) 70%, transparent); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, .02); overflow: hidden; }
-.console::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 24px 24px; pointer-events: none; }
 .console-bar { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 1rem; border-bottom: 1px solid var(--line); background: var(--surface); font-size: .78rem; color: var(--muted); }
 .dots { display: inline-flex; gap: 6px; direction: ltr; }
 .dots i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; }
 .dots i:nth-child(2) { background: #febc2e; }
 .dots i:nth-child(3) { background: #28c840; }
 .console-status { display: inline-flex; align-items: center; gap: .45rem; color: #22c55e; }
-.diagram { position: relative; width: 100%; padding: 1.2rem 1rem 1rem; }
-.diagram .wires path { stroke-dasharray: 5 7; animation: flow 1.6s linear infinite; }
-@keyframes flow { to { stroke-dashoffset: -24; } }
-.diagram .node rect { fill: var(--surface-2); stroke: var(--line-2); }
-.diagram .node-icon { font: 900 15px 'Font Awesome 6 Free'; fill: var(--accent); text-anchor: middle; }
-.diagram .node-label { font: 600 13px var(--f-body); fill: var(--ink); }
-.diagram .node-sub { font: 400 10px var(--f-mono); fill: var(--muted); }
-.diagram .node-core rect:not(.core-glow) { fill: color-mix(in srgb, var(--accent) 16%, var(--solid)); stroke: var(--accent); }
-.diagram .core-glow { fill: var(--accent); opacity: .45; animation: breathe 3s ease-in-out infinite; }
-@keyframes breathe { 50% { opacity: .15; } }
-.diagram .packet { fill: var(--accent-2); filter: drop-shadow(0 0 4px var(--accent-2)); }
-.diagram .packet-2 { fill: var(--good); filter: drop-shadow(0 0 4px var(--good)); }
-.metric-badge { position: absolute; z-index: 2; display: flex; align-items: center; gap: .7rem; max-width: 260px; padding: .65rem .9rem; border: 1px solid var(--line-2); border-radius: 14px; background: color-mix(in srgb, var(--solid) 82%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: var(--shadow-lg); animation: float 7s ease-in-out infinite; }
-.metric-badge i { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: 10px; background: var(--good-soft); color: var(--good); font-size: .85rem; }
-.metric-badge strong { display: block; color: var(--good); font-size: .9rem; line-height: 1.3; }
-.metric-badge small { display: block; color: var(--muted); font-size: .72rem; line-height: 1.3; }
-.mb-0 { top: 3.2rem; inset-inline-end: -1.5rem; }
-.mb-1 { top: 46%; inset-inline-start: -2.2rem; animation-delay: -2.3s; }
-.mb-2 { bottom: -1.4rem; inset-inline-end: 12%; animation-delay: -4.6s; }
-@keyframes float { 50% { transform: translateY(-9px); } }
+/* Hero chat: a client's problem in plain words → my answer → real proof */
+.chat { max-width: 480px; margin-inline: auto; border: 1px solid var(--line-2); border-radius: 28px; background: color-mix(in srgb, var(--solid) 82%, transparent); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); box-shadow: var(--shadow-lg); overflow: hidden; }
+.chat-head { display: flex; align-items: center; gap: .8rem; padding: .95rem 1.2rem; border-bottom: 1px solid var(--line); background: var(--surface); }
+.chat-avatar { position: relative; flex-shrink: 0; }
+.chat-avatar img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+.chat-online { position: absolute; bottom: 1px; inset-inline-end: 1px; width: 11px; height: 11px; border-radius: 50%; background: #22c55e; border: 2px solid var(--solid); }
+.chat-who { display: grid; flex: 1; min-width: 0; line-height: 1.3; }
+.chat-who strong { font-size: .95rem; }
+.chat-who small { color: var(--good); font-size: .78rem; }
+.chat-brand { color: var(--wa); font-size: 1.4rem; }
+.chat-body { min-height: 330px; padding: 1.3rem 1.1rem; background-image: radial-gradient(var(--grid) 1px, transparent 1.2px); background-size: 18px 18px; }
+.chat-thread { display: grid; gap: .7rem; align-content: start; }
+.js .chat-thread:not(.is-active) { display: none; }
+.bubble { max-width: 86%; padding: .75rem 1rem; border-radius: 18px; font-size: .95rem; line-height: 1.55; box-shadow: 0 6px 18px -12px rgba(0, 0, 0, .5); }
+.bubble-client { justify-self: start; border: 1px solid var(--line); border-start-start-radius: 6px; background: var(--surface-2); }
+.bubble-me { justify-self: end; border-start-end-radius: 6px; background: linear-gradient(135deg, var(--btn-from), var(--accent-deep)); color: var(--btn-ink); }
+.bubble-typing { justify-self: end; display: inline-flex; gap: 4px; padding: .8rem 1rem; border-start-end-radius: 6px; background: var(--surface-2); overflow: hidden; }
+.bubble-typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1s infinite; }
+.bubble-typing i:nth-child(2) { animation-delay: .15s; }
+.bubble-typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes blink { 50% { opacity: .25; transform: translateY(-2px); } }
+.chat-thread:not(.is-active) .bubble-typing { display: none; }
+.bubble-proof { justify-self: end; display: flex; align-items: center; gap: .8rem; border: 1px solid color-mix(in srgb, var(--good) 40%, transparent); background: var(--solid); transition: border-color .2s, transform .25s var(--ease); }
+.bubble-proof:hover { border-color: var(--good); transform: translateY(-2px); }
+.proof-media { position: relative; display: grid; place-items: center; flex-shrink: 0; width: 54px; height: 54px; border-radius: 12px; background: linear-gradient(135deg, var(--accent-soft), var(--good-soft)); font-size: 1.7rem; overflow: hidden; }
+.proof-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.proof-text { display: grid; gap: .15rem; min-width: 0; }
+.proof-text strong { font-size: .9rem; line-height: 1.35; }
+.proof-result { color: var(--good); font-size: .84rem; font-weight: 600; line-height: 1.4; }
+/* Conversation plays out each time a thread becomes active */
+.chat-thread.is-active .bubble-client { animation: pop .5s var(--ease) .2s both; }
+.chat-thread.is-active .bubble-typing { animation: typing 1.3s ease .8s both; }
+.chat-thread.is-active .bubble-me { animation: pop .5s var(--ease) 2.1s both; }
+.chat-thread.is-active .bubble-proof { animation: pop .5s var(--ease) 2.8s both; }
+@keyframes pop { from { opacity: 0; transform: translateY(10px) scale(.96); } }
+@keyframes typing { 0% { opacity: 0; max-height: 0; padding-block: 0; } 12%, 88% { opacity: 1; max-height: 3rem; padding-block: .8rem; } 100% { opacity: 0; max-height: 0; padding-block: 0; margin-block: -.35rem; } }
+.chat-foot { display: grid; gap: .75rem; padding: .9rem 1rem 1rem; border-top: 1px solid var(--line); background: var(--surface); }
+.chat-tabs { display: flex; flex-wrap: wrap; gap: .4rem; }
+.chat-tab { padding: .35rem .85rem; border: 1px solid var(--line-2); border-radius: 999px; background: transparent; color: var(--ink-2); font-size: .82rem; font-weight: 500; cursor: pointer; transition: background-color .2s, border-color .2s, color .2s; }
+.chat-tab:hover { border-color: var(--accent); color: var(--ink); }
+.chat-tab.is-active { border-color: transparent; background: var(--accent-soft); color: var(--accent); }
+.chat-input { display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding: .45rem .45rem .45rem 1.1rem; border: 1px solid var(--line-2); border-radius: 999px; background: var(--surface-2); color: var(--muted); font-size: .92rem; transition: border-color .2s, color .2s; }
+[dir="rtl"] .chat-input { padding: .45rem 1.1rem .45rem .45rem; }
+.chat-input:hover { border-color: var(--accent); color: var(--ink); }
+.chat-send { display: grid; place-items: center; flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; background: var(--wa); color: #05331a; }
+[dir="rtl"] .chat-send i { transform: scaleX(-1); }
 
 /* ── Diagnose ───────────────────────────────────────────────────────────── */
 .diagnose { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.6fr); gap: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: calc(var(--radius) + 8px); background: var(--surface); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: var(--shadow-lg); }
@@ -593,8 +617,6 @@ html[lang="ar"] .result-box small { font-family: var(--f-body); letter-spacing: 
 @media (max-width: 1180px) {
     .nav a { padding-inline: .55rem; font-size: .86rem; }
     .brand-text small { display: none; }
-    .mb-0 { inset-inline-end: -.5rem; }
-    .mb-1 { inset-inline-start: -1rem; }
 }
 @media (max-width: 1024px) {
     .nav, .header-cta { display: none; }
@@ -620,7 +642,9 @@ html[lang="ar"] .result-box small { font-family: var(--f-body); letter-spacing: 
     .brand-text { display: none; }
     .hero-actions .btn { width: 100%; }
     .hero-stats > div { padding-inline: 1rem; }
-    .metric-badge { position: static; max-width: none; margin-top: .6rem; animation: none; }
+    .chat { border-radius: 22px; }
+    .chat-body { min-height: 300px; padding-inline: .8rem; }
+    .bubble { max-width: 92%; font-size: .9rem; }
     .console-bar .mono:not(.console-status) { display: none; }
     .diagnose { padding: .6rem; }
     .symptoms { grid-template-columns: 1fr; }
@@ -651,7 +675,7 @@ html[lang="ar"] .result-box small { font-family: var(--f-body); letter-spacing: 
     html { scroll-behavior: auto; }
     *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
     .js .reveal { opacity: 1; transform: none; filter: none; }
-    .diagram .packets { display: none; }
+    .bubble-typing { display: none; }
 }
 
 @media print {
