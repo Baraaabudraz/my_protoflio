@@ -12,6 +12,7 @@
     $homeUrl = \App\Http\Middleware\SetLocale::localizedUrl(url('/'), $locale);
     $anchor = fn (string $id) => ($onHome ? '' : $homeUrl).'#'.$id;
     $navItems = [
+        ['diagnose', __('Diagnose')],
         ['services', __('Services')],
         ['projects', __('Results')],
         ['process', __('Process')],

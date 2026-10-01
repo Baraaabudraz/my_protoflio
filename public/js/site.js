@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Quiet Premium — public site behaviour (no dependencies)
+   Signature — public site behaviour (no dependencies)
    Every module only runs when its elements exist; motion respects
    prefers-reduced-motion.
    ========================================================================== */
@@ -105,6 +105,75 @@
         obs.observe(el);
     });
 
+    /* ── Living headline: cycle the verb ───────────────────────────────── */
+    (function cycler() {
+        const el = $('[data-cycler]');
+        if (!el || reduced) return;
+        let words = [];
+        try { words = JSON.parse(el.dataset.cycler); } catch (e) { return; }
+        if (words.length < 2) return;
+        // Reserve the widest word's width so the line never jumps.
+        const probe = document.createElement('span');
+        probe.className = 'cycler-word';
+        probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap';
+        el.appendChild(probe);
+        const widest = Math.max(...words.map(w => { probe.textContent = w; return probe.offsetWidth; }));
+        probe.remove();
+        el.style.minWidth = widest + 'px';
+        let i = 0;
+        setInterval(() => {
+            if (document.hidden) return;
+            const current = $('.cycler-word', el);
+            current.classList.add('is-out');
+            setTimeout(() => {
+                i = (i + 1) % words.length;
+                current.textContent = words[i];
+                current.classList.remove('is-out');
+                current.classList.add('is-in');
+                setTimeout(() => current.classList.remove('is-in'), 650);
+            }, 420);
+        }, 2600);
+    })();
+
+    /* ── Diagnose: symptom tabs ────────────────────────────────────────── */
+    (function diagnose() {
+        const tabs = $$('.symptom[role="tab"]');
+        if (!tabs.length) return;
+        const select = (tab, focus) => {
+            tabs.forEach(t => {
+                const on = t === tab;
+                t.classList.toggle('is-active', on);
+                t.setAttribute('aria-selected', String(on));
+                t.tabIndex = on ? 0 : -1;
+                document.getElementById(t.getAttribute('aria-controls')).classList.toggle('is-active', on);
+            });
+            if (focus) tab.focus();
+        };
+        tabs.forEach((tab, i) => {
+            tab.addEventListener('click', () => select(tab, false));
+            tab.addEventListener('keydown', e => {
+                const keys = { ArrowDown: 1, ArrowRight: isRtl ? -1 : 1, ArrowUp: -1, ArrowLeft: isRtl ? 1 : -1 };
+                if (e.key in keys) { e.preventDefault(); select(tabs[(i + keys[e.key] + tabs.length) % tabs.length], true); }
+                if (e.key === 'Home') { e.preventDefault(); select(tabs[0], true); }
+                if (e.key === 'End') { e.preventDefault(); select(tabs[tabs.length - 1], true); }
+            });
+        });
+    })();
+
+    /* ── Process line draws itself as you scroll ───────────────────────── */
+    (function drawSteps() {
+        const list = $('[data-draw]');
+        if (!list) return;
+        const line = $('.steps-line', list);
+        const steps = $$('.step', list);
+        onScroll(() => {
+            const r = list.getBoundingClientRect();
+            const p = reduced ? 1 : Math.min(1, Math.max(0, (innerHeight * .75 - r.top) / (innerHeight * .5)));
+            if (line) line.style.setProperty('--progress', p);
+            steps.forEach((s, idx) => s.classList.toggle('is-done', p >= idx / steps.length + .02));
+        });
+    })();
+
     /* ── Sticky consultation bar ───────────────────────────────────────── */
     (function consultBar() {
         const bar = $('#consultBar');
@@ -152,9 +221,11 @@
     })();
 
     /* ── Service CTA → preselect in form ───────────────────────────────── */
-    $$('[data-service]').forEach(a => a.addEventListener('click', () => {
+    $$('[data-service], [data-message]').forEach(a => a.addEventListener('click', () => {
         const select = $('#cf-service');
-        if (select) select.value = a.dataset.service;
+        const message = $('#cf-message');
+        if (select && a.dataset.service) select.value = a.dataset.service;
+        if (message && a.dataset.message && !message.value.trim()) message.value = a.dataset.message;
     }));
 
     /* ── Contact form (server) + WhatsApp alternative ──────────────────── */

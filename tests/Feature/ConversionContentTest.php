@@ -42,6 +42,26 @@ class ConversionContentTest extends TestCase
             ->assertSee('"@type":"FAQPage"', false);
     }
 
+    public function test_diagnose_section_links_each_symptom_to_a_case_study(): void
+    {
+        $response = $this->get('/?lang=en')->assertOk()->assertSee('id="diagnose"', false);
+
+        foreach (['slow', 'breaking', 'outdated', 'idea'] as $symptom) {
+            $response->assertSee('id="tab-'.$symptom.'"', false)->assertSee('id="panel-'.$symptom.'"', false);
+        }
+        $response->assertSee('data-message=', false)->assertSee(route('project.show', $this->projectId), false);
+
+        $this->get('/?lang=ar')->assertOk()->assertSee('id="diagnose"', false);
+    }
+
+    public function test_hero_headline_keeps_the_full_sentence_for_screen_readers(): void
+    {
+        $this->get('/?lang=en')
+            ->assertOk()
+            ->assertSee('aria-label="I build, fix, speed up and rescue web systems that help your business grow."', false)
+            ->assertSee('data-cycler=', false);
+    }
+
     public function test_testimonials_section_only_appears_once_there_is_one(): void
     {
         $this->get('/?lang=en')->assertOk()->assertDontSee('id="testimonials"', false);

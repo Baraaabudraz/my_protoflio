@@ -1,4 +1,5 @@
 @extends('layouts.site')
+@use('Illuminate\Support\Str')
 
 @php
     $heroName = ts($settings, 'hero_name') ?: ($settings['hero_name'] ?? 'Your Name');
@@ -10,6 +11,7 @@
     $linkedinUrl = $settings['linkedin_url'] ?? '';
     $cvPath = $settings['cv_path'] ?? '';
     $cvUrl = ($cvPath !== '' && file_exists(public_path($cvPath))) ? asset($cvPath) : null;
+    $techTags = array_values(array_filter(array_map('trim', explode(',', ts($settings, 'about_tags') ?: ($settings['about_tags'] ?? '')))));
     $aboutHeading = ts($settings, 'about_heading') ?: ($settings['about_heading'] ?? '');
     $aboutParagraphs = array_values(array_filter([ts($settings, 'about_p1'), ts($settings, 'about_p2'), ts($settings, 'about_p3')]));
     $arrow = $isRtl ? '←' : '→';
@@ -26,20 +28,61 @@
 
         return '<p class="label reveal"><span class="label-num">'.str_pad((string) $section, 2, '0', STR_PAD_LEFT).'</span>'.e($name).'</p>';
     };
+
+    // Living headline: the verb cycles; the full sentence stays available to screen readers.
+    $verbs = [__('build'), __('fix'), __('speed up'), __('rescue')];
+
+    // Real, measured outcomes (results that contain a number) float beside the portrait.
+    $metricProjects = array_values(array_filter($projects, fn ($p) => preg_match('/\d+\s*%/', (string) $p->result)));
+    $heroMetrics = array_map(fn ($p) => [Str::before(t($p, 'result'), $locale === 'ar' ? ' و' : ','), t($p, 'title')], array_slice($metricProjects, 0, 2));
+
+    // Marquee: the industries I have worked in, then the tools I use.
+    $industries = array_values(array_unique(array_filter(array_map(fn ($p) => t($p, 'category'), $projects))));
+    $marqueeItems = array_merge($industries, array_slice($techTags, 0, 6));
+
+    // "Diagnose your system": each symptom maps to a service (by position) and the case study that best proves the fix.
+    $findCase = function (string $pattern) use ($projects) {
+        foreach ($projects as $p) {
+            if (preg_match($pattern, (string) $p->result.' '.$p->description)) {
+                return $p;
+            }
+        }
+
+        return $projects[0] ?? null;
+    };
+    $serviceAt = fn (int $i) => $services[$i] ?? ($services[0] ?? null);
+    $symptoms = [
+        ['slow', __('My system is slow'), __('Pages take forever, reports time out and users leave.'),
+            [__('Measure exactly where the time goes'), __('Fix slow queries, add indexes and caching'), __('Prove it with before/after numbers')],
+            $serviceAt(2), $findCase('/efficien|faster|speed|performance/i')],
+        ['breaking', __('It keeps breaking'), __('Bugs, crashes or failed notifications keep coming back.'),
+            [__('Find the root cause, not just the symptom'), __('Fix it, test it and add monitoring'), __('Stabilise the system so it stays fixed')],
+            $serviceAt(1), $findCase('/stable|error/i')],
+        ['outdated', __('It’s outdated or hard to change'), __('Old Laravel/PHP, messy code, and every change feels risky.'),
+            [__('Review the code and plan safe upgrades'), __('Upgrade Laravel and PHP step by step'), __('Clean up the code so new features are easy')],
+            $serviceAt(1), $findCase('/duplicat|maintain|code/i')],
+        ['idea', __('I have an idea to build'), __('A process on spreadsheets and WhatsApp, or a product that doesn’t exist yet.'),
+            [__('Turn your idea into a clear plan and price'), __('Build it step by step with regular demos'), __('Launch, document and hand everything over')],
+            $serviceAt(0), $projects[0] ?? null],
+    ];
 @endphp
 
 @section('content')
 
 {{-- ═════════ HERO ═════════ --}}
 <section class="hero" id="top" aria-labelledby="heroTitle">
+    <div class="hero-wash" aria-hidden="true"></div>
     <div class="wrap hero-grid">
         <div class="hero-copy">
-            <p class="availability reveal"><span class="status-dot" aria-hidden="true"></span>{{ __('Available for new projects') }}</p>
-            <h1 class="display reveal" id="heroTitle" style="--d:.06s">{{ __('I build and fix web systems that help your business') }} <em>{{ __('grow.') }}</em></h1>
+            <p class="availability reveal"><span class="status-dot" aria-hidden="true"></span>{{ __('Available for new projects') }} <span class="sep" aria-hidden="true">·</span> {{ __('Replies within 1–2 days') }}</p>
+            <h1 class="display reveal" id="heroTitle" style="--d:.06s" aria-label="{{ __('I build, fix, speed up and rescue web systems that help your business grow.') }}">
+                <span aria-hidden="true">{{ __('I') }} <span class="cycler" data-cycler="{{ json_encode($verbs, JSON_UNESCAPED_UNICODE) }}"><span class="cycler-word">{{ $verbs[0] }}</span></span>
+                {{ __('web systems that help your business') }} <em>{{ __('grow.') }}</em></span>
+            </h1>
             <p class="lead reveal" style="--d:.14s">{!! $heroSubtitle !!}</p>
             <div class="hero-actions reveal" style="--d:.22s">
                 <a href="#contact" class="btn btn-primary btn-lg">{{ __('Get a free consultation') }}</a>
-                <a href="#projects" class="text-link">{{ __('See my work') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></a>
+                <a href="#diagnose" class="text-link">{{ __('Diagnose my system') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></a>
             </div>
             <ul class="assurances reveal" style="--d:.3s">
                 <li>{{ __('Fixed quote before any work starts') }}</li>
@@ -49,12 +92,19 @@
         </div>
 
         <figure class="portrait reveal" style="--d:.1s">
+            <div class="portrait-grid" aria-hidden="true"></div>
             <div class="portrait-img">
                 <picture>
                     <source srcset="{{ asset('images/me.webp') }}" type="image/webp">
                     <img src="{{ asset('images/me.jpeg') }}" alt="{{ $heroName }} — {{ $heroTagline }}" width="900" height="900" fetchpriority="high">
                 </picture>
             </div>
+            @foreach($heroMetrics as [$metric, $metricProject])
+                <div class="metric m-{{ $loop->index }}" aria-hidden="true">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <span><strong>{{ $metric }}</strong><small>{{ Str::limit($metricProject, 30) }}</small></span>
+                </div>
+            @endforeach
             <figcaption>
                 <span><strong>{{ $heroName }}</strong>{{ $heroTagline }}</span>
                 <span class="portrait-loc"><i class="fas fa-location-dot" aria-hidden="true"></i> {{ __('Gaza · Remote') }}</span>
@@ -71,8 +121,73 @@
     </div>
 </section>
 
+{{-- ═════════ MARQUEE ═════════ --}}
+@if(!empty($marqueeItems))
+<div class="marquee" aria-label="{{ __('Industries and tools') }}">
+    <div class="marquee-track" dir="ltr">
+        @foreach([1, 2] as $copy)
+            <ul class="marquee-group" @if($copy === 2) aria-hidden="true" @endif>
+                @foreach($marqueeItems as $item)
+                    <li dir="auto">{{ $item }}</li>
+                @endforeach
+            </ul>
+        @endforeach
+    </div>
+</div>
+@endif
+
+{{-- ═════════ DIAGNOSE ═════════ --}}
+<section class="section" id="diagnose" aria-labelledby="diagnoseTitle">
+    <div class="wrap">
+        <header class="section-head">
+            {!! $label(__('Free diagnosis')) !!}
+            <h2 class="title reveal" id="diagnoseTitle">{{ __('What’s going on with your system?') }}</h2>
+            <p class="section-sub reveal">{{ __('Pick what sounds like you — see how I would fix it, and a real project where I already did.') }}</p>
+        </header>
+
+        <div class="diagnose reveal">
+            <div class="symptoms" role="tablist" aria-label="{{ __('Choose a symptom') }}">
+                @foreach($symptoms as [$key, $title, $text])
+                    <button type="button" class="symptom @if($loop->first) is-active @endif" role="tab" id="tab-{{ $key }}" aria-controls="panel-{{ $key }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" @unless($loop->first) tabindex="-1" @endunless>
+                        <span class="symptom-num" aria-hidden="true">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                        <span class="symptom-text"><strong>{{ $title }}</strong><small>{{ $text }}</small></span>
+                        <span class="symptom-arrow" aria-hidden="true">{{ $arrow }}</span>
+                    </button>
+                @endforeach
+            </div>
+
+            @foreach($symptoms as [$key, $title, $text, $plan, $service, $case])
+                <div class="diag-panel card @if($loop->first) is-active @endif" role="tabpanel" id="panel-{{ $key }}" aria-labelledby="tab-{{ $key }}" tabindex="0">
+                    <p class="diag-kicker">{{ __('Diagnosis & plan') }}</p>
+                    <ol class="plan">
+                        @foreach($plan as $step)
+                            <li style="--i: {{ $loop->index }}"><span class="plan-n" aria-hidden="true">{{ $loop->iteration }}</span>{{ $step }}</li>
+                        @endforeach
+                    </ol>
+                    <div class="diag-foot">
+                        @if($case)
+                            <a class="diag-proof" href="{{ $projectUrl($case->id) }}">
+                                <span class="diag-proof-media" aria-hidden="true">@if($case->image)<img src="{{ project_image_url($case->image) }}" alt="" loading="lazy">@else{{ $case->icon ?: '🚀' }}@endif</span>
+                                <span>
+                                    <small>{{ __('Proof — a similar case') }}</small>
+                                    <strong>{{ t($case, 'title') }}</strong>
+                                    @if(t($case, 'result'))<span class="proof-result"><i class="fas fa-arrow-trend-up" aria-hidden="true"></i> {{ t($case, 'result') }}</span>@endif
+                                </span>
+                            </a>
+                        @endif
+                        <div class="diag-cta">
+                            @if($service)<p><small>{{ __('Recommended service') }}</small>{{ t($service, 'title') }}</p>@endif
+                            <a href="#contact" class="btn btn-primary" @if($service) data-service="{{ t($service, 'title') }}" @endif data-message="{{ $title }}. ">{{ __('Fix this with me') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></a>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
 {{-- ═════════ SERVICES ═════════ --}}
-<section class="section" id="services" aria-labelledby="servicesTitle">
+<section class="section section-tint" id="services" aria-labelledby="servicesTitle">
     <div class="wrap">
         <header class="section-head">
             {!! $label(__('Services')) !!}
@@ -86,7 +201,10 @@
                     $deliverables = ($locale === 'ar' && ! empty($service->deliverables_ar)) ? $service->deliverables_ar : ($service->deliverables ?? []);
                 @endphp
                 <article class="card service-card reveal" style="--d: {{ $loop->index * .08 }}s">
-                    <span class="service-icon" aria-hidden="true"><i class="{{ $service->icon ?: 'fa-solid fa-code' }}"></i></span>
+                    <div class="service-top">
+                        <span class="service-icon" aria-hidden="true"><i class="{{ $service->icon ?: 'fa-solid fa-code' }}"></i></span>
+                        <span class="service-num" aria-hidden="true">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                    </div>
                     <h3>{{ t($service, 'title') }}</h3>
                     <p>{{ t($service, 'summary') }}</p>
                     @if(!empty($deliverables))
@@ -98,20 +216,15 @@
                 </article>
             @endforeach
         </div>
-
-        <div class="note reveal">
-            <p><strong>{{ __('Not sure what you need?') }}</strong> {{ __('Describe the problem in your own words — I’ll tell you honestly what it needs, even if it’s a small fix.') }}</p>
-            <a href="#contact" class="btn btn-ghost">{{ __('Ask me') }}</a>
-        </div>
     </div>
 </section>
 
 {{-- ═════════ WORK ═════════ --}}
-<section class="section section-tint" id="projects" aria-labelledby="workTitle">
+<section class="section" id="projects" aria-labelledby="workTitle">
     <div class="wrap">
         <header class="section-head">
             {!! $label(__('Selected work')) !!}
-            <h2 class="title reveal" id="workTitle">{{ __('Real problems, solved') }}</h2>
+            <h2 class="title reveal" id="workTitle">{{ __('Real problems,') }} <em>{{ __('solved.') }}</em></h2>
             <p class="section-sub reveal">{{ __('Real systems I have built and improved — open any project to see the challenge, the approach, and the result.') }}</p>
         </header>
 
@@ -129,12 +242,12 @@
                         @else
                             <span class="work-emoji" aria-hidden="true">{{ $project->icon ?: '🚀' }}</span>
                         @endif
+                        @if($result)<span class="work-badge"><i class="fas fa-arrow-trend-up" aria-hidden="true"></i> {{ Str::before($result, $locale === 'ar' ? ' و' : ',') }}</span>@endif
                     </div>
                     <div class="work-body">
                         <p class="work-meta">{{ t($project, 'category') }}@if($year) <span aria-hidden="true">·</span> <span dir="ltr">{{ $year }}</span>@endif</p>
                         <h3>{{ t($project, 'title') }}</h3>
                         @if($loop->first)<p class="work-desc">{{ t($project, 'description') }}</p>@endif
-                        @if($result)<p class="work-result"><i class="fas fa-arrow-trend-up" aria-hidden="true"></i>{{ $result }}</p>@endif
                         <span class="text-link">{{ __('Read the case study') }} <span class="arrow" aria-hidden="true">{{ $arrow }}</span></span>
                     </div>
                 </a>
@@ -145,7 +258,7 @@
 
 {{-- ═════════ TESTIMONIALS ═════════ --}}
 @if(!empty($testimonials))
-<section class="section" id="testimonials" aria-labelledby="testimonialsTitle">
+<section class="section section-tint" id="testimonials" aria-labelledby="testimonialsTitle">
     <div class="wrap">
         <header class="section-head">
             {!! $label(__('Testimonials')) !!}
@@ -170,14 +283,15 @@
 @endif
 
 {{-- ═════════ PROCESS ═════════ --}}
-<section class="section" id="process" aria-labelledby="processTitle">
+<section class="section {{ empty($testimonials) ? 'section-tint' : '' }}" id="process" aria-labelledby="processTitle">
     <div class="wrap">
         <header class="section-head">
             {!! $label(__('Process')) !!}
             <h2 class="title reveal" id="processTitle">{{ __('How we work together') }}</h2>
             <p class="section-sub reveal">{{ __('A simple, transparent process — you always know what is happening and what comes next.') }}</p>
         </header>
-        <ol class="steps">
+        <ol class="steps" data-draw>
+            <span class="steps-line" aria-hidden="true"><span></span></span>
             @foreach([
                 [__('Discovery'), __('We talk about your project, the problem, and the goal. No technical jargon needed.')],
                 [__('Audit & Plan'), __('I review the code or requirements and send a clear plan with scope, timeline, and price.')],
@@ -185,6 +299,7 @@
                 [__('Deliver & Support'), __('You get tested, documented work — plus support after delivery to make sure everything runs smoothly.')],
             ] as [$title, $text])
                 <li class="step reveal" style="--d: {{ $loop->index * .08 }}s">
+                    <span class="step-dot" aria-hidden="true"></span>
                     <span class="step-num" aria-hidden="true">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
                     <h3>{{ $title }}</h3>
                     <p>{{ $text }}</p>
@@ -195,7 +310,7 @@
 </section>
 
 {{-- ═════════ ABOUT ═════════ --}}
-<section class="section section-tint" id="about" aria-labelledby="aboutTitle">
+<section class="section" id="about" aria-labelledby="aboutTitle">
     <div class="wrap">
         <header class="section-head">
             {!! $label(__('About')) !!}
@@ -259,7 +374,7 @@
 
 {{-- ═════════ FAQ ═════════ --}}
 @if(!empty($faqs))
-<section class="section" id="faq" aria-labelledby="faqTitle">
+<section class="section section-tint" id="faq" aria-labelledby="faqTitle">
     <div class="wrap faq-grid">
         <header>
             {!! $label(__('FAQ')) !!}
@@ -279,8 +394,8 @@
 </section>
 @endif
 
-{{-- ═════════ CONTACT ═════════ --}}
-<section class="section contact" id="contact" aria-labelledby="contactTitle">
+{{-- ═════════ CONTACT (ink) ═════════ --}}
+<section class="section contact is-ink" id="contact" aria-labelledby="contactTitle">
     <div class="wrap contact-grid">
         <div class="contact-intro">
             {!! $label(__('Contact')) !!}
