@@ -29,13 +29,13 @@ class ProjectDetailTest extends TestCase
         foreach ($projects as $project) {
             $this->get(route('project.show', $project->id).'?lang=en')
                 ->assertOk()
-                ->assertSee('<h1 class="project-title">'.e($project->title).'</h1>', false)
+                ->assertSee('<h1 class="p-title">'.e($project->title).'</h1>', false)
                 ->assertSee('aria-label="Breadcrumb"', false)
                 ->assertSee('I want something similar');
 
             $this->get(route('project.show', $project->id).'?lang=ar')
                 ->assertOk()
-                ->assertSee('<h1 class="project-title">'.e($project->title_ar ?: $project->title).'</h1>', false);
+                ->assertSee('<h1 class="p-title">'.e($project->title_ar ?: $project->title).'</h1>', false);
         }
     }
 

@@ -20,6 +20,8 @@ class PortfolioContent
         'services' => ['deliverables', 'deliverables_ar'],
         'projects' => ['stack', 'work_stages', 'work_stages_ar'],
         'project_images' => [],
+        'testimonials' => [],
+        'faqs' => [],
         'experiences' => ['tags'],
         'skill_categories' => [],
         'skills' => [],
