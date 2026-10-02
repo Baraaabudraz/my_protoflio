@@ -124,11 +124,10 @@
         }));
     }
 
-    /* ── Hero: drafting crosshair + cursor-driven headline width ───────── */
+    /* ── Hero: drafting crosshair that follows the cursor ──────────────── */
     (function heroPointer() {
         const hero = $('.hero');
         if (!hero || reduced || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-        const title = $('.hero-title', hero);
         const cross = document.createElement('div');
         cross.className = 'crosshair';
         cross.setAttribute('aria-hidden', 'true');
@@ -148,13 +147,8 @@
             ty = e.clientY - r.top;
             if (!hero.classList.contains('is-pointing')) { x = tx; y = ty; hero.classList.add('is-pointing'); }
             if (!raf) raf = requestAnimationFrame(loop);
-            // Latin headline only: Archivo's width axis follows the cursor (88% → 118%).
-            if (title && root.lang !== 'ar') title.style.setProperty('--wdth', (88 + 30 * (tx / r.width)).toFixed(1) + '%');
         });
-        hero.addEventListener('pointerleave', () => {
-            hero.classList.remove('is-pointing');
-            if (title) title.style.removeProperty('--wdth');
-        });
+        hero.addEventListener('pointerleave', () => hero.classList.remove('is-pointing'));
     })();
 
     /* ── Hero chat: rotate example conversations, or pick one ──────────── */

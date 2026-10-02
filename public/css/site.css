@@ -680,7 +680,7 @@ h3 { font-weight: 700; letter-spacing: -.015em; }
 html[lang="ar"] .p-title { line-height: 1.4; }
 .grad { background: var(--accent); color: var(--btn-ink); -webkit-text-fill-color: currentColor; animation: none; padding: 0 .12em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .mono, .eyebrow, .stage-step, .diag-label, .faq-n, .timeline .dates, .service-num, .field label, .footer-title, .crumbs { font-family: var(--f-mono); }
-html[lang="ar"] :is(.eyebrow, .stage-step, .diag-label, .field label, .footer-title, .crumbs) { font-family: var(--f-body); }
+html[lang="ar"] :is(.mono, .eyebrow, .stage-step, .diag-label, .field label, .footer-title, .crumbs, .brand-text small, .spec-sheet dt, .chips li, .stack li, .timeline .dates) { font-family: var(--f-body); letter-spacing: 0; }
 
 /* Accent as text uses the darker, readable tone */
 :is(.card-link, .diag-label, .stage-step, .faq-n, .timeline .dates, .quote-card figcaption a, .menu-panel nav a .mono, .sub-title i, .facts dt i, .symptom-icon, .values i, .theme-option[aria-checked="true"], .site-footer ul a:hover, .crumbs a:hover, .quote-mark, .proof-result) { color: var(--accent-text); }
@@ -851,6 +851,9 @@ html[lang="ar"] .case-card.is-featured .case-body h3 { font-stretch: 100%; lette
 .site-footer .icon-btn { border-color: color-mix(in srgb, var(--bg) 40%, transparent); color: var(--bg); }
 .site-footer .icon-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--btn-ink); }
 .site-footer ul a:hover { color: var(--accent); }
+.site-footer .status-line { color: #4ade80 !important; }
+.diag-case-media { background: var(--bg-2); }
+.p-cover .placeholder { background: var(--bg-2); background-image: repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 32px), repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 32px); }
 .consult-bar { border-radius: 0; }
 .url-bar { border-radius: 0; }
 .result-box { border-radius: 0; border-color: var(--good); }
@@ -871,9 +874,18 @@ html[lang="ar"] .case-card.is-featured .case-body h3 { font-stretch: 100%; lette
 }
 @media (max-width: 680px) {
     .header-island { width: calc(100% - 2rem); }
-    .hero-stats > div { padding-inline: .9rem; }
+    .hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .hero-stats > div { padding-inline: .75rem; }
     .hero-stats > div:first-child { padding-inline-start: 0; }
+    .hero-stats dd { font-size: 1.75rem; }
+    .hero-stats dt { font-size: .76rem; line-height: 1.35; }
+    .pill { font-size: .8rem; row-gap: .15rem; }
     .spec-sheet { inset: auto; margin-inline: .75rem; }
+}
+@media (max-width: 440px) {
+    .consult-bar p { display: none; }
+    .consult-actions { flex: 1; }
+    .consult-actions .btn-primary { flex: 1; }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -881,13 +893,9 @@ html[lang="ar"] .case-card.is-featured .case-body h3 { font-stretch: 100%; lette
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* Marker sweep: the hero highlight is painted in like a highlighter pen */
-.grad { background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 0 / 0% 100%; color: var(--ink); animation: marker 1s var(--ease) .7s forwards; }
-[dir="rtl"] .grad { background-position: 100% 0; }
-@keyframes marker { to { background-size: 100% 100%; color: var(--btn-ink); } }
-
-/* Hero headline width follows the cursor (set by JS as --wdth) */
-.hero-title { font-stretch: var(--wdth, 100%); }
-.js .hero-title.reveal { transition: opacity .8s var(--ease), transform .8s var(--ease), font-stretch .6s var(--ease); transition-delay: var(--d, 0s), var(--d, 0s), 0s; }
+.grad { padding: 0; background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 88% / 0% .3em; color: var(--ink); animation: marker 1.1s var(--ease) .7s forwards; }
+[dir="rtl"] .grad { background-position: 100% 88%; }
+@keyframes marker { to { background-size: 100% .3em; } }
 
 /* Drafting crosshair that follows the cursor over the hero grid (added by JS) */
 .crosshair { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .3s; }
@@ -937,7 +945,7 @@ html[lang="ar"] .case-card.is-featured .case-body h3 { font-stretch: 100%; lette
     *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
     .js .reveal { opacity: 1; transform: none; filter: none; }
     .bubble-typing { display: none; }
-    .grad { background-size: 100% 100%; color: var(--btn-ink); }
+    .grad { background-size: 100% .3em; }
     .crosshair { display: none; }
 }
 
