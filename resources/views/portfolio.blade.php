@@ -226,7 +226,7 @@
                     $result = t($project, 'result');
                 @endphp
                 <a href="{{ $projectUrl($project->id) }}" class="glass-card case-card reveal @if($loop->first) is-featured @endif" data-spotlight style="--d: {{ ($loop->index % 3) * .08 }}s">
-                    <div class="case-media">
+                    <div class="case-media" style="view-transition-name: project-{{ $project->id }}">
                         @if($image)
                             <img src="{{ $image }}" alt="" loading="lazy">
                         @else

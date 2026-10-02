@@ -69,7 +69,7 @@
 
 {{-- ═════════ COVER ═════════ --}}
 <div class="wrap">
-    <div class="p-cover reveal">
+    <div class="p-cover reveal" style="view-transition-name: project-{{ $project->id }}">
         <div class="console-bar" aria-hidden="true">
             <span class="dots"><i></i><i></i><i></i></span>
             <span class="mono url-bar">{{ $project->live_url ? preg_replace('#^https?://#', '', rtrim($project->live_url, '/')) : \Illuminate\Support\Str::slug($project->title).'.app' }}</span>
@@ -189,7 +189,7 @@
                     $itemResult = t($item, 'result');
                 @endphp
                 <a href="{{ $projectUrl($item->id) }}" class="glass-card case-card reveal" data-spotlight style="--d: {{ $loop->index * .08 }}s">
-                    <div class="case-media">
+                    <div class="case-media" style="view-transition-name: project-{{ $item->id }}">
                         @if($itemImage)<img src="{{ $itemImage }}" alt="" loading="lazy">@else<span class="case-emoji" aria-hidden="true">{{ $item->icon ?: '🚀' }}</span>@endif
                     </div>
                     <div class="case-body">

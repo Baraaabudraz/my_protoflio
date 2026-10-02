@@ -876,12 +876,69 @@ html[lang="ar"] .case-card.is-featured .case-body h3 { font-stretch: 100%; lette
     .spec-sheet { inset: auto; margin-inline: .75rem; }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   Motion layer — modern, progressive touches (all off under reduced motion)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Marker sweep: the hero highlight is painted in like a highlighter pen */
+.grad { background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 0 / 0% 100%; color: var(--ink); animation: marker 1s var(--ease) .7s forwards; }
+[dir="rtl"] .grad { background-position: 100% 0; }
+@keyframes marker { to { background-size: 100% 100%; color: var(--btn-ink); } }
+
+/* Hero headline width follows the cursor (set by JS as --wdth) */
+.hero-title { font-stretch: var(--wdth, 100%); }
+.js .hero-title.reveal { transition: opacity .8s var(--ease), transform .8s var(--ease), font-stretch .6s var(--ease); transition-delay: var(--d, 0s), var(--d, 0s), 0s; }
+
+/* Drafting crosshair that follows the cursor over the hero grid (added by JS) */
+.crosshair { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .3s; }
+.hero.is-pointing .crosshair { opacity: 1; }
+.crosshair::before, .crosshair::after { content: ''; position: absolute; background: var(--accent); opacity: .55; }
+.crosshair::before { top: var(--cy, 50%); inset-inline: 0; height: 1px; }
+.crosshair::after { left: var(--cx, 50%); inset-block: 0; width: 1px; }
+.crosshair span { position: absolute; top: var(--cy, 50%); left: var(--cx, 50%); width: 11px; height: 11px; margin: -5px 0 0 -5px; background: var(--accent); }
+.hero .wrap { z-index: 1; }
+
+/* Page transitions: the clicked project image morphs into the project cover */
+@view-transition { navigation: auto; }
+::view-transition-group(*) { animation-duration: .55s; animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
+.site-header { view-transition-name: site-header; }
+
+/* Scroll-driven effects (native CSS, only where supported) */
+@supports (animation-timeline: view()) {
+    /* Headings breathe from narrow to wide as they enter the page */
+    html:not([lang="ar"]) :is(.section-head h2, .faq-side h2, .about-copy h2, .contact-intro h2) {
+        animation: breathe-in linear both; animation-timeline: view(); animation-range: entry 0% cover 35%;
+    }
+    @keyframes breathe-in { from { font-stretch: 68%; letter-spacing: .01em; opacity: .25; } to { font-stretch: 112%; letter-spacing: -.035em; opacity: 1; } }
+    html[lang="ar"] :is(.section-head h2, .faq-side h2, .about-copy h2, .contact-intro h2) {
+        animation: wipe-in linear both; animation-timeline: view(); animation-range: entry 0% cover 30%;
+    }
+    @keyframes wipe-in { from { clip-path: inset(0 0 0 100%); } to { clip-path: inset(0); } }
+
+    /* Images unfold top-to-bottom as you scroll to them */
+    .case-media img, .frame img, .diag-case-media img {
+        animation: unfold linear both; animation-timeline: view(); animation-range: entry 5% cover 35%;
+    }
+    @keyframes unfold { from { clip-path: inset(0 0 100% 0); transform: scale(1.12); } to { clip-path: inset(0); transform: scale(1); } }
+
+    /* Section rules draw across as each section arrives */
+    .section { border-top-color: transparent; }
+    .section::before {
+        content: ''; position: absolute; top: -1px; inset-inline: 0; height: 1px; background: var(--line-2); transform-origin: left;
+        animation: rule-in linear both; animation-timeline: view(); animation-range: entry 0% entry 60%;
+    }
+    [dir="rtl"] .section::before { transform-origin: right; }
+    @keyframes rule-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+
 /* ── Reduced motion ─────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
     .js .reveal { opacity: 1; transform: none; filter: none; }
     .bubble-typing { display: none; }
+    .grad { background-size: 100% 100%; color: var(--btn-ink); }
+    .crosshair { display: none; }
 }
 
 @media print {

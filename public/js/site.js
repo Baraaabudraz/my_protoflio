@@ -124,6 +124,39 @@
         }));
     }
 
+    /* ── Hero: drafting crosshair + cursor-driven headline width ───────── */
+    (function heroPointer() {
+        const hero = $('.hero');
+        if (!hero || reduced || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+        const title = $('.hero-title', hero);
+        const cross = document.createElement('div');
+        cross.className = 'crosshair';
+        cross.setAttribute('aria-hidden', 'true');
+        cross.appendChild(document.createElement('span'));
+        hero.prepend(cross);
+        let tx = 0, ty = 0, x = 0, y = 0, raf = null;
+        const loop = () => {
+            x += (tx - x) * .18;
+            y += (ty - y) * .18;
+            cross.style.setProperty('--cx', x + 'px');
+            cross.style.setProperty('--cy', y + 'px');
+            raf = Math.abs(tx - x) + Math.abs(ty - y) > .5 ? requestAnimationFrame(loop) : null;
+        };
+        hero.addEventListener('pointermove', e => {
+            const r = hero.getBoundingClientRect();
+            tx = e.clientX - r.left;
+            ty = e.clientY - r.top;
+            if (!hero.classList.contains('is-pointing')) { x = tx; y = ty; hero.classList.add('is-pointing'); }
+            if (!raf) raf = requestAnimationFrame(loop);
+            // Latin headline only: Archivo's width axis follows the cursor (88% → 118%).
+            if (title && root.lang !== 'ar') title.style.setProperty('--wdth', (88 + 30 * (tx / r.width)).toFixed(1) + '%');
+        });
+        hero.addEventListener('pointerleave', () => {
+            hero.classList.remove('is-pointing');
+            if (title) title.style.removeProperty('--wdth');
+        });
+    })();
+
     /* ── Hero chat: rotate example conversations, or pick one ──────────── */
     (function heroChat() {
         const chat = $('[data-chat]');
