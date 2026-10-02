@@ -25,7 +25,7 @@
     $asset = fn (string $path) => asset($path).'?v='.(@filemtime(public_path($path)) ?: 1);
 @endphp
 <!DOCTYPE html>
-<html lang="{{ $locale }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}" data-theme="dark">
+<html lang="{{ $locale }}" dir="{{ $isRtl ? 'rtl' : 'ltr' }}" data-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -36,15 +36,15 @@
             root.classList.add('js');
             try { saved = localStorage.getItem('theme'); } catch (e) {}
             var themes = ['light', 'dark', 'ocean', 'sunset'];
-            root.setAttribute('data-theme', themes.indexOf(saved) > -1 ? saved : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+            root.setAttribute('data-theme', themes.indexOf(saved) > -1 ? saved : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     @if($isRtl)
-        <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@600..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     @else
-        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     @endif
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="{{ $asset('css/site.css') }}">
