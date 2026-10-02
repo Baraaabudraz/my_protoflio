@@ -97,11 +97,6 @@
                     <label class="form-label">Overview (Full Detail) <span class="lang-badge en">EN</span></label>
                     <textarea name="overview" class="form-control" rows="5" placeholder="Detailed project overview shown on the detail page...">{{ old('overview', $project?->overview) }}</textarea>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Result <span class="lang-badge en">EN</span></label>
-                    <input type="text" name="result" class="form-control" maxlength="255" value="{{ old('result', $project?->result) }}" placeholder="e.g. Page load cut from 6s to 1.2s">
-                    <div class="form-hint">One measurable outcome. Highlighted on the case-study card and project page — leave empty if you don't have a real number.</div>
-                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Client <span class="lang-badge en">EN</span></label>
@@ -141,10 +136,6 @@
                 <div class="form-group">
                     <label class="form-label">نظرة عامة تفصيلية <span class="lang-badge ar">AR</span></label>
                     <textarea name="overview_ar" class="form-control" rows="5" placeholder="نظرة عامة تفصيلية تظهر في صفحة المشروع..." dir="rtl" style="font-family:'Cairo',sans-serif">{{ old('overview_ar', $project?->overview_ar) }}</textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">النتيجة <span class="lang-badge ar">AR</span></label>
-                    <input type="text" name="result_ar" class="form-control" maxlength="255" value="{{ old('result_ar', $project?->result_ar) }}" placeholder="مثال: تقليل زمن التحميل من 6 ثوانٍ إلى 1.2 ثانية" dir="rtl" style="font-family:'Cairo',sans-serif">
                 </div>
                 <div class="form-row">
                     <div class="form-group">

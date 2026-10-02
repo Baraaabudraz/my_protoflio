@@ -51,16 +51,9 @@ class PortfolioController extends Controller
             $settings[$s->key] = $s->value;
         }
 
-        $faqs = Database::query('SELECT * FROM faqs WHERE visible = 1 ORDER BY sort_order ASC, id ASC');
-        $testimonials = Database::query(
-            'SELECT t.*, p.title AS project_title, p.title_ar AS project_title_ar FROM testimonials t
-             LEFT JOIN projects p ON p.id = t.project_id AND p.visible = 1
-             WHERE t.visible = 1 ORDER BY t.sort_order ASC, t.id ASC'
-        );
+        $seo = $seoBuilder->home($settings, $services);
 
-        $seo = $seoBuilder->home($settings, $services, $faqs);
-
-        return view('portfolio', compact('projects', 'services', 'experiences', 'categories', 'settings', 'seo', 'faqs', 'testimonials'));
+        return view('portfolio', compact('projects', 'services', 'experiences', 'categories', 'settings', 'seo'));
     }
 
     public function show(int $id, SeoBuilder $seoBuilder)
@@ -114,11 +107,10 @@ class PortfolioController extends Controller
         $this->useGalleryAsCover([$project]);
         $this->useGalleryAsCover($related);
         $project->gallery = $gallery;
-        $testimonials = Database::query('SELECT * FROM testimonials WHERE project_id = ? AND visible = 1 ORDER BY sort_order ASC, id ASC', [$id]);
 
         $seo = $seoBuilder->project($project, $settings);
 
-        return view('project-detail', compact('project', 'related', 'settings', 'seo', 'previousProject', 'nextProject', 'gallery', 'testimonials'));
+        return view('project-detail', compact('project', 'related', 'settings', 'seo', 'previousProject', 'nextProject', 'gallery'));
     }
 
     /**

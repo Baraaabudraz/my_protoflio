@@ -1,0 +1,156 @@
+[29-Sep-2026 16:24:31 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328
+[29-Sep-2026 16:24:33 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328
+[29-Sep-2026 16:25:14 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328
+[29-Sep-2026 16:26:26 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328
+[29-Sep-2026 16:26:28 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328
+[29-Sep-2026 16:26:29 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328
+[29-Sep-2026 16:26:30 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328
+[29-Sep-2026 16:27:01 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328
+[29-Sep-2026 16:27:33 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328
+[29-Sep-2026 16:27:34 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328
+[29-Sep-2026 16:30:00 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328
+[29-Sep-2026 16:30:01 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328
+[29-Sep-2026 16:31:03 UTC] PHP Fatal error:  Uncaught ErrorException: Cannot modify header information - headers already sent by (output started at /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:393) in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php:328
+Stack trace:
+#0 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleError()
+#1 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#2 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(328): header()
+#3 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php(407): Symfony\Component\HttpFoundation\Response->sendHeaders()
+#4 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(228): Symfony\Component\HttpFoundation\Response->send()
+#5 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(205): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#6 /home/uplancer/baraa-abudraz.uplancerps.com/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(265): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#7 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->{closure:Illuminate\Foundation\Bootstrap\HandleExceptions::forwardsTo():264}()
+#8 {main}
+  thrown in /home/uplancer/baraa-abudraz.uplancerps.com/vendor/symfony/http-foundation/Response.php on line 328

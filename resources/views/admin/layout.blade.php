@@ -274,8 +274,6 @@
         @foreach([
             ['admin.services', 'admin.services*', 'fa-handshake', __('Services')],
             ['admin.projects', 'admin.projects*', 'fa-rocket', __('Projects')],
-            ['admin.testimonials', 'admin.testimonials*', 'fa-quote-left', __('Testimonials')],
-            ['admin.faqs', 'admin.faqs*', 'fa-circle-question', __('FAQ')],
             ['admin.experience', 'admin.experience*', 'fa-briefcase', __('Experience')],
             ['admin.skills', 'admin.skills*', 'fa-code-branch', __('Skills')],
         ] as [$navRoute, $navPattern, $navIcon, $navLabel])

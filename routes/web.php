@@ -48,22 +48,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('/services/{id}', [AdminController::class, 'serviceUpdate'])->name('services.update');
     Route::delete('/services/{id}', [AdminController::class, 'serviceDelete'])->name('services.delete');
 
-    // Testimonials
-    Route::get('/testimonials', [AdminController::class, 'testimonials'])->name('testimonials');
-    Route::get('/testimonials/create', [AdminController::class, 'testimonialCreate'])->name('testimonials.create');
-    Route::post('/testimonials', [AdminController::class, 'testimonialStore'])->name('testimonials.store');
-    Route::get('/testimonials/{id}/edit', [AdminController::class, 'testimonialEdit'])->name('testimonials.edit');
-    Route::put('/testimonials/{id}', [AdminController::class, 'testimonialUpdate'])->name('testimonials.update');
-    Route::delete('/testimonials/{id}', [AdminController::class, 'testimonialDelete'])->name('testimonials.delete');
-
-    // FAQs
-    Route::get('/faqs', [AdminController::class, 'faqs'])->name('faqs');
-    Route::get('/faqs/create', [AdminController::class, 'faqCreate'])->name('faqs.create');
-    Route::post('/faqs', [AdminController::class, 'faqStore'])->name('faqs.store');
-    Route::get('/faqs/{id}/edit', [AdminController::class, 'faqEdit'])->name('faqs.edit');
-    Route::put('/faqs/{id}', [AdminController::class, 'faqUpdate'])->name('faqs.update');
-    Route::delete('/faqs/{id}', [AdminController::class, 'faqDelete'])->name('faqs.delete');
-
     // Experience
     Route::get('/experience', [AdminController::class, 'experiences'])->name('experience');
     Route::get('/experience/create', [AdminController::class, 'experienceCreate'])->name('experience.create');
